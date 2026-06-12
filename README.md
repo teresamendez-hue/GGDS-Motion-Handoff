@@ -1,20 +1,25 @@
 # Motion Handoff GGDS
 
-Repositorio de trabajo para generar y mantener handoffs de motion de componentes del GGDS en Web y App.
+Guia operativa del proyecto de handoffs de motion para componentes GGDS en Web y App.
 
 ## Objetivo
 
-- Documentar de forma clara como se comporta el motion de cada componente.
-- Alinear diseño y desarrollo con tokens semanticos y primitivos.
-- Entregar previews interactivos para validar estados, ritmo y accesibilidad.
+- Estandarizar handoffs de motion entre Diseno Ops y Desarrollo.
+- Documentar comportamiento real de componentes con tokens semanticos.
+- Entregar previews y especificaciones tecnicas consistentes por plataforma.
 
-## Estructura del proyecto
+## Que cubre este proyecto
 
-Cada componente vive en su carpeta y se separa por plataforma:
+- Estados internos de componentes (ej. button, checkbox, icon button).
+- Componentes de entrada/salida de viewport (ej. sidesheet, modal, toast).
+- Paridad Web/App cuando aplique.
+- Accesibilidad (`prefers-reduced-motion` y `disableAnimations`).
+
+## Estructura de carpetas
 
 ```text
 motion/
-├── [componente]/
+├── [componente-kebab-case]/
 │   ├── Web/
 │   │   ├── [componente]_motion-handoff_web.html
 │   │   ├── [componente]_motion-handoff_web.md
@@ -23,42 +28,41 @@ motion/
 │       ├── [componente]_motion-handoff_app.html
 │       ├── [componente]_motion-handoff_app.md
 │       └── [componente]_motion-spec_app.md
+├── README.md
 ├── tokens.md
 ├── motion-tokens-gds-2.0-tabla.csv
 └── guia-ops-motion-handoff.md
 ```
 
-## Componentes trabajados
-
-- `button`
-- `sidesheet`
-- `checkbox`
-- `radio-button`
-- `box-selector`
-
 ## Entregables por componente
 
-- `motion-handoff_*.html`: preview interactivo para validacion visual.
-- `motion-handoff_*.md`: resumen funcional para handoff/ticket.
-- `motion-spec_*.md`: especificacion tecnica de tokens y reglas.
+- `*_motion-handoff_[web|app].html`: preview interactivo de motion.
+- `*_motion-handoff_[web|app].md`: documento de handoff para ticket/repo.
+- `*_motion-spec_[web|app].md`: spec estructurada para trazabilidad/pipeline.
 
-## Accesibilidad
+## Convenciones clave
 
-- Web: usar `prefers-reduced-motion` para validar estado final sin transiciones.
-- App: usar `disableAnimations` para simular comportamiento accesible equivalente.
-
-## Convenciones
-
-- Mantener token semantico visible en la pill.
-- Describir composicion completa del token en `Token Mapping`.
-- No sobrescribir decisiones historicas sin registrar el cambio.
-- Priorizar estados reales del componente sobre decoraciones visuales.
+- Consumir siempre tokens semanticos (no valores crudos en decisiones de handoff).
+- Incluir `Token Mapping` completo: semantico -> primitivo -> valor final.
+- Mantener naming consistente por slug de componente.
+- Reflejar solo estados reales de Figma y del componente.
+- No usar este README para listar componentes uno por uno.
 
 ## Historial y trazabilidad
 
-El historial interno del skill se guarda en:
+- La fuente de verdad de entregables es `~/motion/[componente]/`.
+- El historial curado del skill vive en `~/.cursor/skills/motion-handoff/references/history/`.
+- En ese historial se mantienen solo referencias canonicas de patrones (no todo componente nuevo).
+- Si hay cambios de criterio, documentarlos en el handoff/spec del componente afectado.
 
-- `~/.cursor/skills/motion-handoff/references/history/`
+## Mantenimiento de este README
 
-Cada snapshot se versiona por componente y fecha (`YYYY-MM-DD`).
+Actualizar este archivo solo cuando cambie:
+
+- la estructura de carpetas,
+- el flujo de trabajo,
+- las convenciones del sistema,
+- o la politica de trazabilidad.
+
+No actualizarlo por cada componente nuevo.
 
