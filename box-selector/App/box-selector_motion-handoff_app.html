@@ -28,9 +28,32 @@ section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35
 <div class="controls"><label><input type="checkbox" id="disabled"/> Disabled</label><label><input type="checkbox" id="reduced"/> disableAnimations (sin animación)</label><label>Type <select id="type"><option value="checkbox">Checkbox</option><option value="radio">Radio</option></select></label></div>
 <div class="callout">Este preview simula el spring en el navegador. No es Flutter. Implementá con los parámetros del Token Mapping.</div><p class="companion">Referencia visual Web: <a href="../Web/box-selector_motion-handoff_web.html">abrir preview Web</a></p>
 <div class="readout">State: <span id="state">default · unchecked</span></div><div class="mapping"><strong>Token Mapping</strong><br/>motion-spring-sm → mass 1.0 · stiffness 400 · damping 35</div><div class="implementation"><strong>Implementación Dart (Flutter)</strong><pre>final motion = context.motionTokens;
-final spring = motion.springSm; // motion-spring-sm
+final spring = motion.springSm; // motion-spring-sm (mass: 1.0, stiffness: 400, damping: 35)
+final disableAnimations = MediaQuery.of(context).disableAnimations;
 
-// Usar `spring` en pressed/focus/selection/loading.</pre></div></section><footer class="doc-footer">Motion System GGDS · Box Selector Handoff App · 2026-06-08<br/>DesignOps @ itti</footer></div>
+double scale = 1.0;
+double opacity = 1.0;
+
+void onPressedChanged(bool pressed) {
+  if (disableAnimations) {
+    scale = pressed ? 0.985 : 1.0;
+    opacity = pressed ? 0.92 : 1.0;
+    return;
+  }
+
+  controller.animateWith(
+    SpringSimulation(
+      spring,
+      pressed ? 1.0 : 0.0,
+      pressed ? 0.0 : 1.0,
+      0,
+    ),
+  );
+}
+
+// disabled: estado final instantaneo
+// skeleton/loading: usar el mismo spring para crossfade interno
+</pre></div></section><footer class="doc-footer">Motion System GGDS · Box Selector Handoff App · 2026-06-08<br/>DesignOps @ itti</footer></div>
 <script>
 (()=>{const card=document.getElementById('card'),state=document.getElementById('state'),disabled=document.getElementById('disabled'),reduced=document.getElementById('reduced'),type=document.getElementById('type'),lab=document.getElementById('motion-lab');let focusVisible=false,controlSelected=false;
 const selectedSuffix=()=>controlSelected?'checked':'unchecked';const set=s=>state.textContent=s+' · '+selectedSuffix();
