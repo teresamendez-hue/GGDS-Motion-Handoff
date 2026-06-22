@@ -29,12 +29,36 @@ section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35
 <div class="readout">State: <span id="state">hidden</span></div>
 <div class="mapping"><strong>Token Mapping</strong><br/>Entrada: motion-curve-lg → easing-emphasis → cubic-bezier(0.2, 0, 0, 1) → duration-500 (500ms)<br/>Salida: motion-exit → easing-accelerate → cubic-bezier(0.4, 0, 1, 1) → duration-300 (300ms)</div></section>
 <div class="implementation"><strong>Implementación CSS</strong><pre>.sheet {
-  transition-timing-function: var(--motion-curve-lg);
+  transition-property: transform, opacity;
   transition-duration: var(--motion-duration-from-motion-curve-lg);
+  transition-timing-function: var(--motion-curve-lg);
+  transform: translateX(100%);
+  opacity: 0;
 }
-.sheet.is-exit {
+
+.sheet[data-open="true"] {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.sheet[data-open="false"] {
+  transition-duration: var(--motion-duration-from-motion-exit);
   transition-timing-function: var(--motion-exit);
-}</pre></div><footer class="doc-footer">Motion System GGDS · Sidesheet Handoff Web · 2026-06-05<br/>DesignOps @ itti</footer>
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.scrim {
+  transition: opacity var(--motion-duration-from-motion-curve-lg) var(--motion-curve-lg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet,
+  .scrim {
+    transition: none;
+  }
+}
+</pre></div><footer class="doc-footer">Motion System GGDS · Sidesheet Handoff Web · 2026-06-05<br/>DesignOps @ itti</footer>
 </div>
 <script>
 (()=>{const lab=document.getElementById('motion-lab'),scrim=document.getElementById('scrim'),sheet=document.getElementById('sheet'),state=document.getElementById('state');

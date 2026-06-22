@@ -29,11 +29,36 @@ section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35
 <div class="stage"><button class="card" id="card"><span class="ring"></span><div class="card-main"><span class="card-title">Label</span><span class="card-desc">Description</span></div><span class="control" aria-hidden="true"><span class="control-check"></span><span class="control-dot"></span></span></button></div>
 <div class="controls"><label><input type="checkbox" id="disabled"/> Disabled</label><label><input type="checkbox" id="reduced"/> prefers-reduced-motion</label><label>Type <select id="type"><option value="checkbox">Checkbox</option><option value="radio">Radio</option></select></label></div>
 
-<div class="readout">State: <span id="state">default · unchecked</span></div><div class="mapping"><strong>Token Mapping</strong><br/>motion-curve-sm → easing-standard → cubic-bezier(0.4, 0, 0.2, 1) → duration-150 (150ms)</div><div class="implementation"><strong>Implementación CSS</strong><pre>.component {
-  transition-timing-function: var(--motion-curve-sm);
+<div class="readout">State: <span id="state">default · unchecked</span></div><div class="mapping"><strong>Token Mapping</strong><br/>motion-curve-sm → easing-standard → cubic-bezier(0.4, 0, 0.2, 1) → duration-150 (150ms)</div><div class="implementation"><strong>Implementación CSS</strong><pre>.card {
+  transition-property: background-color, border-color, color, transform, opacity;
   transition-duration: var(--motion-duration-from-motion-curve-sm);
+  transition-timing-function: var(--motion-curve-sm);
 }
-.component:disabled { transition: none; }</pre></div></section><footer class="doc-footer">Motion System GGDS · Box Selector Handoff Web · 2026-06-08<br/>DesignOps @ itti</footer></div>
+
+.card:hover:not([data-disabled="true"]) {
+  /* hovered */
+}
+
+.card:active:not([data-disabled="true"]) {
+  transform: scale(0.985);
+  opacity: 0.92;
+}
+
+.card[data-focus-visible="true"] {
+  /* focus ring visible */
+}
+
+.card[data-disabled="true"] {
+  transition: none;
+  opacity: 0.45;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}
+</pre></div></section><footer class="doc-footer">Motion System GGDS · Box Selector Handoff Web · 2026-06-08<br/>DesignOps @ itti</footer></div>
 <script>
 (()=>{const card=document.getElementById('card'),state=document.getElementById('state'),disabled=document.getElementById('disabled'),reduced=document.getElementById('reduced'),type=document.getElementById('type'),lab=document.getElementById('motion-lab');let focusVisible=false,controlSelected=false;
 const selectedSuffix=()=>controlSelected?'checked':'unchecked';const set=s=>state.textContent=s+' · '+selectedSuffix();

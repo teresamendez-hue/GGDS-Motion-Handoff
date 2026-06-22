@@ -311,6 +311,22 @@ Bloques obligatorios en este orden:
 5. **Implementación** — código CSS o Dart listo para usar
 6. **Recomendaciones** — criterio del sistema, advertencias, accesibilidad
 
+### Regla crítica — Implementación = solo motion
+
+La sección **Implementación** (MD y HTML) debe incluir únicamente contrato de motion.
+
+**Permitido:**
+- Tokens de motion (`motion-curve-*`, `motion-spring-*`, `motion-exit`)
+- Propiedades animadas (`transition-property`, `transition-duration`, `transition-timing-function`, `animation`, `SpringDescription`, `SpringSimulation`)
+- Gate de accesibilidad (`prefers-reduced-motion`, `disableAnimations`)
+
+**Prohibido:**
+- Tokens visuales no-motion (`--color-*`, spacing, radius, typography, layout)
+- Reglas funcionales del componente (`[data-error]`, `:disabled`, selectors de negocio) salvo mención mínima de “disabled sin transición”
+- Lógica de UI que ya vive en Storybook/Widgetbook
+
+Objetivo: que el snippet sea un contrato de motion reusable sin redefinir el componente.
+
 ### App — bloques adicionales obligatorios
 
 Leer [references/app-handoff.md](references/app-handoff.md). Insertar **después del encabezado**, antes de Motion Specification:
@@ -591,6 +607,7 @@ Verificar antes de entregar cada archivo:
 - [ ] App: mismo token spring en entrada y salida
 - [ ] App: secciones Referencia visual, Paridad Web↔App, Nota para desarrollo
 - [ ] App: link companion Web solo si existe handoff Web en `../Web/` del mismo componente
+- [ ] Implementación (MD/HTML) contiene solo motion: sin tokens visuales ni reglas funcionales del componente
 
 **MD agentico:**
 - [ ] Frontmatter YAML válido con todos los campos obligatorios

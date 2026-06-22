@@ -39,9 +39,32 @@ section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35
 <div class="readout">State: <span id="state">default</span></div>
 <div class="mapping"><strong>Token Mapping</strong><br/>motion-spring-sm → mass 1.0 · stiffness 400 · damping 35</div></section>
 <div class="implementation"><strong>Implementación Dart (Flutter)</strong><pre>final motion = context.motionTokens;
-final spring = motion.springSm; // motion-spring-sm
+final spring = motion.springSm; // motion-spring-sm (mass: 1.0, stiffness: 400, damping: 35)
+final disableAnimations = MediaQuery.of(context).disableAnimations;
 
-// Usar `spring` en pressed/focus/selection/loading.</pre></div><footer class="doc-footer">Motion System GGDS · Button Handoff App · 2026-06-05<br/>DesignOps @ itti</footer>
+double scale = 1.0;
+double opacity = 1.0;
+
+void onPressedChanged(bool pressed) {
+  if (disableAnimations) {
+    scale = pressed ? 0.985 : 1.0;
+    opacity = pressed ? 0.92 : 1.0;
+    return;
+  }
+
+  controller.animateWith(
+    SpringSimulation(
+      spring,
+      pressed ? 1.0 : 0.0,
+      pressed ? 0.0 : 1.0,
+      0,
+    ),
+  );
+}
+
+// disabled: estado final instantaneo
+// skeleton/loading: usar el mismo spring para crossfade interno
+</pre></div><footer class="doc-footer">Motion System GGDS · Button Handoff App · 2026-06-05<br/>DesignOps @ itti</footer>
 </div>
 <script>
 (()=>{const S=400,D=35,M=1,btn=document.getElementById('btn'),state=document.getElementById('state'),ring=btn.querySelector('.ring');
