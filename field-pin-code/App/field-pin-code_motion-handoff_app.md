@@ -79,6 +79,33 @@ void animatePinFocus({
 
 ---
 
+## Haptics Specification
+
+Field Pin Code dispara haptic en dígito completado usando `haptic-selection-change`.
+
+| Campo | Valor |
+|---|---|
+| **Token default** | `haptic-selection-change` |
+| **Trigger** | `dígito completado` |
+
+---
+
+## Token Mapping Haptics
+
+| Token semántico | Token primitivo | Flutter API |
+|---|---|---|
+| `haptic-selection-change` | `haptic-selection-click` | `HapticFeedback.selectionClick()` |
+
+---
+
+## Implementación Haptics
+
+```dart
+void onDigitFilled(int index) {
+  context.haptics.trigger(GgdsHapticSemantic.selectionChange); // haptic-selection-change
+}
+```
+
 ## Recomendaciones
 
 | Tema | Criterio |

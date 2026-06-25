@@ -18,7 +18,7 @@ Conecta las decisiones de diseño con los tokens del motion system y la implemen
 tanto para **Web** (CSS con curvas bezier) como para **App** (Flutter con `flutter_animate` y springs).
 
 > Los tokens semánticos son los que el dev consume en código. Los primitivos son la fuente de verdad del valor.
-> Nunca usar valores de memoria. **Siempre leer** [references/tokens.md](references/tokens.md) antes de generar.
+> Nunca usar valores de memoria. **Siempre leer** [references/tokens-motion.md](references/tokens-motion.md) antes de generar.
 
 ---
 
@@ -108,6 +108,31 @@ Contame si querés ir con esto o cambiar algo.
 
 Máximo 4-5 comportamientos por fase para no abrumar. Si hay más decisiones, priorizarlas.
 
+### 1d. Haptics en App (obligatorio si aplica)
+
+Si la plataforma incluye **App**, leer [references/tokens-haptics.md](references/tokens-haptics.md) y verificar si el componente requiere haptics.
+
+**Informar proactivamente en Fase 1** (sin esperar a Fase 4) cuando corresponda:
+
+> "Este componente en App requiere haptics: `[token semántico]`. Trigger: `[evento]`. [Si aplica override: ¿querés `none` en algún contexto puntual?]"
+
+| Componente | ¿Haptics? | Token default | Override |
+|---|---|---|---|
+| Button, Icon Button, Quick Action | Sí | `haptic-action-press` | `none` \| `default` |
+| Switch, Checkbox, Radio Button, Box Selector, Field Pin Code | Sí | `haptic-selection-change` | no recomendado |
+| Field Text, Field Prefix, Text Area, Link | No | — | — |
+
+Si el componente **no** requiere haptics, aclararlo explícitamente en App para evitar confusión.
+
+**Referencias externas** (orientación UX; la fuente de verdad sigue siendo `tokens-haptics.md`):
+
+| Sistema | Link |
+|---|---|
+| Apple HIG | [Playing haptics](https://developer.apple.com/design/human-interface-guidelines/playing-haptics) |
+| Flutter API | [HapticFeedback class](https://api.flutter.dev/flutter/services/HapticFeedback-class.html) |
+| Material M3 | [Búsqueda haptics](https://m3.material.io/search.html?q=haptics) |
+| Android | [Haptics principles](https://developer.android.com/develop/ui/views/haptics/haptics-principles) |
+
 ---
 
 ## FASE 2 — Confirmación o ajustes
@@ -143,6 +168,12 @@ Perfecto, acá va el resumen de lo que voy a generar:
 **Tokens:**
 - Entrada: [token semántico] → [curva primitiva] · [duración]
 - Salida: `motion-exit` → `easing-accelerate` · [duración según par entrada/salida]
+
+**Haptics (solo App, si aplica):**
+- Requiere haptics: [sí/no]
+- Token: [haptic-action-press / haptic-selection-change / no aplica]
+- Trigger: [onPressed / onChanged / onDigitFilled / no aplica]
+- Override: [none | default / no aplica]
 
 **Archivos que voy a generar** (en `~/motion/[componente]/`):
 
@@ -267,7 +298,7 @@ Opcional: usar MCP `open_resource` con la ruta `file://` del HTML si está dispo
 
 ## Clasificación de tokens (referencia para Fases 1-4)
 
-Leer siempre [references/tokens.md](references/tokens.md) para valores exactos. Esta tabla es orientativa.
+Leer siempre [references/tokens-motion.md](references/tokens-motion.md) para valores exactos. Esta tabla es orientativa.
 
 ### Curvas (Web)
 
@@ -291,7 +322,7 @@ Leer siempre [references/tokens.md](references/tokens.md) para valores exactos. 
 ### Reglas críticas
 
 - **Web entrada:** token semántico de categoría (`motion-curve-sm` … `motion-curve-xl`).
-- **Web salida:** siempre `motion-exit` → `easing-accelerate`; duración según tabla de pares en `tokens.md` (~40% menor que entrada). Nunca `easing-accelerate` directo en código de componente.
+- **Web salida:** siempre `motion-exit` → `easing-accelerate`; duración según tabla de pares en `tokens-motion.md` (~40% menor que entrada). Nunca `easing-accelerate` directo en código de componente.
 - **App:** Entrada y salida usan **siempre el mismo token spring**. Nunca mezclar con curvas bezier en salida.
 - **Coherencia primero:** si un componente similar ya está documentado en GGDS, usar el mismo token salvo justificación explícita.
 - Nunca `easing-back` en componentes informativos.
@@ -441,13 +472,13 @@ web_parity_token: [motion-curve-*]                 # null si no hay par Web
 
 - material_design: [URL o "no aplica"]
 - apple_hig: [URL o "no aplica"]
-- tokens_file: "references/tokens.md"
+- tokens_file: "references/tokens-motion.md"
 ```
 
 **Reglas del MD agentico:**
 - Sin prosa decorativa. Cada dato tiene que ser extraíble sin interpretación.
 - Valores numéricos siempre como números (300, no "300ms").
-- Nombres de tokens exactamente como aparecen en `references/tokens.md`.
+- Nombres de tokens exactamente como aparecen en `references/tokens-motion.md`.
 - El frontmatter YAML debe ser válido (comillas cuando el valor tiene caracteres especiales).
 - Si hay múltiples elementos animados, repetir la sección "Propiedades animadas" por cada uno.
 
@@ -469,6 +500,7 @@ Archivo autocontenido, sin dependencias externas obligatorias (excepto Google Fo
 | Timeline de interacción | Tablas separadas por Entrada / Salida, con badges Trigger/Response |
 | Token Mapping | Cards con cadena de resolución por dirección |
 | Implementación CSS / Dart | Bloque `<pre>` con syntax highlighting manual |
+| Haptics (solo App, si aplica) | Sección `<h2>Haptics</h2>` después de Implementación Dart, separada por divider de sección |
 | Recomendaciones | Tabla limpia sin cards pesadas |
 | `hero-meta` (junto al owner) | `[Web\|App] · GGDS · [YYYY-MM-DD]` — sin `v1.0` ni versión del DS |
 | Footer | Línea 1: `Motion System GGDS · [Componente] Handoff [Web\|App] · [fecha]` · Línea 2: `DesignOps @ itti` |
@@ -591,6 +623,103 @@ Reglas específicas para App en componentes de estado interno:
 
 ---
 
+## Haptics — App (Flutter)
+
+Leer siempre [references/tokens-haptics.md](references/tokens-haptics.md) antes de documentar haptics.
+
+Haptics aplica **solo App** y **solo en componentes que lo ameriten** (ver matriz en `tokens-haptics.md`). Web no documenta haptics.
+
+### Cuándo incluir sección Haptics
+
+| Incluir | No incluir |
+|---|---|
+| Button, Icon Button, Quick Action | Field Text, Field Prefix, Text Area, Link |
+| Switch, Checkbox, Radio Button, Box Selector | Breadcrumb, Sidesheet (Web-only) |
+| Field Pin Code | Componentes sin interacción táctil relevante |
+
+### Estructura en HTML App
+
+Después de **Implementación Dart (Flutter)**, agregar una sección separada (divider visual con `border-bottom` de `section`):
+
+```html
+<section class="haptics-section">
+  <h2>Haptics</h2>
+  <div class="mapping">
+    <strong>Token Mapping</strong><br/>
+    haptic-action-press → haptic-impact-light → HapticFeedback.lightImpact()
+  </div>
+  <div class="implementation">
+    <pre>final haptic = widget.haptic ?? GgdsHapticSemantic.actionPress;
+
+void onPressed() {
+  if (haptic != GgdsHapticSemantic.none) {
+    context.haptics.trigger(haptic); // haptic-action-press
+  }
+}</pre>
+  </div>
+</section>
+```
+
+Orden obligatorio en HTML App con haptics:
+1. Preview de motion
+2. Implementación Dart (Flutter)
+3. **Haptics** (divider + `h2`)
+4. Footer
+
+### Tokens semánticos default por familia
+
+| Familia | Token default | Override por instancia |
+|---|---|---|
+| Acción (Button, Icon Button, Quick Action) | `haptic-action-press` | `none` \| `default` |
+| Selección (Switch, Checkbox, Radio, Box Selector, Pin Code) | `haptic-selection-change` | no recomendado |
+
+### Regla crítica — Implementación Haptics = solo haptics
+
+La sección **Haptics** (MD y HTML) debe incluir únicamente contrato de haptics.
+
+**Permitido:**
+- Tokens semánticos (`haptic-action-press`, `haptic-selection-change`, etc.)
+- Trigger de disparo (`onPressed`, `onChanged`, dígito completado)
+- Override (`none` / `default`) cuando aplique
+- Llamada a capa `context.haptics.trigger(...)`
+
+**Prohibido:**
+- Motion/springs/curvas en la sección Haptics
+- Tokens visuales, layout, colores
+- Lógica de negocio del componente
+
+### MD App — bloque Haptics (cuando aplique)
+
+Agregar después de **Implementación Flutter (Dart)**:
+
+1. **Haptics Specification** — token semántico, trigger, override
+2. **Token Mapping Haptics** — semántico → primitivo → Flutter API
+3. **Implementación Haptics** — snippet Dart haptic-only
+
+### MD agentico App — campos opcionales
+
+Cuando el componente lleva haptics, agregar en frontmatter o sección dedicada:
+
+```yaml
+haptic_semantic_default: haptic-action-press
+haptic_override_allowed: true
+haptic_trigger: onPressed
+```
+
+### Referencias externas (haptics)
+
+Usar para justificar criterio en Fase 1. **No** reemplazan `tokens-haptics.md`.
+
+| Sistema | Link | Uso |
+|---|---|---|
+| GGDS (fuente de verdad) | [references/tokens-haptics.md](references/tokens-haptics.md) | Tokens semánticos/primitivos y matriz componente → token |
+| Apple HIG | [Playing haptics](https://developer.apple.com/design/human-interface-guidelines/playing-haptics) | Cuándo y cómo usar feedback táctil en iOS |
+| Flutter | [HapticFeedback class](https://api.flutter.dev/flutter/services/HapticFeedback-class.html) | APIs técnicas disponibles en App |
+| Material M3 | [Búsqueda haptics](https://m3.material.io/search.html?q=haptics) | Patrones y guidance de Material |
+| Android | [Haptics principles](https://developer.android.com/develop/ui/views/haptics/haptics-principles) | Principios de haptics en Android |
+
+---
+
 ## Self-check antes de entregar (Fase 4)
 
 Verificar antes de entregar cada archivo:
@@ -601,7 +730,7 @@ Verificar antes de entregar cada archivo:
 
 **MD de tickets:**
 - [ ] Archivos en `~/motion/[componente]/Web/` y/o `~/motion/[componente]/App/`, no en la raíz suelta
-- [ ] Todos los valores de tokens vienen de `references/tokens.md` — ningún valor inventado
+- [ ] Todos los valores de tokens vienen de `references/tokens-motion.md` — ningún valor inventado
 - [ ] Timeline unificada (sin Motion Details separado)
 - [ ] Duración de salida ~40% menor que entrada (solo Web)
 - [ ] App: mismo token spring en entrada y salida
@@ -614,7 +743,7 @@ Verificar antes de entregar cada archivo:
 - [ ] `design_system: GGDS` (no `gds_version`)
 - [ ] App: `preview_type`, `spring_token`, `companion_web_handoff`, `web_parity_token` cuando aplique
 - [ ] Valores numéricos sin unidades en el YAML (300, no "300ms")
-- [ ] Nombres de tokens exactos (copiar de tokens.md, no de memoria)
+- [ ] Nombres de tokens exactos (copiar de tokens-motion.md, no de memoria)
 - [ ] Sección "Coherencia sistémica" completa con justificación
 
 **HTML:**
@@ -627,6 +756,8 @@ Verificar antes de entregar cada archivo:
 - [ ] Checkbox `prefers-reduced-motion` implementado
 - [ ] Footer: `Motion System GGDS · …` + `DesignOps @ itti`; hero-meta sin `v1.0`
 - [ ] App: callout + link companion Web (si existe) + spring simulado
+- [ ] App con haptics: sección `Haptics` después de Implementación Dart, con Token Mapping y snippet haptic-only
+- [ ] App sin haptics: no incluir sección Haptics vacía
 - [ ] Archivo autocontenido (sin dependencias externas rotas)
 
 ---
@@ -636,7 +767,8 @@ Verificar antes de entregar cada archivo:
 | Archivo | Cuándo leerlo |
 |---|---|
 | [avatars.json](avatars.json) | Siempre antes de generar el HTML — foto del owner |
-| [references/tokens.md](references/tokens.md) | Siempre — fuente de verdad de todos los tokens |
+| [references/tokens-motion.md](references/tokens-motion.md) | Siempre — fuente de verdad de tokens de motion |
+| [references/tokens-haptics.md](references/tokens-haptics.md) | App con haptics — fuente de verdad de tokens táctiles |
 | [references/html-live-preview.md](references/html-live-preview.md) | Antes de armar el preview interactivo |
 | [references/app-handoff.md](references/app-handoff.md) | Siempre que la plataforma incluya App |
 | [references/history/button/](references/history/button/) | Referencia canónica — cambio de estado |

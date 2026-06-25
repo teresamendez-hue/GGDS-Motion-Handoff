@@ -13,6 +13,7 @@ Guia operativa del proyecto de handoffs de motion para componentes GGDS en Web y
 - Estados internos de componentes (ej. button, checkbox, icon button).
 - Componentes de entrada/salida de viewport (ej. sidesheet, modal, toast).
 - Paridad Web/App cuando aplique.
+- Haptics en App (cuando el componente lo requiere).
 - Accesibilidad (`prefers-reduced-motion` y `disableAnimations`).
 
 ## Estructura de carpetas
@@ -29,8 +30,9 @@ motion/
 │       ├── [componente]_motion-handoff_app.md
 │       └── [componente]_motion-spec_app.md
 ├── README.md
-├── tokens.md
-├── motion-tokens-gds-2.0-tabla.csv
+├── motion-handoff.skill
+├── tokens-motion.md
+├── tokens-haptics.md
 └── guia-ops-motion-handoff.md
 ```
 

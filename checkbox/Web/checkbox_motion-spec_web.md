@@ -47,4 +47,4 @@ Componente con estados internos de interacción y selección en Web.
 
 ## Referencias
 
-- tokens_file: references/tokens.md
+- tokens_file: references/tokens-motion.md

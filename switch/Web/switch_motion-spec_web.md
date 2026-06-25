@@ -71,4 +71,4 @@ Control atomico para alternar entre encendido y apagado con estado interno.
 
 - material_design: https://m3.material.io/components/switch/overview
 - apple_hig: https://developer.apple.com/design/human-interface-guidelines/toggles
-- tokens_file: references/tokens.md
+- tokens_file: references/tokens-motion.md

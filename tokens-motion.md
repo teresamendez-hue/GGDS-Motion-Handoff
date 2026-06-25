@@ -1,4 +1,4 @@
-# Motion System GGDS — Tokens
+# Motion System GGDS — Tokens (Motion)
 
 Fuente de verdad para handoffs de motion. **Nunca usar valores de memoria** — leer este archivo antes de generar cualquier `.md`.
 

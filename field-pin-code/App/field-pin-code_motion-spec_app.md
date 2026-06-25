@@ -13,6 +13,9 @@ preview_type: internal_state
 spring_token: motion-spring-md
 companion_web_handoff: field-pin-code_motion-handoff_web.html
 web_parity_token: motion-curve-md
+haptic_semantic_default: haptic-selection-change
+haptic_override_allowed: false
+haptic_trigger: onDigitFilled
 ---
 
 ## Intent
@@ -44,6 +47,14 @@ web_parity_token: motion-curve-md
 | Semantic token | Primitive spring | mass | stiffness | damping |
 |---|---|---:|---:|---:|
 | `motion-spring-md` | `spring-standard-md` | 1.0 | 300 | 28 |
+
+## Haptics
+
+- semantic_default: haptic-selection-change
+- primitive: haptic-selection-click
+- flutter_api: HapticFeedback.selectionClick()
+- trigger: onDigitFilled
+- override_allowed: false
 
 ## Accessibility
 
