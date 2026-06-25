@@ -13,6 +13,9 @@ preview_type: internal_state
 spring_token: motion-spring-sm
 companion_web_handoff: box-selector_motion-handoff_web.html
 web_parity_token: motion-curve-sm
+haptic_semantic_default: haptic-selection-change
+haptic_override_allowed: false
+haptic_trigger: onChanged
 ---
 
 ## Descripción
@@ -42,10 +45,18 @@ Componente con estados internos y selección en App usando spring.
 - selected: toggle control
 - disabled: estado programático instantáneo
 
+## Haptics
+
+- semantic_default: haptic-selection-change
+- primitive: haptic-selection-click
+- flutter_api: HapticFeedback.selectionClick()
+- trigger: onChanged
+- override_allowed: false
+
 ## Accesibilidad
 
 - flutter_disable_animations: MediaQuery.of(context).disableAnimations
 
 ## Referencias
 
-- tokens_file: references/tokens.md
+- tokens_file: references/tokens-motion.md
