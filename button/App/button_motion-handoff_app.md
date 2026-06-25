@@ -88,6 +88,40 @@ final spring = motion.springSm; // motion-spring-sm
 
 ---
 
+## Haptics Specification
+
+Button dispara haptic en press exitoso usando `haptic-action-press`.
+
+El diseñador puede desactivarlo por instancia con override `none` (ej. onboarding intermedio).
+
+| Campo | Valor |
+|---|---|
+| **Token default** | `haptic-action-press` |
+| **Trigger** | `onPressed exitoso` |
+| **Override** | `none` \| `default` |
+
+---
+
+## Token Mapping Haptics
+
+| Token semántico | Token primitivo | Flutter API |
+|---|---|---|
+| `haptic-action-press` | `haptic-impact-light` | `HapticFeedback.lightImpact()` |
+
+---
+
+## Implementación Haptics
+
+```dart
+final haptic = widget.haptic ?? GgdsHapticSemantic.actionPress;
+
+void onPressed() {
+  if (haptic != GgdsHapticSemantic.none) {
+    context.haptics.trigger(haptic); // haptic-action-press
+  }
+}
+```
+
 ## Recomendaciones
 
 | Tema | Criterio |

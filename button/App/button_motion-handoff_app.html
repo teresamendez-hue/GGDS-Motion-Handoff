@@ -38,7 +38,7 @@ section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35
 <p class="companion">Referencia visual Web: <a href="../Web/button_motion-handoff_web.html">abrir preview Web</a></p>
 <div class="readout">State: <span id="state">default</span></div>
 <div class="mapping"><strong>Token Mapping</strong><br/>motion-spring-sm → mass 1.0 · stiffness 400 · damping 35</div></section>
-<div class="implementation"><strong>Implementación Dart (Flutter)</strong><pre>final motion = context.motionTokens;
+<section><h2>Implementación Dart (Flutter)</h2><div class="implementation"><pre>final motion = context.motionTokens;
 final spring = motion.springSm; // motion-spring-sm (mass: 1.0, stiffness: 400, damping: 35)
 final disableAnimations = MediaQuery.of(context).disableAnimations;
 
@@ -64,7 +64,13 @@ void onPressedChanged(bool pressed) {
 
 // disabled: estado final instantaneo
 // skeleton/loading: usar el mismo spring para crossfade interno
-</pre></div><footer class="doc-footer">Motion System GGDS · Button Handoff App · 2026-06-05<br/>DesignOps @ itti</footer>
+</pre></div></section><section class="haptics-section"><h2>Haptics</h2><div class="mapping"><strong>Token Mapping</strong><br/>haptic-action-press → haptic-impact-light → HapticFeedback.lightImpact()<br/>Override por instancia: none | default</div><div class="implementation"><pre>final haptic = widget.haptic ?? GgdsHapticSemantic.actionPress;
+
+void onPressed() {
+  if (haptic != GgdsHapticSemantic.none) {
+    context.haptics.trigger(haptic); // haptic-action-press
+  }
+}</pre></div></section><footer class="doc-footer">Motion System GGDS · Button Handoff App · 2026-06-05<br/>DesignOps @ itti</footer>
 </div>
 <script>
 (()=>{const S=400,D=35,M=1,btn=document.getElementById('btn'),state=document.getElementById('state'),ring=btn.querySelector('.ring');

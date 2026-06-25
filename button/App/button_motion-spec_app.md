@@ -13,6 +13,9 @@ preview_type: internal_state
 spring_token: motion-spring-sm
 companion_web_handoff: button_motion-handoff_web.html
 web_parity_token: motion-curve-sm
+haptic_semantic_default: haptic-action-press
+haptic_override_allowed: true
+haptic_trigger: onPressed
 ---
 
 ## Descripción
@@ -74,6 +77,14 @@ Botón de app con estados internos animados usando spring. No tiene enter/exit d
 - tipo: programmatic
 - note: instantáneo
 
+## Haptics
+
+- semantic_default: haptic-action-press
+- primitive: haptic-impact-light
+- flutter_api: HapticFeedback.lightImpact()
+- trigger: onPressed
+- override_allowed: true
+
 ## Coherencia sistémica
 
 - componentes_relacionados: [Action Link]
@@ -87,4 +98,4 @@ Botón de app con estados internos animados usando spring. No tiene enter/exit d
 ## Referencias
 
 - apple_hig: https://developer.apple.com/design/human-interface-guidelines/animation
-- tokens_file: references/tokens.md
+- tokens_file: references/tokens-motion.md
