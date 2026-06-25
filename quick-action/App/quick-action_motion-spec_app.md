@@ -13,6 +13,9 @@ preview_type: internal_state
 spring_token: motion-spring-sm
 companion_web_handoff: quick-action_motion-handoff_web.html
 web_parity_token: motion-curve-sm
+haptic_semantic_default: haptic-action-press
+haptic_override_allowed: true
+haptic_trigger: onPressed
 ---
 
 ## Descripción
@@ -76,6 +79,14 @@ Usa motion solo para cambios de estado internos en App.
 - propiedades: pressed, focused, disabled, skeleton
 - token: motion-spring-sm
 
+## Haptics
+
+- semantic_default: haptic-action-press
+- primitive: haptic-impact-light
+- flutter_api: HapticFeedback.lightImpact()
+- trigger: onPressed
+- override_allowed: true
+
 ## Coherencia sistémica
 
 - componentes_relacionados: [Button, Icon Button]
@@ -91,4 +102,4 @@ Usa motion solo para cambios de estado internos en App.
 
 - material_design: https://m3.material.io/components/buttons/overview
 - apple_hig: https://developer.apple.com/design/human-interface-guidelines/buttons
-- tokens_file: references/tokens.md
+- tokens_file: references/tokens-motion.md

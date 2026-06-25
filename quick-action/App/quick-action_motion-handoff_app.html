@@ -106,7 +106,13 @@ void onPressedChanged(bool pressed) {
 </pre>
     </section>
 
-    <footer class="doc-footer"><p>Motion System GGDS · Quick Action Handoff App · 2026-06-17</p><p class="doc-footer-brand">DesignOps @ itti</p></footer>
+    <section class="haptics-section"><h2>Haptics</h2><div class="mapping"><strong>Token Mapping</strong><br/>haptic-action-press → haptic-impact-light → HapticFeedback.lightImpact()<br/>Override por instancia: none | default</div><div class="implementation"><pre>final haptic = widget.haptic ?? GgdsHapticSemantic.actionPress;
+
+void onPressed() {
+  if (haptic != GgdsHapticSemantic.none) {
+    context.haptics.trigger(haptic); // haptic-action-press
+  }
+}</pre></div></section><footer class="doc-footer"><p>Motion System GGDS · Quick Action Handoff App · 2026-06-17</p><p class="doc-footer-brand">DesignOps @ itti</p></footer>
   </div>
 
   <script>
