@@ -13,6 +13,9 @@ preview_type: internal_state
 spring_token: motion-spring-sm
 companion_web_handoff: icon-button_motion-handoff_web.html
 web_parity_token: motion-curve-sm
+haptic_semantic_default: haptic-action-press
+haptic_override_allowed: true
+haptic_trigger: onPressed
 ---
 
 ## Descripción
@@ -44,10 +47,18 @@ Componente de acción compacta con estados internos y feedback táctil spring.
 - skeleton: estado programático
 - disabled: estado programático instantáneo
 
+## Haptics
+
+- semantic_default: haptic-action-press
+- primitive: haptic-impact-light
+- flutter_api: HapticFeedback.lightImpact()
+- trigger: onPressed
+- override_allowed: true
+
 ## Accesibilidad
 
 - flutter_disable_animations: MediaQuery.of(context).disableAnimations
 
 ## Referencias
 
-- tokens_file: references/tokens.md
+- tokens_file: references/tokens-motion.md
