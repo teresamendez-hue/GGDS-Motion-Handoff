@@ -13,6 +13,9 @@ preview_type: internal_state
 spring_token: motion-spring-sm
 companion_web_handoff: switch_motion-handoff_web.html
 web_parity_token: motion-curve-sm
+haptic_semantic_default: haptic-selection-change
+haptic_override_allowed: false
+haptic_trigger: onChanged
 ---
 
 ## Descripción
@@ -55,6 +58,14 @@ Control atomico para alternar entre encendido y apagado con estado interno.
 ### Skeleton
 - valores: False, True
 
+## Haptics
+
+- semantic_default: haptic-selection-change
+- primitive: haptic-selection-click
+- flutter_api: HapticFeedback.selectionClick()
+- trigger: onChanged
+- override_allowed: false
+
 ## Coherencia sistémica
 
 - componentes_relacionados: [button, checkbox, radio-button, box-selector]
@@ -69,4 +80,4 @@ Control atomico para alternar entre encendido y apagado con estado interno.
 
 - material_design: https://m3.material.io/components/switch/overview
 - apple_hig: https://developer.apple.com/design/human-interface-guidelines/toggles
-- tokens_file: references/tokens.md
+- tokens_file: references/tokens-motion.md

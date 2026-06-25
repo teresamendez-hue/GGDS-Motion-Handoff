@@ -82,6 +82,33 @@ final spring = motion.springSm; // motion-spring-sm
 
 ---
 
+## Haptics Specification
+
+Switch dispara haptic en cambio de estado on/off usando `haptic-selection-change`.
+
+| Campo | Valor |
+|---|---|
+| **Token default** | `haptic-selection-change` |
+| **Trigger** | `cambio de estado/selección` |
+
+---
+
+## Token Mapping Haptics
+
+| Token semántico | Token primitivo | Flutter API |
+|---|---|---|
+| `haptic-selection-change` | `haptic-selection-click` | `HapticFeedback.selectionClick()` |
+
+---
+
+## Implementación Haptics
+
+```dart
+void onChanged(bool value) {
+  context.haptics.trigger(GgdsHapticSemantic.selectionChange); // haptic-selection-change
+}
+```
+
 ## Recomendaciones
 
 | Tema | Criterio |
