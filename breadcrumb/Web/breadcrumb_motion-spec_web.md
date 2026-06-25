@@ -72,4 +72,4 @@ Componente de navegación jerárquica por rutas internas de producto.
 
 - material_design: https://m3.material.io/components/breadcrumbs/overview
 - apple_hig: no aplica
-- tokens_file: references/tokens.md
+- tokens_file: references/tokens-motion.md

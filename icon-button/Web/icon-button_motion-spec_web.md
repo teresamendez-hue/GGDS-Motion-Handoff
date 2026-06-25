@@ -49,4 +49,4 @@ Componente de acción compacta con estados internos de interacción.
 
 ## Referencias
 
-- tokens_file: references/tokens.md
+- tokens_file: references/tokens-motion.md

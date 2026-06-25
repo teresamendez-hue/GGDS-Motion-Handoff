@@ -81,4 +81,4 @@ Panel lateral que aparece desde el borde derecho con scrim. Incluye variantes ov
 
 - material_design: https://m3.material.io/
 - apple_hig: https://developer.apple.com/design/human-interface-guidelines/animation
-- tokens_file: references/tokens.md
+- tokens_file: references/tokens-motion.md

@@ -77,4 +77,4 @@ Usa motion solo para cambios de estado internos.
 
 - material_design: https://m3.material.io/components/buttons/overview
 - apple_hig: https://developer.apple.com/design/human-interface-guidelines/buttons
-- tokens_file: references/tokens.md
+- tokens_file: references/tokens-motion.md
