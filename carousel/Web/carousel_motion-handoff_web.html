@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Motion Handoff — Carousel (Web)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#FFFFFF;--bg-subtle:#F7F7F7;--surface:#FFFFFF;--border:#E8E8EC;--border-strong:#D8D8DE;
+  --text:#252529;--text-2:#404047;--muted:#6C6C78;--subtle:#8F8F9C;
+  --accent:#7373E5;--accent-soft:rgba(115,115,229,0.10);
+  --shadow-sm:0px 0px 24px 0px rgba(37,37,41,0.08);
+  --radius:12px;--radius-sm:6px;
+  --mono:'SF Mono','Fira Code','Consolas',monospace;--sans:'Inter',sans-serif;
+  --motion-curve-sm:cubic-bezier(0.4,0,0.2,1);--duration-150:150ms;
+  --motion-curve-md:cubic-bezier(0.0,0,0.2,1);--duration-300:300ms;
+  --indicator:#C6C6CC;--indicator-active:#6F1D11;
+  --nav-bg:#D8D8DE;--nav-bg-hover:#B4B4BF;--nav-bg-pressed:#A9A9B6;--nav-bg-disabled:#EAEAEB;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);font-size:14px;line-height:1.6;color:var(--text);background:var(--bg)}
+.topnav{position:sticky;top:0;z-index:10;height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;background:var(--bg-subtle);border-bottom:1px solid var(--border);font-size:.82rem;color:var(--muted)}
+.topnav a{color:var(--text);text-decoration:none;font-weight:600}
+.page{max-width:960px;margin:0 auto;padding:2.5rem 1.5rem}
+.hero h1{font-size:3rem;font-weight:800;letter-spacing:-0.03em}
+.hero-meta{display:flex;align-items:center;gap:1rem;color:var(--muted);margin:.7rem 0 1rem;font-size:.88rem}
+.owner-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.3rem .65rem .3rem .3rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:999px}
+.owner-avatar{width:28px;height:28px;border-radius:50%;background:var(--text);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700}
+.pill{display:inline-block;padding:.3rem .6rem;border:1px solid var(--border);border-radius:999px;background:var(--bg-subtle);font-size:.75rem;margin-right:.4rem}
+.pill.primary{border-color:rgba(115,115,229,.35);background:var(--accent-soft);color:var(--accent)}
+section{padding:1.75rem 0;border-bottom:1px solid var(--border)}
+h2{font-size:1.35rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:.85rem}
+.motion-lab-disclaimer{font-size:.82rem;color:var(--muted);margin-bottom:.75rem;padding:.5rem .75rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.hint{font-size:.88rem;color:var(--muted);margin-bottom:1rem}
+.stage{position:relative;min-height:260px;display:flex;align-items:center;justify-content:center;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius);padding:2rem}
+.carousel-demo{position:relative;width:100%;max-width:420px}
+.carousel-viewport{overflow:hidden;border-radius:var(--radius-sm);border:1px solid var(--border-strong)}
+.carousel-track{display:flex;transition:transform var(--duration-300) var(--motion-curve-md)}
+.slide{flex:0 0 100%;height:160px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.4rem;color:#fff}
+.slide:nth-child(1){background:#7373E5}.slide:nth-child(2){background:#6F1D11}.slide:nth-child(3){background:#252529}.slide:nth-child(4){background:#807462}
+.carousel-nav{position:absolute;top:50%;transform:translateY(-50%);width:32px;height:32px;border:none;border-radius:var(--radius-sm);background:var(--nav-bg);display:flex;align-items:center;justify-content:center;font-size:1rem;cursor:pointer;opacity:0;transition:opacity var(--duration-150) var(--motion-curve-sm),background-color var(--duration-150) var(--motion-curve-sm);color:var(--text)}
+.carousel-demo:hover .carousel-nav{opacity:1}
+.carousel-nav:hover:not(:disabled){background:var(--nav-bg-hover)}
+.carousel-nav:active:not(:disabled){background:var(--nav-bg-pressed)}
+.carousel-nav:focus-visible{opacity:1;outline:2px solid var(--accent);outline-offset:2px}
+.carousel-nav:disabled{background:var(--nav-bg-disabled);cursor:not-allowed;transition:background-color 0s}
+.nav-prev{left:8px}.nav-next{right:8px}
+.dots{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:1rem}
+.dot{width:8px;height:8px;border-radius:999px;background:var(--indicator);border:none;padding:0;cursor:pointer;transition:background-color var(--duration-150) var(--motion-curve-sm)}
+.dot.is-active{background:var(--indicator-active)}
+.controls{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;margin-top:1.25rem}
+.controls label{cursor:pointer;font-size:.86rem}
+.controls select{font:inherit;font-size:.84rem;padding:.35rem .55rem;border:1px solid var(--border);border-radius:6px;background:#fff}
+.readout{margin-top:.9rem;font-size:.78rem;font-family:var(--mono);color:var(--muted)}
+.mapping{margin-top:.9rem;border:1px solid rgba(115,115,229,.35);border-radius:var(--radius-sm);padding:.8rem;font-size:.78rem;color:var(--muted);line-height:1.6;background:var(--accent-soft)}
+.mapping strong{display:block;font-size:.8rem;margin-bottom:.35rem;color:var(--text-2)}
+.spec p{margin-bottom:.85rem;color:var(--text-2);font-size:.92rem}
+table{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:.5rem}
+th,td{text-align:left;padding:.55rem .6rem;border-bottom:1px solid var(--border)}
+th{color:var(--muted);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em}
+.badge{display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.7rem;font-weight:600}
+.badge.trigger{background:var(--accent-soft);color:var(--accent);border:1px solid rgba(115,115,229,.35)}
+.badge.response{background:var(--bg-subtle);color:var(--muted);border:1px solid var(--border)}
+.mapping-cards{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.5rem}
+.map-card{border:1px solid var(--border);border-radius:var(--radius-sm);padding:.9rem;font-size:.82rem}
+.map-card strong{display:block;font-size:.78rem;color:var(--muted);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.03em}
+.map-chain{font-family:var(--mono);font-size:.78rem;color:var(--text-2);line-height:1.7}
+.implementation{margin-top:.9rem;border:1px solid var(--border);border-radius:var(--radius);padding:1rem;background:#1C1C20}
+.implementation pre{margin:0;font-family:var(--mono);font-size:.78rem;line-height:1.55;white-space:pre-wrap;color:#E8E8EC}
+.reco-table td:first-child{font-weight:600;color:var(--text-2);white-space:nowrap}
+#motion-lab.reduced-motion .carousel-track,#motion-lab.reduced-motion .carousel-nav,#motion-lab.reduced-motion .dot{transition:none!important}
+.doc-footer{text-align:center;padding:2rem 0 1rem;color:var(--subtle);font-size:.8rem}
+.doc-footer p{margin:0}
+@media(max-width:640px){.mapping-cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav class="topnav"><span>Motion System → Carousel</span><a href="https://itti-digital.atlassian.net/wiki/spaces/GR/pages/144111534088/Carousel" target="_blank">Documentation ↗</a></nav>
+<div class="page">
+<header class="hero">
+<h1>Carousel</h1>
+<div class="hero-meta">
+<span class="owner-badge"><span class="owner-avatar">EA</span> Ezequiel Arguello</span>
+<span>Web · GGDS · 2026-07-02</span>
+</div>
+<span class="pill primary">motion-curve-md · 300ms</span>
+<span class="pill primary">motion-curve-sm · 150ms</span>
+</header>
+
+<section id="motion-lab">
+<h2>Preview de motion</h2>
+<p class="motion-lab-disclaimer">Motion lab — no es el componente de la librería. Validá motion y tokens; la UI final está en Figma.</p>
+<p class="hint">Interactuá con el carousel: pasá el mouse para revelar la navegación, hacé click en las flechas o en los dots. <strong>Behavior</strong> simula Normal (con límites) e Infinite Scroll (loop continuo).</p>
+<div class="stage">
+<div class="carousel-demo" id="carousel">
+<div class="carousel-viewport"><div class="carousel-track" id="track">
+<div class="slide">1</div><div class="slide">2</div><div class="slide">3</div><div class="slide">4</div>
+</div></div>
+<button class="carousel-nav nav-prev" id="prev" aria-label="Anterior">‹</button>
+<button class="carousel-nav nav-next" id="next" aria-label="Siguiente">›</button>
+</div>
+</div>
+<div class="dots" id="dots">
+<button class="dot is-active" data-i="0" aria-label="Slide 1"></button>
+<button class="dot" data-i="1" aria-label="Slide 2"></button>
+<button class="dot" data-i="2" aria-label="Slide 3"></button>
+<button class="dot" data-i="3" aria-label="Slide 4"></button>
+</div>
+<div class="controls">
+<label>Behavior <select id="behavior"><option value="normal">Normal</option><option value="infinite">Infinite Scroll</option></select></label>
+<label><input type="checkbox" id="reduced"/> prefers-reduced-motion</label>
+</div>
+<div class="readout" id="readout">Behavior: Normal · Slide 1/4 · Nav: oculta</div>
+<div class="mapping"><strong>Token Mapping activo</strong>Slide → motion-curve-md · 300ms &nbsp;|&nbsp; Nav reveal / dot → motion-curve-sm · 150ms</div>
+</section>
+
+<section class="spec">
+<h2>Motion Specification</h2>
+<p>Carousel permite navegar contenido relacionado en un espacio horizontal limitado mediante un track de slides que se desplaza lateralmente. A diferencia de un Modal o un Sidesheet, no es un componente que entra o sale del viewport: vive embebido en la página, por lo que todo su motion son transiciones de estado internas.</p>
+<p>El cambio de slide anima <code>transform: translateX()</code> sobre el track completo usando <strong>motion-curve-md</strong>, con el mismo token en ambas direcciones — no aplica <code>motion-exit</code>, ya que no hay una jerarquía de entrada/salida como en un overlay, sino un reposicionamiento continuo dentro de una pista.</p>
+<p>Las flechas de navegación permanecen ocultas por default (<code>Enabled</code>) y se revelan con opacity al pasar el mouse sobre el carousel (<code>Active</code>), usando <strong>motion-curve-sm</strong>. El dot indicator activo cambia de color con el mismo token, manteniendo coherencia entre todas las microinteracciones del componente.</p>
+<p>En <strong>Normal</strong>, la flecha llega a estado <code>Disabled</code> de forma instantánea (sin transición) al alcanzar el primer o último slide. En <strong>Infinite Scroll</strong>, el índice hace loop continuo y la flecha nunca se deshabilita; ambos comportamientos comparten el mismo token de transición de slide.</p>
+</section>
+
+<section>
+<h2>Timeline de interacción</h2>
+<table>
+<thead><tr><th>#</th><th>Tipo</th><th>Evento</th><th>Elemento</th><th>Propiedad</th><th>De</th><th>A</th><th>Token</th><th>Duración</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><span class="badge trigger">Trigger</span></td><td>Click flecha derecha / dot siguiente</td><td><code>.carousel</code></td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>2</td><td><span class="badge response">Response</span></td><td>Slide siguiente</td><td><code>.carousel-track</code></td><td><code>transform</code></td><td><code>translateX(-n·100%)</code></td><td><code>translateX(-(n+1)·100%)</code></td><td><code>motion-curve-md</code></td><td>300ms</td></tr>
+<tr><td>3</td><td><span class="badge trigger">Trigger</span></td><td>Click flecha izquierda / dot anterior</td><td><code>.carousel</code></td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>4</td><td><span class="badge response">Response</span></td><td>Slide anterior</td><td><code>.carousel-track</code></td><td><code>transform</code></td><td><code>translateX(-n·100%)</code></td><td><code>translateX(-(n-1)·100%)</code></td><td><code>motion-curve-md</code></td><td>300ms</td></tr>
+<tr><td>5</td><td><span class="badge trigger">Trigger</span></td><td>Pointer enter sobre el carousel</td><td><code>.carousel</code></td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>6</td><td><span class="badge response">Response</span></td><td>Reveal navegación</td><td><code>.carousel-nav</code></td><td><code>opacity</code></td><td>0</td><td>1</td><td><code>motion-curve-sm</code></td><td>150ms</td></tr>
+<tr><td>7</td><td><span class="badge trigger">Trigger</span></td><td>Pointer leave</td><td><code>.carousel</code></td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>8</td><td><span class="badge response">Response</span></td><td>Ocultar navegación</td><td><code>.carousel-nav</code></td><td><code>opacity</code></td><td>1</td><td>0</td><td><code>motion-curve-sm</code></td><td>150ms</td></tr>
+<tr><td>9</td><td><span class="badge trigger">Trigger</span></td><td>Cambio de slide activo</td><td><code>.carousel</code></td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>10</td><td><span class="badge response">Response</span></td><td>Dot activo</td><td><code>.dot</code></td><td><code>background-color</code></td><td><code>indicator</code></td><td><code>indicator-active</code></td><td><code>motion-curve-sm</code></td><td>150ms</td></tr>
+<tr><td>11</td><td><span class="badge trigger">Trigger</span></td><td>Llegada al límite (Normal)</td><td><code>.carousel-nav</code></td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>12</td><td><span class="badge response">Response</span></td><td>Disabled</td><td><code>.carousel-nav</code></td><td>—</td><td>—</td><td>final</td><td>—</td><td>0ms</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Token Mapping</h2>
+<div class="mapping-cards">
+<div class="map-card"><strong>Slide transition</strong><div class="map-chain">motion-curve-md<br/>→ easing-decelerate<br/>→ cubic-bezier(0.0, 0, 0.2, 1)<br/>→ duration-300 (300ms)</div></div>
+<div class="map-card"><strong>Nav reveal / dot indicator</strong><div class="map-chain">motion-curve-sm<br/>→ easing-standard<br/>→ cubic-bezier(0.4, 0, 0.2, 1)<br/>→ duration-150 (150ms)</div></div>
+</div>
+</section>
+
+<section>
+<h2>Implementación CSS</h2>
+<div class="implementation"><pre>.carousel-track {
+  transition-property: transform;
+  transition-duration: var(--motion-duration-from-motion-curve-md);
+  transition-timing-function: var(--motion-curve-md);
+}
+
+.carousel-nav {
+  transition-property: opacity, background-color;
+  transition-duration: var(--motion-duration-from-motion-curve-sm);
+  transition-timing-function: var(--motion-curve-sm);
+}
+
+.carousel-nav:disabled {
+  transition: none;
+}
+
+.carousel-dot {
+  transition-property: background-color;
+  transition-duration: var(--motion-duration-from-motion-curve-sm);
+  transition-timing-function: var(--motion-curve-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carousel-track,
+  .carousel-nav,
+  .carousel-dot {
+    transition: none;
+  }
+}</pre></div>
+</section>
+
+<section>
+<h2>Recomendaciones</h2>
+<table class="reco-table">
+<tbody>
+<tr><td>Token único por dirección</td><td>El slide usa <code>motion-curve-md</code> en ambos sentidos; no aplicar <code>motion-exit</code> — el Carousel no abandona el viewport, solo reposiciona su track.</td></tr>
+<tr><td>Nav reveal</td><td>Exclusivo de Web. En touch no existe hover, por eso en App las flechas nunca se muestran (ver handoff App).</td></tr>
+<tr><td>Rebote</td><td>Nunca <code>easing-back</code>: es un componente de contenido, no expresivo (no es onboarding ni celebración).</td></tr>
+<tr><td>Límite (Normal)</td><td>El estado <code>Disabled</code> de la flecha es instantáneo, sin transición.</td></tr>
+<tr><td>Accesibilidad</td><td><code>prefers-reduced-motion</code> aplica el estado final sin transición. Flechas y dots deben ser navegables por teclado con foco visible.</td></tr>
+</tbody>
+</table>
+</section>
+
+<footer class="doc-footer">
+<p>Motion System GGDS · Carousel Handoff Web · 2026-07-02</p>
+<p>DesignOps @ itti</p>
+</footer>
+</div>
+<script>
+(function(){
+var track=document.getElementById('track'),prev=document.getElementById('prev'),next=document.getElementById('next'),
+dots=Array.from(document.querySelectorAll('.dot')),behavior=document.getElementById('behavior'),
+reduced=document.getElementById('reduced'),readout=document.getElementById('readout'),lab=document.getElementById('motion-lab'),
+carousel=document.getElementById('carousel');
+var total=4,index=0;
+
+function render(){
+  track.style.transform='translateX(-'+(index*100)+'%)';
+  dots.forEach(function(d,i){d.classList.toggle('is-active',i===index)});
+  updateDisabled();
+  updateReadout('');
+}
+function updateDisabled(){
+  if(behavior.value==='normal'){
+    prev.disabled=index===0;
+    next.disabled=index===total-1;
+  } else {
+    prev.disabled=false;
+    next.disabled=false;
+  }
+}
+function updateReadout(navState){
+  var behaviorLabel=behavior.value==='infinite'?'Infinite Scroll':'Normal';
+  var nav=navState||(carousel.matches(':hover')?'visible (hover)':'oculta');
+  readout.textContent='Behavior: '+behaviorLabel+' · Slide '+(index+1)+'/'+total+' · Nav: '+nav;
+}
+function go(delta){
+  if(behavior.value==='infinite'){
+    index=(index+delta+total)%total;
+  } else {
+    index=Math.min(total-1,Math.max(0,index+delta));
+  }
+  render();
+}
+prev.addEventListener('click',function(){ if(!prev.disabled) go(-1); });
+next.addEventListener('click',function(){ if(!next.disabled) go(1); });
+dots.forEach(function(d){ d.addEventListener('click',function(){ index=parseInt(d.dataset.i,10); render(); }); });
+behavior.addEventListener('change',render);
+carousel.addEventListener('mouseenter',function(){ updateReadout('visible (hover)'); });
+carousel.addEventListener('mouseleave',function(){ updateReadout('oculta'); });
+reduced.addEventListener('change',function(e){ lab.classList.toggle('reduced-motion',e.target.checked); });
+render();
+})();
+</script>
+</body>
+</html>

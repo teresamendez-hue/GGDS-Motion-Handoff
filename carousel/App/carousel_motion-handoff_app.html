@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Motion Handoff — Carousel (App)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#FFFFFF;--bg-subtle:#F7F7F7;--surface:#FFFFFF;--border:#E8E8EC;--border-strong:#D8D8DE;
+  --text:#252529;--text-2:#404047;--muted:#6C6C78;--subtle:#8F8F9C;
+  --accent:#7373E5;--accent-soft:rgba(115,115,229,0.10);
+  --shadow-sm:0px 0px 24px 0px rgba(37,37,41,0.08);
+  --radius:12px;--radius-sm:6px;
+  --mono:'SF Mono','Fira Code','Consolas',monospace;--sans:'Inter',sans-serif;
+  --indicator:#C6C6CC;--indicator-active:#6F1D11;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);font-size:14px;line-height:1.6;color:var(--text);background:var(--bg)}
+.topnav{position:sticky;top:0;z-index:10;height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;background:var(--bg-subtle);border-bottom:1px solid var(--border);font-size:.82rem;color:var(--muted)}
+.topnav a{color:var(--text);text-decoration:none;font-weight:600}
+.page{max-width:960px;margin:0 auto;padding:2.5rem 1.5rem}
+.hero h1{font-size:3rem;font-weight:800;letter-spacing:-0.03em}
+.hero-meta{display:flex;align-items:center;gap:1rem;color:var(--muted);margin:.7rem 0 1rem;font-size:.88rem}
+.owner-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.3rem .65rem .3rem .3rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:999px}
+.owner-avatar{width:28px;height:28px;border-radius:50%;background:var(--text);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700}
+.pill{display:inline-block;padding:.3rem .6rem;border:1px solid var(--border);border-radius:999px;background:var(--bg-subtle);font-size:.75rem;margin-right:.4rem}
+.pill.primary{border-color:rgba(115,115,229,.35);background:var(--accent-soft);color:var(--accent)}
+section{padding:1.75rem 0;border-bottom:1px solid var(--border)}
+h2{font-size:1.35rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:.85rem}
+.motion-lab-disclaimer{font-size:.82rem;color:var(--muted);margin-bottom:.75rem;padding:.5rem .75rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.hint{font-size:.88rem;color:var(--muted);margin-bottom:1rem}
+.stage{position:relative;min-height:260px;display:flex;align-items:center;justify-content:center;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius);padding:2rem}
+.carousel-demo{position:relative;width:100%;max-width:340px}
+.carousel-viewport{overflow:hidden;border-radius:var(--radius-sm);border:1px solid var(--border-strong);touch-action:pan-y;cursor:grab}
+.carousel-viewport:active{cursor:grabbing}
+.carousel-track{display:flex;will-change:transform}
+.slide{flex:0 0 100%;height:200px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.4rem;color:#fff;user-select:none}
+.slide:nth-child(1){background:#7373E5}.slide:nth-child(2){background:#6F1D11}.slide:nth-child(3){background:#252529}.slide:nth-child(4){background:#807462}
+.dots{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:1rem}
+.dot{width:8px;height:8px;border-radius:999px;background:var(--indicator);border:none;padding:0;cursor:pointer}
+.controls{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;margin-top:1.25rem}
+.controls label{cursor:pointer;font-size:.86rem}
+.controls select{font:inherit;font-size:.84rem;padding:.35rem .55rem;border:1px solid var(--border);border-radius:6px;background:#fff}
+.callout{border-left:4px solid var(--accent);background:var(--accent-soft);padding:.8rem 1rem;border-radius:0 6px 6px 0;margin-top:1rem;font-size:.88rem;color:var(--text-2)}
+.companion{margin-top:.75rem;font-size:.88rem}.companion a{color:var(--accent)}
+.readout{margin-top:.9rem;font-size:.78rem;font-family:var(--mono);color:var(--muted)}
+.mapping{margin-top:.9rem;border:1px solid rgba(115,115,229,.35);border-radius:var(--radius-sm);padding:.8rem;font-size:.78rem;color:var(--muted);line-height:1.6;background:var(--accent-soft)}
+.mapping strong{display:block;font-size:.8rem;margin-bottom:.35rem;color:var(--text-2)}
+.implementation{margin-top:.9rem;border:1px solid var(--border);border-radius:var(--radius);padding:1rem;background:#1C1C20}
+.implementation pre{margin:0;font-family:var(--mono);font-size:.78rem;line-height:1.55;white-space:pre-wrap;color:#E8E8EC}
+.doc-footer{text-align:center;padding:2rem 0 1rem;color:var(--subtle);font-size:.8rem}
+.doc-footer p{margin:0}
+.haptics-section h2{margin-bottom:.85rem}
+</style>
+</head>
+<body>
+<nav class="topnav"><span>Motion System → Carousel</span><a href="https://itti-digital.atlassian.net/wiki/spaces/GR/pages/144111534088/Carousel" target="_blank">Documentation ↗</a></nav>
+<div class="page">
+<header class="hero">
+<h1>Carousel</h1>
+<div class="hero-meta">
+<span class="owner-badge"><span class="owner-avatar">EA</span> Ezequiel Arguello</span>
+<span>App · GGDS · 2026-07-02</span>
+</div>
+<span class="pill primary">motion-spring-md</span>
+<span class="pill primary">motion-spring-sm</span>
+</header>
+
+<section id="motion-lab">
+<h2>Preview de motion</h2>
+<p class="motion-lab-disclaimer">Motion lab — no es el componente de la librería. Validá motion y tokens; la UI final está en Figma.</p>
+<p class="hint">Interactuá arrastrando (swipe) el carousel o tocando los dots. En App <strong>nunca</strong> se muestran flechas de navegación — toda la interacción es gestual. <strong>Behavior</strong> simula Normal (con resistencia en los límites) e Infinite Scroll (loop continuo).</p>
+<div class="stage">
+<div class="carousel-demo">
+<div class="carousel-viewport" id="viewport"><div class="carousel-track" id="track">
+<div class="slide">1</div><div class="slide">2</div><div class="slide">3</div><div class="slide">4</div>
+</div></div>
+</div>
+</div>
+<div class="dots" id="dots">
+<button class="dot" data-i="0" aria-label="Slide 1"></button>
+<button class="dot" data-i="1" aria-label="Slide 2"></button>
+<button class="dot" data-i="2" aria-label="Slide 3"></button>
+<button class="dot" data-i="3" aria-label="Slide 4"></button>
+</div>
+<div class="controls">
+<label>Behavior <select id="behavior"><option value="normal">Normal</option><option value="infinite">Infinite Scroll</option></select></label>
+<label><input type="checkbox" id="reduced"/> disableAnimations (sin animación)</label>
+</div>
+<div class="callout">Este preview simula el spring en el navegador (mass / stiffness / damping del Token Mapping). No es Flutter. Los valores que implementás son los del Token Mapping.</div>
+<p class="companion">Referencia visual Web (misma intención): <a href="../Web/carousel_motion-handoff_web.html">abrir preview Web</a></p>
+<div class="readout" id="readout">Behavior: Normal · Slide 1/4</div>
+<div class="mapping"><strong>Token Mapping activo</strong>Slide (drag/swipe) → motion-spring-md → mass 1.0 · stiffness 300 · damping 28 &nbsp;|&nbsp; Dot indicator → motion-spring-sm → mass 1.0 · stiffness 400 · damping 35</div>
+</section>
+
+<section><h2>Implementación Dart (Flutter)</h2>
+<div class="implementation"><pre>final motion = context.motionTokens;
+final spring = motion.springMd;     // motion-spring-md (mass: 1.0, stiffness: 300, damping: 28)
+final dotSpring = motion.springSm;  // motion-spring-sm (mass: 1.0, stiffness: 400, damping: 35)
+final disableAnimations = MediaQuery.of(context).disableAnimations;
+
+double dragExtent = 0.0;
+int currentIndex = 0;
+
+void onPanUpdate(DragUpdateDetails details) {
+  final atStart = currentIndex == 0 && details.delta.dx > 0;
+  final atEnd = currentIndex == slideCount - 1 && details.delta.dx < 0;
+  final resist = (behavior == CarouselBehavior.normal && (atStart || atEnd)) ? 0.35 : 1.0;
+  dragExtent += details.delta.dx * resist;
+  controller.value = dragExtent;
+}
+
+void onPanEnd(DragEndDetails details) {
+  final committed = dragExtent.abs() > settleThreshold;
+  var targetIndex = currentIndex;
+
+  if (committed) {
+    final direction = dragExtent.isNegative ? 1 : -1;
+    targetIndex = behavior == CarouselBehavior.infinite
+        ? (currentIndex + direction) % slideCount
+        : (currentIndex + direction).clamp(0, slideCount - 1);
+  }
+
+  if (disableAnimations) {
+    controller.value = targetIndex.toDouble();
+  } else {
+    controller.animateWith(SpringSimulation(
+      spring,
+      controller.value,
+      targetIndex.toDouble(),
+      details.velocity.pixelsPerSecond.dx,
+    ));
+  }
+
+  if (targetIndex != currentIndex) {
+    currentIndex = targetIndex;
+    onSlideSettled(currentIndex); // ver sección Haptics
+  }
+}
+
+// Dot indicator: crossfade de color entre indicator/indicator-active con motion-spring-sm
+</pre></div></section>
+
+<section class="haptics-section"><h2>Haptics</h2>
+<div class="mapping"><strong>Token Mapping</strong><br/>haptic-selection-change → haptic-selection-click → HapticFeedback.selectionClick()<br/>Trigger: al completarse el cambio de slide (swipe soltado por encima del umbral, o tap en dot)</div>
+<div class="implementation"><pre>void onSlideSettled(int newIndex) {
+  if (newIndex != previousIndex) {
+    context.haptics.trigger(GgdsHapticSemantic.selectionChange); // haptic-selection-change
+    previousIndex = newIndex;
+  }
+}
+
+// No disparar en cada frame de arrastre — un evento = un haptic</pre></div>
+</section>
+
+<footer class="doc-footer">
+<p>Motion System GGDS · Carousel Handoff App · 2026-07-02</p>
+<p>DesignOps @ itti</p>
+</footer>
+</div>
+<script>
+(function(){
+var viewport=document.getElementById('viewport'),track=document.getElementById('track'),
+dots=Array.from(document.querySelectorAll('.dot')),behaviorSel=document.getElementById('behavior'),
+reduced=document.getElementById('reduced'),readout=document.getElementById('readout'),lab=document.getElementById('motion-lab');
+var total=4,index=0,currentPx=0,dragging=false,startX=0,baseline=0,raf=null;
+var S_MD=300,D_MD=28,M=1;
+var S_SM=400,D_SM=35;
+var indicator=[198,198,204],indicatorActive=[111,29,17];
+
+function springTo(from,to,S,D,cb,done){
+  cancelAnimationFrame(raf);
+  if(reduced.checked){ cb(to); if(done) done(); return; }
+  var x=from,v=0,last=performance.now();
+  function frame(now){
+    var dt=Math.min((now-last)/1000,.064); last=now;
+    var a=(-S*(x-to)-D*v)/M; v+=a*dt; x+=v*dt; cb(x);
+    if(Math.abs(x-to)<.5 && Math.abs(v)<.5){ cb(to); if(done) done(); return; }
+    raf=requestAnimationFrame(frame);
+  }
+  raf=requestAnimationFrame(frame);
+}
+function blend(a,b,t){ return a.map(function(v,i){ return Math.round(v+(b[i]-v)*t); }); }
+function rgb(a){ return 'rgb('+a[0]+','+a[1]+','+a[2]+')'; }
+function setDotsImmediate(){ dots.forEach(function(d,i){ d.style.background=i===index?rgb(indicatorActive):rgb(indicator); }); }
+function paintDots(prevIndex,t){
+  dots.forEach(function(d,i){
+    if(i===index){ d.style.background=rgb(blend(indicator,indicatorActive,t)); }
+    else if(i===prevIndex){ d.style.background=rgb(blend(indicatorActive,indicator,t)); }
+    else { d.style.background=rgb(indicator); }
+  });
+}
+function updateReadout(justChanged){
+  var behaviorLabel=behaviorSel.value==='infinite'?'Infinite Scroll':'Normal';
+  var msg='Behavior: '+behaviorLabel+' · Slide '+(index+1)+'/'+total;
+  if(justChanged) msg+=' · haptic-selection-change disparado';
+  readout.textContent=msg;
+}
+function goTo(targetIndex){
+  var prevIndex=index;
+  var width=viewport.clientWidth;
+  var target=-targetIndex*width;
+  springTo(currentPx,target,S_MD,D_MD,function(v){ currentPx=v; track.style.transform='translateX('+v+'px)'; },function(){
+    var changed=targetIndex!==prevIndex;
+    index=targetIndex;
+    updateReadout(changed);
+  });
+  if(targetIndex!==prevIndex){
+    springTo(0,1,S_SM,D_SM,function(t){ paintDots(prevIndex,t); });
+  }
+}
+
+viewport.addEventListener('pointerdown',function(e){
+  dragging=true; startX=e.clientX; baseline=currentPx;
+  try{ viewport.setPointerCapture(e.pointerId); }catch(err){}
+});
+viewport.addEventListener('pointermove',function(e){
+  if(!dragging) return;
+  var delta=e.clientX-startX;
+  var resist=1;
+  if(behaviorSel.value==='normal'){
+    if(index===0 && delta>0) resist=.35;
+    if(index===total-1 && delta<0) resist=.35;
+  }
+  currentPx=baseline+delta*resist;
+  track.style.transform='translateX('+currentPx+'px)';
+});
+viewport.addEventListener('pointerup',function(e){
+  if(!dragging) return; dragging=false;
+  var delta=e.clientX-startX; var width=viewport.clientWidth;
+  var committed=Math.abs(delta)>width*0.2;
+  var targetIndex=index;
+  if(committed){
+    if(behaviorSel.value==='infinite'){ targetIndex=(index+(delta<0?1:-1)+total)%total; }
+    else { targetIndex=Math.min(total-1,Math.max(0,index+(delta<0?1:-1))); }
+  }
+  goTo(targetIndex);
+});
+dots.forEach(function(d){ d.addEventListener('click',function(){ goTo(parseInt(d.dataset.i,10)); }); });
+behaviorSel.addEventListener('change',function(){ updateReadout(false); });
+reduced.addEventListener('change',function(e){ lab.classList.toggle('reduced-motion',e.target.checked); });
+window.addEventListener('resize',function(){ currentPx=-index*viewport.clientWidth; track.style.transform='translateX('+currentPx+'px)'; });
+
+setDotsImmediate(); updateReadout(false);
+})();
+</script>
+</body>
+</html>
