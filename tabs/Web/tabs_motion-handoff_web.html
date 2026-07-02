@@ -1,0 +1,253 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Motion Handoff — Tabs (Web)</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#fff;--bg-subtle:#f7f7f7;--border:#e8e8ec;--border-strong:#d8d8de;--text:#252529;--text-2:#404047;--muted:#6c6c78;--subtle:#8f8f9c;--accent:#7373e5;--accent-soft:rgba(115,115,229,.10);--radius:12px;--radius-sm:6px;--sans:'Inter',sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+--motion-curve-sm:cubic-bezier(.4,0,.2,1);--duration-150:150ms;
+--motion-curve-md:cubic-bezier(0,0,.2,1);--duration-300:300ms;
+--seg-selected-bg:#eebcb5;--seg-selected-text:#40110a;--line-selected:#6f1d11;--control-enabled:#6c6c78;--control-hover:#404047}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--sans);font-size:14px;line-height:1.6;color:var(--text)}
+.page{max-width:960px;margin:0 auto;padding:2rem 1.5rem}
+.hero h1{font-size:3rem;font-weight:800;letter-spacing:-.03em}
+.hero-meta{display:flex;align-items:center;gap:1rem;color:var(--muted);margin:.6rem 0 1rem}
+.owner-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.3rem .65rem .3rem .3rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:999px;font-size:.82rem}
+.owner-avatar{width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700}
+.pills{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem}
+.pill{display:inline-block;padding:.3rem .6rem;border:1px solid var(--border);border-radius:999px;background:var(--bg-subtle);font-size:.75rem}
+.pill.primary{border-color:rgba(115,115,229,.35);background:var(--accent-soft);color:var(--accent)}
+section{padding:1.5rem 0;border-bottom:1px solid var(--border)}
+h2{font-size:1.35rem;font-weight:700;letter-spacing:-.02em;margin-bottom:.75rem}
+.motion-lab-disclaimer{font-size:.82rem;color:var(--muted);margin-bottom:.75rem;padding:.5rem .75rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.hint{font-size:.88rem;color:var(--muted);margin-bottom:1rem}
+.stage{min-height:220px;display:flex;flex-direction:column;gap:2rem;justify-content:center;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius);padding:2rem}
+.tabs-block .variant-label{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--subtle);margin-bottom:.6rem;font-weight:700}
+.tabs{position:relative;display:flex;align-items:center}
+.tabs--segmented{gap:8px}
+.tabs--line{gap:0}
+.tab-indicator{position:absolute;top:0;left:0;pointer-events:none;transition:transform var(--duration-300) var(--motion-curve-md),width var(--duration-300) var(--motion-curve-md)}
+.tabs--segmented .tab-indicator{height:36px;border-radius:4px;background:var(--seg-selected-bg);z-index:0}
+.tabs--line .tab-indicator{top:auto;bottom:0;height:2px;background:var(--line-selected)}
+.tab-item{position:relative;z-index:1;font:inherit;font-size:14px;background:none;cursor:pointer;color:var(--control-enabled);white-space:nowrap;outline:none;
+transition:border-color var(--duration-150) var(--motion-curve-sm),background-color var(--duration-150) var(--motion-curve-sm),color var(--duration-150) var(--motion-curve-sm)}
+.tabs--segmented .tab-item{height:36px;padding:8px 12px;border-radius:4px;border:1px solid var(--control-enabled)}
+.tabs--segmented .tab-item.is-selected{border-color:transparent;color:var(--seg-selected-text);font-weight:600}
+.tabs--segmented .tab-item:hover:not(:disabled):not(.is-selected){border-color:var(--control-hover);color:var(--control-hover)}
+.tabs--segmented .tab-item:active:not(:disabled):not(.is-selected){background:rgba(37,37,41,.06)}
+.tabs--line .tab-item{padding:8px 12px;border:none;border-bottom:1px solid var(--control-enabled)}
+.tabs--line .tab-item.is-selected{color:var(--line-selected);font-weight:600;border-bottom-color:transparent}
+.tabs--line .tab-item:hover:not(:disabled):not(.is-selected){color:var(--control-hover);border-bottom-color:var(--control-hover)}
+.tab-item:focus-visible{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent);border-radius:4px}
+.tab-item:disabled{opacity:.45;cursor:not-allowed;transition:none}
+.controls{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.25rem}.controls label{cursor:pointer;font-size:.85rem;color:var(--text-2)}
+.readout{margin-top:.75rem;font-size:.78rem;font-family:var(--mono);color:var(--muted)}
+.implementation{margin-top:.75rem;border:1px solid var(--border);border-radius:var(--radius-sm);padding:.8rem;background:#1c1c20}
+.implementation strong{display:block;font-size:.8rem;margin-bottom:.35rem;color:var(--subtle)}
+.implementation pre{margin:0;font-family:var(--mono);font-size:.75rem;line-height:1.5;white-space:pre-wrap;color:#e8e8ec}
+.mapping{margin-top:.75rem;border:1px solid rgba(115,115,229,.35);border-radius:var(--radius-sm);padding:.8rem;font-size:.78rem;color:var(--muted);line-height:1.6;background:var(--accent-soft)}
+.mapping strong{color:var(--text-2)}
+table.clean{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:.5rem}
+table.clean th,table.clean td{text-align:left;padding:.5rem .6rem;border-bottom:1px solid var(--border)}
+table.clean th{color:var(--subtle);font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em}
+.badge{display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.7rem;font-weight:600}
+.badge.trigger{background:var(--accent-soft);color:var(--accent);border:1px solid rgba(115,115,229,.3)}
+.badge.response{background:var(--bg-subtle);color:var(--muted);border:1px solid var(--border)}
+#motion-lab.reduced-motion .tab-item,#motion-lab.reduced-motion .tab-indicator{transition:none!important}
+.doc-footer{text-align:center;padding:1.5rem 0;color:var(--subtle);font-size:.8rem}
+.doc-footer p{margin:0}
+</style></head><body><div class="page">
+
+<header class="hero">
+<h1>Tabs</h1>
+<div class="hero-meta">
+<span class="owner-badge"><span class="owner-avatar">EA</span> Ezequiel Arguello</span>
+<span>Web · GGDS · 2026-07-02</span>
+</div>
+<div class="pills">
+<span class="pill primary">motion-curve-sm · estado</span>
+<span class="pill primary">motion-curve-md · indicador</span>
+<span class="pill">Segmented Item</span>
+<span class="pill">Line Item</span>
+</div>
+</header>
+
+<section id="motion-lab">
+<h2>Preview de motion</h2>
+<p class="motion-lab-disclaimer">Motion lab — no es el componente de la librería. Validá motion y tokens; la UI final está en Figma.</p>
+<p class="hint">Interactuá con los tabs: click/tap, hover y Tab (focus). Los checkboxes de abajo solo simulan Disabled.</p>
+<div class="stage" id="stage">
+  <div class="tabs-block">
+    <p class="variant-label">Segmented Item</p>
+    <div class="tabs tabs--segmented" id="segmented-tabs" role="tablist" aria-label="Segmented tabs">
+      <div class="tab-indicator" id="segmented-indicator"></div>
+      <button class="tab-item is-selected" data-index="0" role="tab" aria-selected="true">Resumen</button>
+      <button class="tab-item" data-index="1" role="tab" aria-selected="false">Actividad</button>
+      <button class="tab-item" data-index="2" role="tab" aria-selected="false">Reportes</button>
+      <button class="tab-item" data-index="3" role="tab" aria-selected="false" id="seg-disabled-target">Ajustes</button>
+    </div>
+  </div>
+  <div class="tabs-block">
+    <p class="variant-label">Line Item</p>
+    <div class="tabs tabs--line" id="line-tabs" role="tablist" aria-label="Line tabs">
+      <div class="tab-indicator" id="line-indicator"></div>
+      <button class="tab-item is-selected" data-index="0" role="tab" aria-selected="true">Resumen</button>
+      <button class="tab-item" data-index="1" role="tab" aria-selected="false">Actividad</button>
+      <button class="tab-item" data-index="2" role="tab" aria-selected="false">Reportes</button>
+      <button class="tab-item" data-index="3" role="tab" aria-selected="false" id="line-disabled-target">Ajustes</button>
+    </div>
+  </div>
+</div>
+<div class="controls">
+  <label><input type="checkbox" id="toggle-disabled"/> Disabled (tab "Ajustes")</label>
+  <label><input type="checkbox" id="reduced"/> prefers-reduced-motion</label>
+</div>
+<div class="readout" id="readout">Estado: enabled · Selected: Resumen</div>
+<div class="mapping"><strong>Token Mapping</strong><br/>
+motion-curve-sm → easing-standard → cubic-bezier(0.4, 0, 0.2, 1) → duration-150 (150ms) — Hovered / Pressed / Focused / fade de color<br/>
+motion-curve-md → easing-decelerate → cubic-bezier(0.0, 0, 0.2, 1) → duration-300 (300ms) — movimiento del indicador de selección
+</div>
+</section>
+
+<section>
+<h2>Motion Specification</h2>
+<p style="margin-bottom:.75rem">Tabs en Web usa motion de estados internos, sin enter/exit de viewport: Enabled, Hovered, Pressed, Focused, Selected, Disabled. Aplica igual a Segmented Item y Line Item, que comparten el mismo contrato de motion y difieren solo en qué propiedad visual representa la selección.</p>
+<p style="margin-bottom:.75rem">Hovered, Pressed y Focused son microinteracciones puntuales sobre <code>border-color</code>/<code>background-color</code>/<code>color</code>, con <code>motion-curve-sm</code> — el mismo token que Button.</p>
+<p style="margin-bottom:.75rem">El cambio de Selected mueve un indicador de posición (fondo relleno en Segmented, línea inferior en Line) con <code>motion-curve-md</code>, por ser un desplazamiento espacial entre tabs, no un simple cambio de color. El fade del label/ícono corre en paralelo, no en secuencia.</p>
+<p>Disabled es instantáneo. En <code>prefers-reduced-motion</code> se aplica el estado final sin transición, incluido el indicador.</p>
+</section>
+
+<section>
+<h2>Timeline de interacción</h2>
+<table class="clean">
+<tr><th>#</th><th>Tipo</th><th>Evento</th><th>Elemento</th><th>Propiedad</th><th>De → A</th><th>Token</th><th>Duración</th></tr>
+<tr><td>1</td><td><span class="badge trigger">Trigger</span></td><td>Pointer enter</td><td>.tab-item</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>2</td><td><span class="badge response">Response</span></td><td>Hovered</td><td>.tab-item</td><td>border-color / background-color</td><td>Enabled → Hovered</td><td>motion-curve-sm</td><td>150ms</td></tr>
+<tr><td>3</td><td><span class="badge trigger">Trigger</span></td><td>Pointer down</td><td>.tab-item</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>4</td><td><span class="badge response">Response</span></td><td>Pressed</td><td>.tab-item</td><td>background-color</td><td>Hovered → Pressed</td><td>motion-curve-sm</td><td>150ms</td></tr>
+<tr><td>5</td><td><span class="badge trigger">Trigger</span></td><td>Focus visible</td><td>.tab-item</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>6</td><td><span class="badge response">Response</span></td><td>Focus ring</td><td>.tab-item</td><td>box-shadow (opacity)</td><td>0 → 1</td><td>motion-curve-sm</td><td>150ms</td></tr>
+<tr><td>7</td><td><span class="badge trigger">Trigger</span></td><td>Cambio de tab seleccionado</td><td>.tabs</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>8</td><td><span class="badge response">Response</span></td><td>Indicador (Segmented/Line)</td><td>.tab-indicator</td><td>transform / width</td><td>posición anterior → tab activo</td><td>motion-curve-md</td><td>300ms</td></tr>
+<tr><td>9</td><td><span class="badge response">Response</span></td><td>Label/ícono</td><td>.tab-item</td><td>color / font-weight</td><td>enabled ↔ selected</td><td>motion-curve-sm</td><td>150ms</td></tr>
+<tr><td>10</td><td><span class="badge trigger">Trigger</span></td><td>Disabled on</td><td>.tab-item</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>11</td><td><span class="badge response">Response</span></td><td>Disabled</td><td>.tab-item</td><td>todas</td><td>→ final</td><td>—</td><td>0ms</td></tr>
+</table>
+</section>
+
+<section>
+<h2>Implementación CSS</h2>
+<div class="implementation"><pre>.tab-item {
+  transition-property: border-color, background-color, color;
+  transition-duration: var(--motion-duration-from-motion-curve-sm);
+  transition-timing-function: var(--motion-curve-sm);
+}
+
+.tab-item:disabled,
+.tab-item[aria-disabled="true"] {
+  transition: none;
+}
+
+.tab-indicator {
+  transition-property: transform, width;
+  transition-duration: var(--motion-duration-from-motion-curve-md);
+  transition-timing-function: var(--motion-curve-md);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-item,
+  .tab-indicator {
+    transition: none;
+  }
+}</pre></div>
+</section>
+
+<section>
+<h2>Recomendaciones</h2>
+<table class="clean">
+<tr><th>Tema</th><th>Criterio</th></tr>
+<tr><td>Token de estado</td><td><code>motion-curve-sm</code> para Hovered/Pressed/Focused, coherente con Button</td></tr>
+<tr><td>Token de indicador</td><td><code>motion-curve-md</code> por ser desplazamiento espacial, no color plano</td></tr>
+<tr><td>Rebote</td><td>Ninguno — Tabs es navegación/selección, no expresivo</td></tr>
+<tr><td>Fade</td><td>Color de label/ícono en paralelo al movimiento del indicador</td></tr>
+<tr><td>Disabled</td><td>Instantáneo, sin transición</td></tr>
+<tr><td>A11y</td><td><code>prefers-reduced-motion</code> obligatorio, incluido el indicador</td></tr>
+</table>
+</section>
+
+<footer class="doc-footer">
+<p>Motion System GGDS · Tabs Handoff Web · 2026-07-02</p>
+<p>DesignOps @ itti</p>
+</footer>
+</div>
+
+<script>
+(function(){
+  const lab = document.getElementById('motion-lab');
+  const reduced = document.getElementById('reduced');
+  const toggleDisabled = document.getElementById('toggle-disabled');
+  const readout = document.getElementById('readout');
+
+  const groups = [
+    { root: document.getElementById('segmented-tabs'), indicator: document.getElementById('segmented-indicator'), disabledTarget: document.getElementById('seg-disabled-target'), name: 'Segmented' },
+    { root: document.getElementById('line-tabs'), indicator: document.getElementById('line-indicator'), disabledTarget: document.getElementById('line-disabled-target'), name: 'Line' }
+  ];
+
+  function moveIndicator(group, animate) {
+    const active = group.root.querySelector('.tab-item.is-selected');
+    if (!active) { group.indicator.style.width = '0px'; return; }
+    const cRect = group.root.getBoundingClientRect();
+    const aRect = active.getBoundingClientRect();
+    if (!animate) {
+      const prevTransition = group.indicator.style.transition;
+      group.indicator.style.transition = 'none';
+      group.indicator.style.transform = `translateX(${aRect.left - cRect.left}px)`;
+      group.indicator.style.width = aRect.width + 'px';
+      // force reflow then restore
+      group.indicator.offsetHeight;
+      group.indicator.style.transition = prevTransition;
+      return;
+    }
+    group.indicator.style.transform = `translateX(${aRect.left - cRect.left}px)`;
+    group.indicator.style.width = aRect.width + 'px';
+  }
+
+  function selectTab(group, item) {
+    if (item.disabled) return;
+    group.root.querySelectorAll('.tab-item').forEach(t => { t.classList.remove('is-selected'); t.setAttribute('aria-selected', 'false'); });
+    item.classList.add('is-selected');
+    item.setAttribute('aria-selected', 'true');
+    moveIndicator(group, !reduced.checked);
+    readout.textContent = `Estado: selected · ${group.name} → "${item.textContent}" · motion-curve-md (indicador) + motion-curve-sm (label)`;
+  }
+
+  groups.forEach(group => {
+    group.root.querySelectorAll('.tab-item').forEach(item => {
+      item.addEventListener('click', () => selectTab(group, item));
+      item.addEventListener('mouseenter', () => { if (!item.disabled && !item.classList.contains('is-selected')) readout.textContent = `Estado: hovered · ${group.name} → "${item.textContent}" · motion-curve-sm`; });
+      item.addEventListener('mouseleave', () => { readout.textContent = 'Estado: enabled'; });
+      item.addEventListener('mousedown', () => { if (!item.disabled) readout.textContent = `Estado: pressed · ${group.name} → "${item.textContent}" · motion-curve-sm`; });
+      item.addEventListener('focus', () => { if (!item.disabled && item.matches(':focus-visible')) readout.textContent = `Estado: focused · ${group.name} → "${item.textContent}" · motion-curve-sm`; });
+      item.addEventListener('blur', () => { readout.textContent = 'Estado: enabled'; });
+    });
+    moveIndicator(group, false);
+  });
+
+  window.addEventListener('resize', () => groups.forEach(g => moveIndicator(g, false)));
+
+  toggleDisabled.addEventListener('change', (e) => {
+    groups.forEach(g => {
+      g.disabledTarget.disabled = e.target.checked;
+      g.disabledTarget.setAttribute('aria-disabled', String(e.target.checked));
+    });
+    readout.textContent = e.target.checked ? 'Estado: disabled · sin transición' : 'Estado: enabled';
+  });
+
+  reduced.addEventListener('change', (e) => {
+    lab.classList.toggle('reduced-motion', e.target.checked);
+  });
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    lab.classList.add('reduced-motion');
+    reduced.checked = true;
+  }
+})();
+</script>
+</body></html>

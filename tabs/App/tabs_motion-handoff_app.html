@@ -1,0 +1,263 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Motion Handoff — Tabs (App)</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#fff;--bg-subtle:#f7f7f7;--border:#e8e8ec;--border-strong:#d8d8de;--text:#252529;--text-2:#404047;--muted:#6c6c78;--subtle:#8f8f9c;--accent:#7373e5;--accent-soft:rgba(115,115,229,.10);--radius:12px;--radius-sm:6px;--sans:'Inter',sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+--seg-selected-bg:#eebcb5;--seg-selected-text:#40110a;--line-selected:#6f1d11;--control-enabled:#6c6c78}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--sans);font-size:14px;line-height:1.6;color:var(--text)}
+.page{max-width:960px;margin:0 auto;padding:2rem 1.5rem}
+.hero h1{font-size:3rem;font-weight:800;letter-spacing:-.03em}
+.hero-meta{display:flex;align-items:center;gap:1rem;color:var(--muted);margin:.6rem 0 1rem}
+.owner-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.3rem .65rem .3rem .3rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:999px;font-size:.82rem}
+.owner-avatar{width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700}
+.pills{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem}
+.pill{display:inline-block;padding:.3rem .6rem;border:1px solid var(--border);border-radius:999px;background:var(--bg-subtle);font-size:.75rem}
+.pill.primary{border-color:rgba(115,115,229,.35);background:var(--accent-soft);color:var(--accent)}
+section{padding:1.5rem 0;border-bottom:1px solid var(--border)}
+h2{font-size:1.35rem;font-weight:700;letter-spacing:-.02em;margin-bottom:.75rem}
+.motion-lab-disclaimer{font-size:.82rem;color:var(--muted);margin-bottom:.75rem;padding:.5rem .75rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.hint{font-size:.88rem;color:var(--muted);margin-bottom:1rem}
+.stage{min-height:220px;display:flex;flex-direction:column;gap:2rem;justify-content:center;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius);padding:2rem}
+.tabs-block .variant-label{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--subtle);margin-bottom:.6rem;font-weight:700}
+.tabs{position:relative;display:flex;align-items:center}
+.tabs--segmented{gap:8px}
+.tabs--line{gap:0}
+.tab-indicator{position:absolute;top:0;left:0;pointer-events:none}
+.tabs--segmented .tab-indicator{height:36px;border-radius:4px;background:var(--seg-selected-bg);z-index:0}
+.tabs--line .tab-indicator{top:auto;bottom:0;height:2px;background:var(--line-selected)}
+.tab-item{position:relative;z-index:1;font:inherit;font-size:14px;background:none;cursor:pointer;color:var(--control-enabled);white-space:nowrap;outline:none;transform:scale(1)}
+.tabs--segmented .tab-item{height:36px;padding:8px 12px;border-radius:4px;border:1px solid var(--control-enabled)}
+.tabs--segmented .tab-item.is-selected{border-color:transparent;color:var(--seg-selected-text);font-weight:600}
+.tabs--line .tab-item{padding:8px 12px;border:none;border-bottom:1px solid var(--control-enabled)}
+.tabs--line .tab-item.is-selected{color:var(--line-selected);font-weight:600;border-bottom-color:transparent}
+.tab-item .ring{position:absolute;inset:-4px;border:2px solid var(--accent);border-radius:6px;opacity:0;pointer-events:none}
+.tab-item:disabled{opacity:.45;cursor:not-allowed}
+.controls{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.25rem}.controls label{cursor:pointer;font-size:.85rem;color:var(--text-2)}
+.callout{border-left:4px solid var(--accent);background:var(--accent-soft);padding:.8rem 1rem;border-radius:0 6px 6px 0;margin-top:1rem;font-size:.85rem;color:var(--text-2)}
+.companion{margin-top:.75rem;font-size:.88rem}.companion a{color:var(--accent)}
+.readout{margin-top:.75rem;font-size:.78rem;font-family:var(--mono);color:var(--muted)}
+.implementation{margin-top:.75rem;border:1px solid var(--border);border-radius:var(--radius-sm);padding:.8rem;background:#1c1c20}
+.implementation strong{display:block;font-size:.8rem;margin-bottom:.35rem;color:var(--subtle)}
+.implementation pre{margin:0;font-family:var(--mono);font-size:.75rem;line-height:1.5;white-space:pre-wrap;color:#e8e8ec}
+.mapping{margin-top:.75rem;border:1px solid rgba(115,115,229,.35);border-radius:var(--radius-sm);padding:.8rem;font-size:.78rem;color:var(--muted);line-height:1.6;background:var(--accent-soft)}
+.mapping strong{color:var(--text-2)}
+table.clean{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:.5rem}
+table.clean th,table.clean td{text-align:left;padding:.5rem .6rem;border-bottom:1px solid var(--border)}
+table.clean th{color:var(--subtle);font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em}
+#motion-lab.reduced-motion .tab-item,#motion-lab.reduced-motion .tab-indicator,#motion-lab.reduced-motion .ring{transition:none!important}
+.doc-footer{text-align:center;padding:1.5rem 0;color:var(--subtle);font-size:.8rem}
+.doc-footer p{margin:0}
+.haptics-section h2{margin-bottom:.5rem}
+</style></head><body><div class="page">
+
+<header class="hero">
+<h1>Tabs</h1>
+<div class="hero-meta">
+<span class="owner-badge"><span class="owner-avatar">EA</span> Ezequiel Arguello</span>
+<span>App · GGDS · 2026-07-02</span>
+</div>
+<div class="pills">
+<span class="pill primary">motion-spring-sm · estado</span>
+<span class="pill primary">motion-spring-md · indicador</span>
+<span class="pill">Segmented Item</span>
+<span class="pill">Line Item</span>
+</div>
+</header>
+
+<section id="motion-lab">
+<h2>Preview de motion</h2>
+<p class="motion-lab-disclaimer">Motion lab — no es el componente de la librería. Validá motion y tokens; la UI final está en Figma.</p>
+<p class="hint">Interactuá con los tabs: tap/click y Tab (focus). No hay estado hover en App. El checkbox de abajo solo simula Disabled.</p>
+<div class="stage" id="stage">
+  <div class="tabs-block">
+    <p class="variant-label">Segmented Item</p>
+    <div class="tabs tabs--segmented" id="segmented-tabs" role="tablist" aria-label="Segmented tabs">
+      <div class="tab-indicator" id="segmented-indicator"></div>
+      <button class="tab-item is-selected" data-index="0" role="tab" aria-selected="true"><span class="ring"></span>Resumen</button>
+      <button class="tab-item" data-index="1" role="tab" aria-selected="false"><span class="ring"></span>Actividad</button>
+      <button class="tab-item" data-index="2" role="tab" aria-selected="false"><span class="ring"></span>Reportes</button>
+      <button class="tab-item" data-index="3" role="tab" aria-selected="false" id="seg-disabled-target"><span class="ring"></span>Ajustes</button>
+    </div>
+  </div>
+  <div class="tabs-block">
+    <p class="variant-label">Line Item</p>
+    <div class="tabs tabs--line" id="line-tabs" role="tablist" aria-label="Line tabs">
+      <div class="tab-indicator" id="line-indicator"></div>
+      <button class="tab-item is-selected" data-index="0" role="tab" aria-selected="true"><span class="ring"></span>Resumen</button>
+      <button class="tab-item" data-index="1" role="tab" aria-selected="false"><span class="ring"></span>Actividad</button>
+      <button class="tab-item" data-index="2" role="tab" aria-selected="false"><span class="ring"></span>Reportes</button>
+      <button class="tab-item" data-index="3" role="tab" aria-selected="false" id="line-disabled-target"><span class="ring"></span>Ajustes</button>
+    </div>
+  </div>
+</div>
+<div class="controls">
+  <label><input type="checkbox" id="toggle-disabled"/> Disabled (tab "Ajustes")</label>
+  <label><input type="checkbox" id="reduced"/> disableAnimations (sin animación)</label>
+</div>
+<div class="callout">Este preview simula los springs en el navegador (mass / stiffness / damping del Token Mapping). No es Flutter. Los valores que implementás son los del Token Mapping.</div>
+<p class="companion">Referencia visual Web (misma intención): <a href="../Web/tabs_motion-handoff_web.html">abrir preview Web</a></p>
+<div class="readout" id="readout">Estado: enabled · Selected: Resumen</div>
+<div class="mapping"><strong>Token Mapping</strong><br/>
+motion-spring-sm → mass 1.0 · stiffness 400 · damping 35 — Pressed / Focused / fade de color<br/>
+motion-spring-md → mass 1.0 · stiffness 300 · damping 28 — movimiento del indicador de selección
+</div>
+</section>
+
+<section>
+<h2>Motion Specification</h2>
+<p style="margin-bottom:.75rem">Tabs en App usa motion de estados internos, sin enter/exit de viewport: Enabled, Pressed, Focused, Selected, Disabled — no existe estado hover en App.</p>
+<p style="margin-bottom:.75rem">Pressed y Focused usan <code>motion-spring-sm</code>, igual que Button. El cambio de Selected mueve el indicador de posición con <code>motion-spring-md</code>, mismo token en ida y vuelta.</p>
+<p>Disabled es instantáneo. Con <code>MediaQuery.disableAnimations</code> se aplica el estado final sin animar, incluido el indicador.</p>
+</section>
+
+<section>
+<h2>Timeline de interacción</h2>
+<table class="clean">
+<tr><th>#</th><th>Tipo</th><th>Evento</th><th>Elemento</th><th>Propiedad</th><th>De → A</th><th>Token spring</th></tr>
+<tr><td>1</td><td>Trigger</td><td>Tap down</td><td>Tab item</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>2</td><td>Response</td><td>Pressed</td><td>Tab item</td><td>scale</td><td>1.0 → 0.98</td><td>motion-spring-sm</td></tr>
+<tr><td>3</td><td>Trigger</td><td>Focus visible</td><td>Tab item</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>4</td><td>Response</td><td>Focus ring</td><td>Focus ring</td><td>opacity</td><td>0.0 → 1.0</td><td>motion-spring-sm</td></tr>
+<tr><td>5</td><td>Trigger</td><td>Cambio de tab seleccionado</td><td>TabBar</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>6</td><td>Response</td><td>Indicador</td><td>Indicator</td><td>position / size</td><td>anterior → tab activo</td><td>motion-spring-md</td></tr>
+<tr><td>7</td><td>Response</td><td>Label/ícono</td><td>Tab item</td><td>color / fontWeight</td><td>enabled ↔ selected</td><td>motion-spring-sm</td></tr>
+<tr><td>8</td><td>Trigger</td><td>Disabled</td><td>Tab item</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>9</td><td>Response</td><td>Disabled</td><td>Tab item</td><td>—</td><td>final</td><td>instantáneo</td></tr>
+</table>
+</section>
+
+<section>
+<h2>Implementación Dart (Flutter)</h2>
+<div class="implementation"><pre>final motion = context.motionTokens;
+final stateSpring = motion.springSm;      // motion-spring-sm (mass 1.0, stiffness 400, damping 35)
+final indicatorSpring = motion.springMd;  // motion-spring-md (mass 1.0, stiffness 300, damping 28)
+final disableAnimations = MediaQuery.of(context).disableAnimations;
+
+void onTabSelected(int index) {
+  if (disableAnimations) {
+    indicatorController.value = targetOffsetFor(index);
+    return;
+  }
+  indicatorController.animateWith(
+    SpringSimulation(indicatorSpring, indicatorController.value, targetOffsetFor(index), 0),
+  );
+}
+
+// pressed/focus animan scale/opacity con stateSpring (motion-spring-sm)
+// disabled: estado final instantáneo, sin animar</pre></div>
+</section>
+
+<section class="haptics-section">
+<h2>Haptics</h2>
+<div class="mapping"><strong>Token Mapping</strong><br/>haptic-selection-change → haptic-selection-click → HapticFeedback.selectionClick()<br/>Override: no recomendado</div>
+<div class="implementation"><pre>void onTabChanged(int index) {
+  context.haptics.trigger(GgdsHapticSemantic.selectionChange); // haptic-selection-change
+  onTabSelected(index);
+}</pre></div>
+</section>
+
+<footer class="doc-footer">
+<p>Motion System GGDS · Tabs Handoff App · 2026-07-02</p>
+<p>DesignOps @ itti</p>
+</footer>
+</div>
+
+<script>
+(function(){
+  const lab = document.getElementById('motion-lab');
+  const reduced = document.getElementById('reduced');
+  const toggleDisabled = document.getElementById('toggle-disabled');
+  const readout = document.getElementById('readout');
+
+  const STATE = { stiffness: 400, damping: 35, mass: 1 };
+  const INDICATOR = { stiffness: 300, damping: 28, mass: 1 };
+
+  function springTo(cfg, from, to, onUpdate, onComplete) {
+    if (reduced.checked) { onUpdate(to); onComplete && onComplete(); return; }
+    let x = from, v = 0, last = performance.now();
+    function frame(now) {
+      const dt = Math.min((now - last) / 1000, 0.064);
+      last = now;
+      const a = (-cfg.stiffness * (x - to) - cfg.damping * v) / cfg.mass;
+      v += a * dt;
+      x += v * dt;
+      onUpdate(x);
+      if (Math.abs(x - to) < 0.05 && Math.abs(v) < 0.05) { onUpdate(to); onComplete && onComplete(); return; }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  const groups = [
+    { root: document.getElementById('segmented-tabs'), indicator: document.getElementById('segmented-indicator'), disabledTarget: document.getElementById('seg-disabled-target'), name: 'Segmented', x: 0, w: 0 },
+    { root: document.getElementById('line-tabs'), indicator: document.getElementById('line-indicator'), disabledTarget: document.getElementById('line-disabled-target'), name: 'Line', x: 0, w: 0 }
+  ];
+
+  function targetFor(group, active) {
+    const cRect = group.root.getBoundingClientRect();
+    const aRect = active.getBoundingClientRect();
+    return { x: aRect.left - cRect.left, w: aRect.width };
+  }
+
+  function paintIndicator(group) {
+    group.indicator.style.transform = `translateX(${group.x}px)`;
+    group.indicator.style.width = group.w + 'px';
+  }
+
+  function moveIndicator(group, animate) {
+    const active = group.root.querySelector('.tab-item.is-selected');
+    if (!active) return;
+    const t = targetFor(group, active);
+    if (!animate) { group.x = t.x; group.w = t.w; paintIndicator(group); return; }
+    springTo(INDICATOR, group.x, t.x, v => { group.x = v; paintIndicator(group); });
+    springTo(INDICATOR, group.w, t.w, v => { group.w = v; paintIndicator(group); });
+  }
+
+  function pressAnim(item) {
+    springTo(STATE, 1, 0.97, v => { item.style.transform = `scale(${v})`; }, () => {
+      springTo(STATE, 0.97, 1, v => { item.style.transform = `scale(${v})`; });
+    });
+  }
+
+  function focusAnim(item, show) {
+    const ring = item.querySelector('.ring');
+    springTo(STATE, show ? 0 : 1, show ? 1 : 0, v => { ring.style.opacity = v; });
+  }
+
+  function selectTab(group, item) {
+    if (item.disabled) return;
+    group.root.querySelectorAll('.tab-item').forEach(t => { t.classList.remove('is-selected'); t.setAttribute('aria-selected', 'false'); });
+    item.classList.add('is-selected');
+    item.setAttribute('aria-selected', 'true');
+    moveIndicator(group, true);
+    readout.textContent = `Estado: selected · ${group.name} → "${item.textContent.trim()}" · motion-spring-md (indicador) + haptic: selectionClick`;
+  }
+
+  let keyboardFocus = false;
+  document.addEventListener('keydown', e => { if (e.key === 'Tab') keyboardFocus = true; });
+
+  groups.forEach(group => {
+    group.root.querySelectorAll('.tab-item').forEach(item => {
+      item.addEventListener('click', () => selectTab(group, item));
+      item.addEventListener('mousedown', () => { if (!item.disabled) { pressAnim(item); readout.textContent = `Estado: pressed · ${group.name} → "${item.textContent.trim()}" · motion-spring-sm`; } });
+      item.addEventListener('focus', () => { if (!item.disabled && keyboardFocus) { focusAnim(item, true); readout.textContent = `Estado: focused · ${group.name} → "${item.textContent.trim()}" · motion-spring-sm`; } });
+      item.addEventListener('blur', () => { focusAnim(item, false); readout.textContent = 'Estado: enabled'; });
+    });
+    moveIndicator(group, false);
+  });
+
+  window.addEventListener('resize', () => groups.forEach(g => moveIndicator(g, false)));
+
+  toggleDisabled.addEventListener('change', (e) => {
+    groups.forEach(g => {
+      g.disabledTarget.disabled = e.target.checked;
+      g.disabledTarget.setAttribute('aria-disabled', String(e.target.checked));
+    });
+    readout.textContent = e.target.checked ? 'Estado: disabled · instantáneo' : 'Estado: enabled';
+  });
+
+  reduced.addEventListener('change', (e) => {
+    lab.classList.toggle('reduced-motion', e.target.checked);
+  });
+})();
+</script>
+</body></html>
