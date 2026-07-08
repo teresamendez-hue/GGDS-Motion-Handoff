@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Motion Handoff — Date Picker (Web)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:#fff; --bg-subtle:#f7f7f7; --border:#e8e8ec; --text:#252529; --muted:#6c6c78; --subtle:#8f8f9c;
+      --accent:#7373e5; --danger:#d64545; --radius:12px; --radius-sm:6px;
+      --sans:'Inter',sans-serif; --mono:'SF Mono','Fira Code','Consolas',monospace;
+      --curve:cubic-bezier(0,0,0.2,1); --curve-sm:cubic-bezier(.4,0,.2,1); --exit:cubic-bezier(.4,0,1,1);
+      --dur:300ms; --dur-sm:150ms; --dur-exit:200ms;
+      --day-active-bg:#6b2d3c; --day-active-text:#fff; --day-pressed-bg:#f3e8ea;
+      --day-hover-bg:rgba(115,115,229,.08); --day-range-mid:rgba(232,140,114,.35); --day-radius:4px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:var(--sans);font-size:14px;line-height:1.6;color:var(--text)}
+    .page{max-width:980px;margin:0 auto;padding:20px}
+    section{padding:22px 0;border-bottom:1px solid var(--border)}
+    h1{margin:0;font-size:3rem;font-weight:800;letter-spacing:-.03em}
+    h2{margin:0 0 12px;font-size:1.35rem;font-weight:700;letter-spacing:-.02em}
+    .hero-meta{display:flex;gap:12px;align-items:center;margin:10px 0 14px;color:var(--muted);flex-wrap:wrap}
+    .owner-badge{display:inline-flex;align-items:center;gap:8px;padding:4px 10px 4px 4px;border:1px solid var(--border);border-radius:999px;background:var(--bg-subtle);font-size:12px}
+    .owner-avatar-img{width:28px;height:28px;border-radius:50%;object-fit:cover}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid rgba(115,115,229,.35);background:rgba(115,115,229,.1);color:var(--accent);font-size:12px}
+    .motion-lab-disclaimer,.scope-note{font-size:12px;color:var(--muted);margin:0 0 16px;padding:10px 12px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm);line-height:1.55}
+    .scope-note{border-left:4px solid var(--accent);color:#404047}
+    .scope-note a{color:var(--accent)}
+    .motion-stage{height:652px;min-height:652px;border:1px solid var(--border);background:var(--bg-subtle);border-radius:var(--radius);padding:20px;display:flex;align-items:flex-start;justify-content:center;overflow:visible}
+    .dp{width:min(360px,100%)}
+    .dp__label{font-size:12px;color:var(--muted);margin-bottom:6px}
+    .dp__control{position:relative}
+    .dp__wrapper{position:relative;display:flex;align-items:center;gap:8px;min-height:46px;padding:8px 12px;border:1px solid #cfcfda;border-radius:10px;background:#fff;transition:border-color var(--dur) var(--curve)}
+    .dp__ring{position:absolute;inset:-4px;border:2px solid var(--accent);border-radius:12px;opacity:0;pointer-events:none;transition:opacity var(--dur) var(--curve),border-color var(--dur) var(--curve)}
+    .dp__trigger{display:flex;align-items:center;gap:8px;flex:1;min-width:0;border:0;background:transparent;padding:0;font:inherit;text-align:left;cursor:pointer;color:inherit;transition:opacity var(--dur) var(--curve)}
+    .dp__value{flex:1;font-size:14px;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .dp__value.is-placeholder{color:var(--muted)}
+    .dp__icon{flex:0 0 auto;width:16px;height:16px;color:var(--muted)}
+    .dp__panel{position:absolute;left:0;right:0;top:calc(100% + 6px);background:#fff;border:1px solid #cfcfda;border-radius:10px;box-shadow:0 8px 24px rgba(37,37,41,.08);opacity:0;transform:translateY(-6px);pointer-events:none;overflow:hidden;transition:opacity var(--dur) var(--curve),transform var(--dur) var(--curve);z-index:20}
+    .dp.is-panel-open .dp__panel,.dp.is-panel-closing .dp__panel{opacity:1;transform:translateY(0)}
+    .dp.is-panel-open .dp__panel{pointer-events:auto}
+    .dp.is-panel-closing .dp__panel{transition-duration:var(--dur-exit);transition-timing-function:var(--exit)}
+    .dp__helper{margin-top:6px;font-size:12px;color:var(--muted);transition:color var(--dur) var(--curve)}
+    .dp.is-hovered .dp__wrapper{border-color:#a9a9bf}
+    .dp.is-focused .dp__ring{opacity:1}
+    .dp.is-error .dp__wrapper{border-color:var(--danger)}
+    .dp.is-error .dp__ring{border-color:var(--danger)}
+    .dp.is-error .dp__helper{color:var(--danger)}
+    .dp.is-disabled .dp__wrapper{opacity:0.45;transition:none}
+    .dp.is-disabled .dp__ring,.dp.is-disabled .dp__helper,.dp.is-disabled .dp__trigger{transition:none}
+    .dp.is-panel-open .dp__helper{visibility:hidden}
+    .dp__footer{display:none;align-items:center;justify-content:space-between;padding:10px 12px 12px;border-top:1px solid var(--border);gap:12px}
+    .dp.is-range-mode .dp__footer{display:flex}
+    .dp__footer-btn{border:0;background:transparent;font:inherit;font-weight:600;cursor:pointer;padding:10px 4px;color:var(--text)}
+    .dp__footer-btn--primary{background:#3a3a42;color:#fff;border-radius:10px;min-height:40px;padding:0 18px}
+    .dp__footer-btn--primary:disabled{background:#c8c8d0;color:#fff;cursor:not-allowed}
+    .cal{padding:8px 0 0}
+    .cal__header{display:flex;align-items:center;justify-content:space-between;padding:4px 8px 8px;gap:8px}
+    .cal__title{display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;padding:6px 8px;font:inherit;font-size:14px;font-weight:600;color:var(--text);cursor:pointer;border-radius:8px;transition:background-color var(--dur-sm) var(--curve-sm)}
+    .cal__title:hover{background:var(--day-hover-bg)}
+    .cal__title svg{width:14px;height:14px;color:var(--muted);transition:transform var(--dur) var(--curve)}
+    .dp.is-year-view .cal__title svg{transform:rotate(180deg)}
+    .cal__nav{display:flex;gap:2px}
+    .cal__nav-btn{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border:0;border-radius:4px;background:transparent;color:var(--text);cursor:pointer;transition:background-color var(--dur-sm) var(--curve-sm),transform var(--dur-sm) var(--curve-sm)}
+    .cal__nav-btn:hover{background:var(--day-hover-bg)}
+    .cal__nav-btn:active{transform:scale(.96)}
+    .cal__nav-btn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+    .cal__body{position:relative;min-height:292px;padding:0 8px}
+    .cal__view-panel{position:absolute;inset:0;padding:0 0 4px;transition:opacity var(--dur) var(--curve)}
+    .cal__view-panel.is-hidden{opacity:0;pointer-events:none}
+    .cal__weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:6px;font-size:11px;color:var(--muted);text-align:center}
+    .cal__weekdays span{display:block;padding:4px 0}
+    .cal__grid-wrap{transition:opacity var(--dur) var(--curve),transform var(--dur) var(--curve)}
+    .cal__grid-wrap.is-animating-out{opacity:0;transform:translateX(var(--slide-dir,-12px))}
+    .cal__grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+    .cal__day{position:relative;aspect-ratio:1;border:0;border-radius:var(--day-radius);background:transparent;font-size:13px;cursor:pointer;color:var(--text);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:2px 0;font:inherit;transition:background-color var(--dur-sm) var(--curve-sm)}
+    .cal__day-num{line-height:1.1}
+    .cal__day-dot{display:none;width:4px;height:4px;border-radius:50%;background:var(--text);flex-shrink:0}
+    .cal__day.is-today .cal__day-dot{display:block}
+    .cal__day.is-active .cal__day-dot,.cal__day.is-range-start .cal__day-dot,.cal__day.is-range-end .cal__day-dot{background:var(--day-active-text)}
+    .cal__day:hover:not(:disabled):not(.is-active):not(.is-range-start):not(.is-range-end){background:var(--day-hover-bg)}
+    .cal__day:active:not(:disabled){background:var(--day-pressed-bg)}
+    .cal__day.is-out{color:var(--subtle);opacity:.55}
+    .cal__day.is-active{background:var(--day-active-bg);color:var(--day-active-text);font-weight:600}
+    .cal__day.is-range{border-radius:0;background:var(--day-range-mid);color:var(--text)}
+    .cal__day.is-range-start,.cal__day.is-range-end{background:var(--day-active-bg);color:var(--day-active-text);font-weight:600}
+    .cal__day.is-range-start{border-radius:var(--day-radius) 0 0 var(--day-radius)}
+    .cal__day.is-range-end{border-radius:0 var(--day-radius) var(--day-radius) 0}
+    .cal__day.is-range-start.is-range-end{border-radius:var(--day-radius)}
+    .cal__day:disabled{opacity:.32;cursor:not-allowed;pointer-events:none}
+    .cal__day:focus-visible{outline:2px solid var(--accent);outline-offset:1px;z-index:1}
+    .cal__year-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:8px 4px}
+    .cal__year-item{border:0;border-radius:8px;background:transparent;padding:12px 8px;font:inherit;font-size:13px;cursor:pointer;color:var(--text);transition:background-color var(--dur-sm) var(--curve-sm)}
+    .cal__year-item:hover{background:var(--day-hover-bg)}
+    .cal__year-item.is-selected{background:var(--day-active-bg);color:var(--day-active-text);font-weight:600}
+    .motion-controls{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 16px;align-items:center}
+    .motion-controls label{font-size:13px;color:#404047}
+    .motion-token-readout{margin:0 0 12px;font-size:12px;font-family:var(--mono);color:var(--muted)}
+    .mapping{margin:0 0 14px;padding:12px;border:1px solid rgba(115,115,229,.35);border-radius:var(--radius-sm);background:rgba(115,115,229,.1);font-size:12px;color:#404047;line-height:1.55}
+    .mapping-rows{margin:8px 0 0;padding:0;list-style:none}
+    .mapping-rows li{padding:6px 0;border-top:1px solid rgba(115,115,229,.2)}
+    .mapping-rows li:first-child{border-top:0;padding-top:0}
+    .mapping-rows strong{color:var(--text)}
+    .implementation pre{background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;font-size:.75rem;white-space:pre-wrap}
+    .doc-footer{text-align:center;color:var(--subtle);font-size:12px;padding:16px 0 8px}
+    #motion-lab.reduced-motion .dp__wrapper,#motion-lab.reduced-motion .dp__ring,#motion-lab.reduced-motion .dp__helper,#motion-lab.reduced-motion .dp__panel,#motion-lab.reduced-motion .dp__trigger,#motion-lab.reduced-motion .cal__grid-wrap,#motion-lab.reduced-motion .cal__view-panel,#motion-lab.reduced-motion .cal__day,#motion-lab.reduced-motion .cal__nav-btn,#motion-lab.reduced-motion .cal__title,#motion-lab.reduced-motion .cal__year-item{transition:none!important}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <h1>Date Picker</h1>
+      <div class="hero-meta">
+        <span class="owner-badge"><img class="owner-avatar-img" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBAUEBAYFBQUGBgYHCQ4JCQgICRINDQoOFRIWFhUSFBQXGiEcFxgfGRQUHScdHyIjJSUlFhwpLCgkKyEkJST/2wBDAQYGBgkICREJCREkGBQYJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCT/wAARCABQAFADASIAAhEBAxEB/8QAHAAAAgMBAQEBAAAAAAAAAAAABQYCBAcDCAEA/8QAORAAAgECBAMGAwUHBQAAAAAAAQIDBBEABRIhBhMxByJBUWFxFDKBI0JSocEVJIKRsdHxFjNy4fD/xAAaAQACAwEBAAAAAAAAAAAAAAADBAACBQEG/8QAJREAAgICAQMDBQAAAAAAAAAAAQIAEQMhEgQiMSNBURNhcbHR/9oADAMBAAIRAxEAPwB2mVp65pCkFHJCwieFWALHULE6Tud+t97Y4yM0VdUcyWWZhUKtw/NidgguF/GPO5vjqs00FXVU8HJWJZC8tOqGTVuCWIOxIuRsfYeOO70c9KY5+WYaCtsYmZe84AAF7bgg+XpjWU8alCb8xbz0t/q3hK1Q7rGahlK2Sx5Z71m+Xew9hg7S0lT+3lkmo4rsJGs4Z+Zdhb5d9Jv7YpZyhHE/BEr1Ei2mqUMgsGH2Z8D4+l/64vUpigrpZjPDBFEkjmZ5SHUB9yQN+m1vXEUFuVSDVSzURyIZdFRSh4rsH0BXsSuxLdAOm+59sVOTPU5g1RHOJZ5kmRlhYxhwWFwLDqDY79cJGZ9rwq8zaiyzLo6qjW6H4i7Pp2Ntum4JHjviplPa7QVVeuVZpR/Bklgswd103IuxHsLEj3wMsvudy3BvM0LMBSxZVbkyTTuXKNUhiSRs5JBABG2xvtb3xBA9FRLDPIoL8sinjGmQtYaV32Rb2IJBxYzho0ilTLJJ3iZTrqGZRGTb7pA6ED67Y/UikQTvTvTLUEBnM1QdLRgd4EkfL16G+IQSJUAVKj5Ywo6epnqFmllD/uyrrMIGq5ZR1O5t67nA0UqwZpnULpy9QpGjGoF1YR3Fz7Xv7jBvKZTNFWA0608Rg164w2+1tjvfrfqN8U6Ws+OzzPJRFBES8Pf56KFIh7tha97i5UdOmJkIDUfaQDU7Sx0wqzTU0VNRymPlSR/EllJ6ko/Ta1tPp9MSGaVUdUGpYtDpblG1hFdNwFv1IJ97YkpiSJuZUxCRW1FOfG8YUrfUhvcnYbb/AKY+w1FPLTzRSw0wlWILFVI4BUkXJcfesPQdPbBRYWc4m7griCSOXi3hiDRJPDE8vLCoUd2ZGBB63/rtgb2l5gy5eKCJtNVXaotVrMqhvK3nb9cFM+YLxfw2IK3mR8+R0ZgCQTG2p7i+xPh19BhPz2ujz7tPly+ORRLAkkgI7yKUF7D3JLfQDAGbiphunxXkCmWMoyWgymhipaMRvoUB3VgxLeNz54B8f5DE+VLmUcamakkVybb6Ts35HB/KMpmo5KydpklViF06QCG63uAPXA48OVEtPmHMNO0c8TqzqpDDbbe/5WxmWA13PQvhY4+PGMfAWaDNeCoYJ+/LQaqYk+MZ3W/r1H+MOOZhKSAskgenEgd3+HusMukgL03sDcqOvU4yPsbzAVP7QpiVYTU111C4Dqw6/Qt+WNkzCnnost5iVLc6Z+W6ELqK+IA/K53tboMaSbQTzzr3GpRkrlaOpMNQkVNpEMcbOGZVIFtBNt7jptgfQ1skGd50/wAKtQ4qGhkLRWRkESXLdd72Fwb3O+L3JWOSR0pZoYS2lapEErR961nF9h038CB54DZXDUzzZvLM7hDmMqsqkLzmUKoCj8XifQjF2Xk24IaNiEIqCgHMIo8qmWJX1uh0xE6d+X5H3vvfH2GDJ/iJJ3y9TCFT92VtzdNxqO5UkDe22wxbRIZ5eZQR0s0wJ17Wija9rRr426bjrviwkFVQVEU7Mr83TomAUl109B1Atff1tgwW5VT8xTz+Gjg4q4bnWCGOFXkMkKtY2EbHvevl7eeMgyjiSDK+0wZhWWipZppIZWJ3iVwQD7C4v6Y2PtOaGnFJJTtpdFkKszaibgrcHY2IudwN8eds3gLxySnvNLJf36j9MKubYrHFBxqMg8/yegJ6RqKJIZJGXW5YGFLh/wDl3uvqPDATivNRw7w/mVVUMsTToYqeFDu7sCB9bbm3kcWeF8znmyGjWZhI0UYVGbc7C1j7YRe0GWWtzmmSeTmCIGwPRSeu3sMZ4Tk/2m7mz8cPJfJlnscdY81po9kWRSrE32JB/sMbrmGT5UKWN46eSXU9tRqTp3Hzbb+dvPbGEcD18WW8RUqLpUxSI7FjYbna/wBN8egK6oeOm+zqBEJiOcQlzYkArsLH8Qta2HcRJBqYPULQUiBHy3Looypid1aXStRzXU/N8iL0ZyOtzbATIcooBLXxTfEKGr6lY5lZjezDusp3vYjfDg9DFSA006SGRZkMfMspXvXAUE+PU/TAPhUSZjRVwHMaH46pepEkh1I3MsDrPiVBW/0wW+64sWABaEYZ2kWWKOSnHMcl5njEekgWspG9ugHrY4Su0DjWq4czD9g5fEIqh40eWVgCyFlI0p4D39cO6Q2RypllhWXQzMl41a1gB1uLXA+hxhfaFm8eZ8b1MtKFPLQQI6gAOVUgNt6WH0wdyVXRkWmIMiMwmqL812cykuzM2okdAST1J6/XCpYTSzId1jJkFj8pwzVSiljLAWSOJU/iPh/IDCvACFqW8ShsfK5GEk3uO9QeNLDOW8f5nlFPyORSVCRnqwZWufA2NjivNnsueCSonhiRlDt3L+nngM0KrZfM3b1tjtRMwjqR0UxkD0JIxd8ajYEXx9TkNKx1C2WTGKqlqL/asyk/y/tjXOFO06jzRaTKc0C0s68tIaxXIUfd7w87+J2PpjGqVwZio6sgP1H/AFitVVJp5gAbMPD3wJCQ2ofKfTnq1ElSOPmVEhllnjVV1AH5tjuT4jrbwwvcLHXl1TGQZmlq5zK6ylj/ALu57tlaw38OuF7sm4yruKKRspr4pJRSSRaKpbb3uAjk+O1wR5b4NcMz/CZMUUskzSy95lDcoCUksCNidrbYOByMVAIEYRDPTBNUE0MYkudalwxtsOu4sbA22uN8ZT2pcL0dJxHl+YZfFyzWTWnAUKuvTfZRsOh6dcbBV8qOoWopa2pSVNRcJZtLHpYjbQdrnwuMIfHZjqX74W9O6OLdNQG/9Tvi+ZuwGG6RPqOR8b/Uy3iNmjQRqbKbyke+y/lvhdXZJk21FQfzw0cWxKtRPp6BBY+nhhUgWyyuWuzWHv8A+tgWIds71jepIuVkqHSMNYAWBNzv/jE4E+zmPQd259ASf0xWhk1TzkeYF/bHUSWiMe/eN/e3+cEYaiSGjcv0O1VHtsdt/XbArPrx5q6+gGDFChIVvvakFv4sQmysZtxnS0ZvonlRSQei2ufyvhZTT2ZoOpbGAPczSOwzNaGSgqcrmhjNRBUCpUJGebKrDSbP0FiALH8Qw6cMTTw8OwQfY0cTzSGSr063Dazs9ulh4DbHTgzIcmyCjpXy/K4RIqyRmSNS0uq+zSN1PoOm2JcKrbJVMc8ILs0UnOQFFDMdLbDzBH1wwjWARFzjKsUb8T//2Q==" alt="Teresa Mendez" /> Teresa Mendez</span>
+        <span>Web · GGDS · 2026-07-06</span>
+      </div>
+      <span class="pill">motion-curve-md</span>
+      <span class="pill">motion-curve-sm</span>
+      <span class="pill">motion-exit</span>
+    </header>
+
+    <section class="motion-lab" id="motion-lab">
+      <h2>Preview de motion</h2>
+      <p class="motion-lab-disclaimer">Motion lab — no es el componente de la libreria. Valida motion y tokens; la UI final esta en Figma.</p>
+      <div class="motion-stage" id="stage">
+        <div class="dp" id="field">
+          <div class="dp__label">Fecha de nacimiento</div>
+          <div class="dp__control">
+            <div class="dp__wrapper">
+              <div class="dp__ring"></div>
+              <button type="button" class="dp__trigger" id="trigger" aria-expanded="false" aria-controls="panel" aria-haspopup="dialog">
+                <span class="dp__value is-placeholder" id="value">00/00/0000</span>
+                <svg class="dp__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M4.5 8.25h15M4.5 19.5h15a1.5 1.5 0 0 0 1.5-1.5V7.5a1.5 1.5 0 0 0-1.5-1.5h-15A1.5 1.5 0 0 0 3 7.5v10.5a1.5 1.5 0 0 0 1.5 1.5Z" /></svg>
+              </button>
+            </div>
+            <div class="dp__panel" id="panel" aria-hidden="true" role="dialog" aria-label="Seleccionar fecha">
+              <div class="cal" id="cal">
+                <div class="cal__header">
+                  <button type="button" class="cal__title" id="titleBtn" aria-expanded="false">
+                    <span id="titleText">Julio 2026</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                  </button>
+                  <div class="cal__nav">
+                    <button type="button" class="cal__nav-btn" id="prevBtn" aria-label="Mes anterior">‹</button>
+                    <button type="button" class="cal__nav-btn" id="nextBtn" aria-label="Mes siguiente">›</button>
+                  </div>
+                </div>
+                <div class="cal__body">
+                  <div class="cal__view-panel" id="monthPanel">
+                    <div class="cal__weekdays" aria-hidden="true"><span>Dom</span><span>Lun</span><span>Mar</span><span>Mie</span><span>Jue</span><span>Vie</span><span>Sab</span></div>
+                    <div class="cal__grid-wrap" id="gridWrap">
+                      <div class="cal__grid" id="grid"></div>
+                    </div>
+                  </div>
+                  <div class="cal__view-panel is-hidden" id="yearPanel" aria-hidden="true">
+                    <div class="cal__year-grid" id="yearGrid"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="dp__footer" id="footer" aria-hidden="true">
+                <button type="button" class="dp__footer-btn" id="btnCancelar">Cancelar</button>
+                <button type="button" class="dp__footer-btn dp__footer-btn--primary" id="btnAceptar" disabled>Aceptar</button>
+              </div>
+            </div>
+          </div>
+          <div class="dp__helper" id="helper">Helper text</div>
+        </div>
+      </div>
+      <div class="motion-controls">
+        <label><input type="radio" name="mode" value="single" checked /> Single</label>
+        <label><input type="radio" name="mode" value="range" /> Range</label>
+        <label><input type="checkbox" id="filledToggle" /> Filled</label>
+        <label><input type="checkbox" id="errorToggle" /> Error</label>
+        <label><input type="checkbox" id="disabledToggle" /> Disabled</label>
+        <label><input type="checkbox" id="reducedToggle" /> prefers-reduced-motion</label>
+      </div>
+      <p class="scope-note">Popover integrado con Calendar Day Item (atomo interno). Navegacion del header usa <a href="../../icon-button/Web/icon-button_motion-handoff_web.html">Icon Buttons</a>. <strong>Single</strong> cierra al elegir dia; <strong>Range</strong> usa footer Cancelar/Aceptar (motion de botones en handoff Button Web). Paridad App: <a href="../App/date-picker_motion-handoff_app.html">Date Picker App</a>.</p>
+      <div class="motion-token-readout" id="readout">State: empty</div>
+      <div class="mapping">
+        <strong>Token Mapping</strong>
+        <ul class="mapping-rows">
+          <li><strong>Estados del field</strong> — hover, focus ring, error, pressed · <code>motion-curve-md</code> · 300ms</li>
+          <li><strong>Panel enter</strong> — opacity + translateY · <code>motion-curve-md</code> · 300ms</li>
+          <li><strong>Panel exit</strong> — opacity + translateY · <code>motion-exit</code> · 200ms</li>
+          <li><strong>Mes / Year view</strong> — slide + crossfade · <code>motion-curve-md</code> · 300ms</li>
+          <li><strong>Calendar Day Item</strong> — hover, pressed, active · <code>motion-curve-sm</code> · 150ms · range fill instantaneo</li>
+        </ul>
+      </div>
+    </section>
+
+    <section><h2>Implementacion CSS</h2><div class="implementation"><pre>.dp__wrapper,
+.dp__ring,
+.dp__helper {
+  transition-property: border-color, opacity, color;
+  transition-duration: var(--motion-duration-from-motion-curve-md);
+  transition-timing-function: var(--motion-curve-md);
+}
+
+.dp__panel {
+  transition-property: opacity, transform;
+  transition-duration: var(--motion-duration-from-motion-curve-md);
+  transition-timing-function: var(--motion-curve-md);
+}
+
+.dp.is-panel-closing .dp__panel {
+  transition-duration: var(--motion-duration-from-motion-exit);
+  transition-timing-function: var(--motion-exit);
+}
+
+.cal__day {
+  border-radius: 4px;
+  transition-property: background-color;
+  transition-duration: var(--motion-duration-from-motion-curve-sm);
+  transition-timing-function: var(--motion-curve-sm);
+}</pre></div></section>
+
+    <footer class="doc-footer"><p>Motion System GGDS · Date Picker Handoff Web · 2026-07-06</p><p>DesignOps @ itti</p></footer>
+  </div>
+
+  <script>
+(() => {
+  const field = document.getElementById("field");
+  const trigger = document.getElementById("trigger");
+  const panel = document.getElementById("panel");
+  const valueEl = document.getElementById("value");
+  const grid = document.getElementById("grid");
+  const gridWrap = document.getElementById("gridWrap");
+  const titleBtn = document.getElementById("titleBtn");
+  const titleText = document.getElementById("titleText");
+  const monthPanel = document.getElementById("monthPanel");
+  const yearPanel = document.getElementById("yearPanel");
+  const yearGrid = document.getElementById("yearGrid");
+  const readout = document.getElementById("readout");
+  const lab = document.getElementById("motion-lab");
+  const btnCancelar = document.getElementById("btnCancelar");
+  const btnAceptar = document.getElementById("btnAceptar");
+  const footer = document.getElementById("footer");
+  const filledToggle = document.getElementById("filledToggle");
+  const errorToggle = document.getElementById("errorToggle");
+  const disabledToggle = document.getElementById("disabledToggle");
+  const reducedToggle = document.getElementById("reducedToggle");
+
+  const months = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+  const TODAY = new Date(2026, 6, 6);
+
+  let panelOpen = false;
+  let closeTimer = null;
+  let yearView = false;
+  let mode = "single";
+  let viewYear = 2026;
+  let viewMonth = 6;
+  let committed = null;
+  let committedRange = null;
+  let pending = null;
+  let rangeStart = null;
+  let rangeEnd = null;
+
+  const set = (label) => { readout.textContent = "State: " + label; };
+  const isReduced = () => reducedToggle.checked || lab.classList.contains("reduced-motion");
+  const sameDay = (a, b) => a && b && a.toDateString() === b.toDateString();
+  const fmt = (d) => [d.getDate(), d.getMonth() + 1, d.getFullYear()].map(n => String(n).padStart(2, "0")).join("/");
+  const fmtRange = (a, b) => fmt(a) + " – " + fmt(b);
+
+  function getMode() {
+    const r = document.querySelector('input[name="mode"]:checked');
+    return r ? r.value : "single";
+  }
+
+  function syncField() {
+    if (committedRange) {
+      const lo = committedRange.start < committedRange.end ? committedRange.start : committedRange.end;
+      const hi = committedRange.start < committedRange.end ? committedRange.end : committedRange.start;
+      valueEl.textContent = fmtRange(lo, hi);
+      valueEl.classList.remove("is-placeholder");
+    } else if (committed) {
+      valueEl.textContent = fmt(committed);
+      valueEl.classList.remove("is-placeholder");
+    } else {
+      valueEl.textContent = "00/00/0000";
+      valueEl.classList.add("is-placeholder");
+    }
+    filledToggle.checked = !!(committed || committedRange);
+  }
+
+  function syncModeUi() {
+    mode = getMode();
+    const isRange = mode === "range";
+    field.classList.toggle("is-range-mode", isRange);
+    footer.setAttribute("aria-hidden", isRange ? "false" : "true");
+    syncAceptarBtn();
+  }
+
+  function resetPending() {
+    pending = null;
+    rangeStart = null;
+    rangeEnd = null;
+    syncAceptarBtn();
+  }
+
+  function syncAceptarBtn() {
+    if (mode !== "range") {
+      btnAceptar.disabled = true;
+      return;
+    }
+    btnAceptar.disabled = !(rangeStart && rangeEnd);
+  }
+
+  function restoreDraftFromCommitted() {
+    resetPending();
+    if (committedRange) {
+      rangeStart = new Date(committedRange.start);
+      rangeEnd = new Date(committedRange.end);
+    }
+    syncAceptarBtn();
+  }
+
+  function inRange(cell) {
+    if (!rangeStart || !rangeEnd) return false;
+    const lo = Math.min(rangeStart.getTime(), rangeEnd.getTime());
+    const hi = Math.max(rangeStart.getTime(), rangeEnd.getTime());
+    const t = cell.getTime();
+    return t >= lo && t <= hi;
+  }
+
+  function setPanelOpen(open) {
+    panelOpen = open;
+    field.classList.toggle("is-panel-open", open);
+    field.classList.remove("is-panel-closing");
+    trigger.setAttribute("aria-expanded", open ? "true" : "false");
+    panel.setAttribute("aria-hidden", open ? "false" : "true");
+    if (open) {
+      mode = getMode();
+      resetPending();
+      if (committed) pending = new Date(committed);
+      if (committedRange) {
+        rangeStart = new Date(committedRange.start);
+        rangeEnd = new Date(committedRange.end);
+      }
+      renderGrid(false);
+      syncModeUi();
+      set("panel open · motion-curve-md");
+    } else {
+      syncModeUi();
+    }
+  }
+
+  function closePanel(apply) {
+    if (!panelOpen) return;
+    field.classList.add("is-panel-closing");
+    field.classList.remove("is-panel-open");
+    trigger.setAttribute("aria-expanded", "false");
+    panel.setAttribute("aria-hidden", "true");
+    panelOpen = false;
+    const dur = isReduced() ? 0 : 200;
+    clearTimeout(closeTimer);
+    closeTimer = setTimeout(() => {
+      field.classList.remove("is-panel-closing");
+      syncModeUi();
+      if (apply) {
+        if (mode === "single" && pending) {
+          committed = pending;
+          committedRange = null;
+        } else if (mode === "range" && rangeStart && rangeEnd) {
+          committedRange = { start: new Date(rangeStart), end: new Date(rangeEnd) };
+          committed = null;
+        }
+        syncField();
+        set(committedRange ? "filled range · motion-exit" : committed ? "filled · motion-exit" : "empty · motion-exit");
+      } else {
+        resetPending();
+        set(committedRange || committed ? "filled · dismiss sin cambios" : "empty · dismiss");
+      }
+    }, dur);
+  }
+
+  function openPanel() {
+    if (disabledToggle.checked) return;
+    if (panelOpen) return;
+    setPanelOpen(true);
+    set("panel entering · motion-curve-md");
+  }
+
+  function buildYearGrid() {
+    yearGrid.innerHTML = "";
+    months.forEach((label, i) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "cal__year-item";
+      b.textContent = label;
+      if (i === viewMonth) b.classList.add("is-selected");
+      b.addEventListener("click", () => {
+        viewMonth = i;
+        toggleYearView(false);
+        renderGrid(false);
+        set("month picked · year view close");
+      });
+      yearGrid.appendChild(b);
+    });
+  }
+
+  function toggleYearView(force) {
+    const next = typeof force === "boolean" ? force : !yearView;
+    if (next === yearView) return;
+    yearView = next;
+    field.classList.toggle("is-year-view", yearView);
+    titleBtn.setAttribute("aria-expanded", yearView ? "true" : "false");
+    if (isReduced()) {
+      monthPanel.classList.toggle("is-hidden", yearView);
+      yearPanel.classList.toggle("is-hidden", !yearView);
+      yearPanel.setAttribute("aria-hidden", yearView ? "false" : "true");
+      if (yearView) buildYearGrid();
+      return;
+    }
+    monthPanel.classList.remove("is-hidden");
+    yearPanel.classList.remove("is-hidden");
+    yearPanel.setAttribute("aria-hidden", yearView ? "false" : "true");
+    if (yearView) buildYearGrid();
+    monthPanel.style.opacity = yearView ? "1" : "0";
+    yearPanel.style.opacity = yearView ? "0" : "1";
+    requestAnimationFrame(() => {
+      monthPanel.style.opacity = yearView ? "0" : "1";
+      yearPanel.style.opacity = yearView ? "1" : "0";
+      setTimeout(() => {
+        monthPanel.classList.toggle("is-hidden", yearView);
+        yearPanel.classList.toggle("is-hidden", !yearView);
+        monthPanel.style.opacity = "";
+        yearPanel.style.opacity = "";
+        set(yearView ? "year view · motion-curve-md" : "month view");
+      }, isReduced() ? 0 : 300);
+    });
+  }
+
+  function makeDay(cellDate, interactive) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "cal__day";
+    const num = document.createElement("span");
+    num.className = "cal__day-num";
+    num.textContent = String(cellDate.getDate());
+    b.appendChild(num);
+    if (sameDay(cellDate, TODAY)) {
+      b.classList.add("is-today");
+      const dot = document.createElement("span");
+      dot.className = "cal__day-dot";
+      dot.setAttribute("aria-hidden", "true");
+      b.appendChild(dot);
+    }
+    if (cellDate.getMonth() !== viewMonth) b.classList.add("is-out");
+    if (mode === "single") {
+      const sel = pending || committed;
+      if (sameDay(cellDate, sel)) b.classList.add("is-active");
+    } else {
+      if (sameDay(cellDate, rangeStart)) b.classList.add("is-range-start");
+      if (sameDay(cellDate, rangeEnd)) b.classList.add("is-range-end");
+      if (inRange(cellDate) && !sameDay(cellDate, rangeStart) && !sameDay(cellDate, rangeEnd)) b.classList.add("is-range");
+    }
+    if (!interactive) b.disabled = true;
+    else {
+      b.addEventListener("click", (e) => {
+        e.stopPropagation();
+        onDayPick(cellDate);
+      });
+    }
+    return b;
+  }
+
+  function buildGrid() {
+    const first = new Date(viewYear, viewMonth, 1);
+    const start = first.getDay();
+    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+    const prevDays = new Date(viewYear, viewMonth, 0).getDate();
+    grid.innerHTML = "";
+    for (let i = 0; i < start; i++) {
+      const d = prevDays - start + i + 1;
+      grid.appendChild(makeDay(new Date(viewYear, viewMonth - 1, d), false));
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      grid.appendChild(makeDay(new Date(viewYear, viewMonth, d), true));
+    }
+    const total = start + daysInMonth;
+    const trailing = total % 7 === 0 ? 0 : 7 - (total % 7);
+    for (let d = 1; d <= trailing; d++) {
+      grid.appendChild(makeDay(new Date(viewYear, viewMonth + 1, d), false));
+    }
+  }
+
+  function renderGrid(animate, direction) {
+    titleText.textContent = months[viewMonth] + " " + viewYear;
+    if (!animate || isReduced()) {
+      buildGrid();
+      gridWrap.classList.remove("is-animating-out");
+      return;
+    }
+    gridWrap.style.setProperty("--slide-dir", (direction || 1) * -12 + "px");
+    gridWrap.classList.add("is-animating-out");
+    setTimeout(() => {
+      buildGrid();
+      gridWrap.classList.remove("is-animating-out");
+      set("month changed · motion-curve-md");
+    }, isReduced() ? 0 : 300);
+  }
+
+  function onDayPick(cellDate) {
+    mode = getMode();
+    if (mode === "single") {
+      pending = cellDate;
+      renderGrid(false);
+      set("day selected · closing · motion-exit");
+      closePanel(true);
+      return;
+    }
+    if (!rangeStart || (rangeStart && rangeEnd)) {
+      rangeStart = cellDate;
+      rangeEnd = null;
+      renderGrid(false);
+      syncAceptarBtn();
+      set("range start · motion-curve-sm");
+      return;
+    }
+    rangeEnd = cellDate;
+    renderGrid(false);
+    syncAceptarBtn();
+    set("range complete · fill instant · esperando Aceptar");
+  }
+
+  btnCancelar.addEventListener("click", (e) => {
+    e.stopPropagation();
+    restoreDraftFromCommitted();
+    renderGrid(false);
+    set("cancelar · borrador limpiado · input sin cambios");
+  });
+  btnAceptar.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (!rangeStart || !rangeEnd) return;
+    closePanel(true);
+  });
+
+  trigger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (panelOpen) closePanel(false);
+    else openPanel();
+  });
+  trigger.addEventListener("focus", () => field.classList.add("is-focused"));
+  trigger.addEventListener("blur", () => field.classList.remove("is-focused"));
+  field.addEventListener("mouseenter", () => field.classList.add("is-hovered"));
+  field.addEventListener("mouseleave", () => field.classList.remove("is-hovered"));
+  titleBtn.addEventListener("click", (e) => { e.stopPropagation(); toggleYearView(); });
+  document.getElementById("prevBtn").addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (yearView) return;
+    viewMonth--;
+    if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+    renderGrid(true, -1);
+  });
+  document.getElementById("nextBtn").addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (yearView) return;
+    viewMonth++;
+    if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+    renderGrid(true, 1);
+  });
+  document.addEventListener("click", (e) => {
+    if (!field.contains(e.target) && panelOpen) closePanel(false);
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && panelOpen) closePanel(false);
+  });
+  document.querySelectorAll('input[name="mode"]').forEach(r => r.addEventListener("change", () => {
+    mode = getMode();
+    resetPending();
+    syncModeUi();
+    if (panelOpen) renderGrid(false);
+  }));
+  filledToggle.addEventListener("change", (e) => {
+    if (e.target.checked) {
+      committed = new Date(2026, 6, 15);
+      committedRange = null;
+    } else {
+      committed = null;
+      committedRange = null;
+    }
+    syncField();
+  });
+  errorToggle.addEventListener("change", (e) => field.classList.toggle("is-error", e.target.checked));
+  disabledToggle.addEventListener("change", (e) => {
+    field.classList.toggle("is-disabled", e.target.checked);
+    if (e.target.checked && panelOpen) closePanel(false);
+  });
+  reducedToggle.addEventListener("change", (e) => lab.classList.toggle("reduced-motion", e.target.checked));
+
+  renderGrid(false);
+  syncModeUi();
+  syncField();
+  set("empty");
+})();
+  </script>
+</body>
+</html>
