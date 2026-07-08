@@ -1,0 +1,174 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Motion Handoff — Toast (Web)</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#fff;--bg-subtle:#f7f7f7;--border:#e8e8ec;--text:#252529;--muted:#6c6c78;--accent:#55555e;--radius:12px;--radius-sm:6px;--sans:'Inter',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--sans);font-size:14px;line-height:1.6;color:var(--text)}
+.page{max-width:920px;margin:0 auto;padding:2rem 1.5rem}.hero h1{font-size:3rem;font-weight:800}
+.hero-meta{display:flex;align-items:center;gap:1rem;color:var(--muted);margin:.6rem 0 1rem}
+.owner-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.3rem .65rem .3rem .3rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:999px;font-size:.82rem}
+.owner-avatar-img{width:28px;height:28px;border-radius:50%;object-fit:cover}
+.pill{display:inline-block;padding:.3rem .6rem;border:1px solid var(--border);border-radius:999px;background:var(--bg-subtle);font-size:.75rem}
+.pill.primary{border-color:rgba(37,37,41,.18);background:rgba(37,37,41,.06);color:var(--accent)}
+section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35rem;margin-bottom:.75rem}
+.motion-lab-disclaimer{font-size:.82rem;color:var(--muted);margin-bottom:.75rem;padding:.5rem .75rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.hint{font-size:.88rem;color:var(--muted);margin-bottom:1rem}
+.controls{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1rem;align-items:center}.controls label{cursor:pointer}
+.controls button{padding:.45rem .65rem;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;font:inherit;font-size:.84rem}
+.controls select{padding:.35rem .5rem;border:1px solid var(--border);border-radius:6px;background:#fff;font:inherit;font-size:.84rem}
+.readout{margin-top:.75rem;font-size:.78rem;color:var(--muted)}
+.implementation{margin-top:.75rem;border:1px solid var(--border);border-radius:var(--radius-sm);padding:.8rem;background:#fff}.implementation strong{display:block;font-size:.8rem;margin-bottom:.35rem;color:var(--muted)}.implementation pre{margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.75rem;line-height:1.45;white-space:pre-wrap;color:#404047}
+.mapping{margin-top:.75rem;border:1px solid rgba(37,37,41,.18);border-radius:var(--radius-sm);padding:.8rem;font-size:.78rem;color:var(--muted);line-height:1.5;background:rgba(37,37,41,.04)}
+.callout{border-left:4px solid var(--accent);background:rgba(37,37,41,.06);padding:.8rem 1rem;border-radius:0 6px 6px 0;margin-top:1rem;font-size:.88rem;color:#404047}
+.companion{margin-top:.75rem;font-size:.88rem}.companion a{color:var(--accent)}
+.doc-footer{text-align:center;padding:1.2rem 0;color:#8f8f9c;font-size:.8rem}
+
+
+.stage{position:relative;min-height:320px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.toast-viewport{position:absolute;right:24px;bottom:24px;width:320px;max-width:calc(100% - 48px);pointer-events:none}
+.toast{display:flex;gap:12px;align-items:flex-start;padding:8px 12px 12px 16px;width:320px;max-width:100%;background:#fff;border:.5px solid #a0a0aa;border-radius:8px;box-shadow:0 0 12px rgba(37,37,41,.08);opacity:0;transform:translateY(100%);pointer-events:none;touch-action:pan-y}
+.toast-badge{flex:0 0 auto;width:24px;height:24px;border-radius:999px;display:flex;align-items:center;justify-content:center;padding:4px;margin-top:4px}
+.badge-icon-frame{position:relative;display:flex;align-items:center;justify-content:center;width:16px;height:16px;flex-shrink:0;line-height:0}
+.badge-icon-frame svg{display:block;width:16px;height:16px;flex-shrink:0}
+.toast.semantic-info{border-color:#004799}.toast.semantic-info .toast-badge{background:#1d85fc}
+.toast.semantic-success{border-color:#146542}.toast.semantic-success .toast-badge{background:#16a366}
+.toast.semantic-warning{border-color:#664400}.toast.semantic-warning .toast-badge{background:#ea9e06}
+.toast.semantic-error{border-color:#d3315f}.toast.semantic-error .toast-badge{background:#d3315f}
+.toast-link[hidden]{display:none!important}
+.toast-body{flex:1;min-width:0;padding-top:8px}
+.toast-title{font-size:16px;font-weight:600;line-height:24px;color:#252529;margin:0 0 2px}
+.toast-desc{font-size:14px;line-height:20px;color:#252529;margin:0}
+.toast-link{display:inline-block;margin-top:4px;padding:12px 0;font-size:12px;color:#252529;text-decoration:underline;background:none;border:none;cursor:pointer;font-family:inherit}
+.toast-close{flex:0 0 36px;width:36px;height:36px;border:none;background:transparent;border-radius:4px;cursor:pointer;color:#6c6c78;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center}
+.toast-close:hover{background:#f7f7f7}
+.toast.is-dragging{transition:none!important}
+.lifecycle{margin-top:.5rem;font-size:.8rem;color:var(--muted)}
+
+
+.toast.is-entering{opacity:1;transform:translateY(0);pointer-events:auto;transition:opacity 500ms cubic-bezier(0.2,0,0,1),transform 500ms cubic-bezier(0.2,0,0,1)}
+.toast.is-exiting{opacity:0;transform:translateY(100%);pointer-events:none;transition:opacity 300ms cubic-bezier(0.4,0,1,1),transform 300ms cubic-bezier(0.4,0,1,1)}
+.toast.is-hidden{opacity:0;transform:translateY(100%);transition:none}
+#motion-lab.reduced-motion .toast,#motion-lab.reduced-motion .toast.is-entering,#motion-lab.reduced-motion .toast.is-exiting{transition:none!important}
+
+</style></head><body><div class="page">
+<header class="hero"><h1>Toast</h1><div class="hero-meta"><span class="owner-badge"><img class="owner-avatar-img" src="data:image/jpeg;base64,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" alt="Nehuén Benitez"/> Nehuén Benitez</span><span>Web · GGDS · 2026-06-24</span></div><span class="pill primary">motion-curve-lg · motion-exit</span></header>
+<section id="motion-lab"><h2>Preview de motion</h2>
+<p class="motion-lab-disclaimer">Motion lab — no es el componente de la librería. Validá motion y tokens; la UI final está en Figma.</p>
+<p class="hint">Entrada · Salida · Reset. Arrastrá horizontalmente el toast para dismiss — sale por el costado. Por defecto sin Action Link (auto-dismiss 6s).</p>
+<div class="stage"><div class="toast-viewport"><article class="toast is-hidden semantic-info" id="toast" role="status"><span class="toast-badge" aria-hidden="true"><span id="toastBadgeIcon"></span></span>
+<div class="toast-body"><p class="toast-title">Title</p><p class="toast-desc">Description</p><button type="button" class="toast-link" id="actionLink" hidden>Action link</button></div>
+<button type="button" class="toast-close" id="closeBtn" aria-label="Cerrar">×</button></article></div></div>
+<div class="controls"><button type="button" id="btnEnter">Entrada</button><button type="button" id="btnExit">Salida</button><button type="button" id="btnReset">Reset</button>
+<label>Semántica <select id="semanticSelect"><option value="info">Information</option><option value="success">Success</option><option value="warning">Warning</option><option value="error">Error</option></select></label>
+<label><input type="checkbox" id="actionLinkToggle"/> Action Link (sin timer 6s)</label><label><input type="checkbox" id="reducedToggle"/> prefers-reduced-motion</label></div>
+<div class="readout">Estado: <span id="readout">hidden</span></div>
+<p class="lifecycle" id="lifecycle">Timer auto-dismiss: —</p>
+<div class="mapping"><strong>Token Mapping</strong><br/>Entrada: motion-curve-lg → easing-emphasis → cubic-bezier(0.2, 0, 0, 1) → duration-500 (500ms)<br/>Salida estándar: motion-exit → easing-accelerate → 300ms · translateY<br/>Salida swipe: motion-exit → 300ms · translateX</div></section>
+<div class="implementation"><strong>Implementación CSS</strong><pre>.toast {
+  transition-property: opacity, transform;
+  transition-duration: var(--motion-duration-from-motion-curve-lg);
+  transition-timing-function: var(--motion-curve-lg);
+  opacity: 0;
+  transform: translateY(100%);
+}
+
+.toast.is-entering {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast.is-exiting {
+  transition-duration: var(--motion-duration-from-motion-exit);
+  transition-timing-function: var(--motion-exit);
+  opacity: 0;
+  transform: translateY(100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast,
+  .toast.is-entering,
+  .toast.is-exiting {
+    transition: none;
+  }
+}</pre></div>
+<footer class="doc-footer">Motion System GGDS · Toast Handoff Web · 2026-06-24<br/>DesignOps @ itti</footer>
+</div><script>
+(()=>{
+  const lab=document.getElementById('motion-lab'),toast=document.getElementById('toast'),toastBadgeIcon=document.getElementById('toastBadgeIcon'),readout=document.getElementById('readout'),lifecycle=document.getElementById('lifecycle');
+  const actionLink=document.getElementById('actionLink'),actionLinkToggle=document.getElementById('actionLinkToggle'),reducedToggle=document.getElementById('reducedToggle'),semanticSelect=document.getElementById('semanticSelect');
+  function dsIcon(key){
+    const icons={
+      info:'<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="4.375" r="1.125" fill="#fff"/><rect x="7.125" y="6.75" width="1.75" height="5.5" rx=".875" fill="#fff"/></svg>',
+      success:'<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path fill="#fff" d="M6.05 10.52 3.4 7.87a.85.85 0 1 1 1.2-1.2l1.45 1.45 3.85-3.85a.85.85 0 1 1 1.2 1.2L6.05 10.52Z"/></svg>',
+      warning:'<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="7.35" y="4.5" width="1.3" height="5.75" rx=".3" fill="#fff"/><circle cx="8" cy="12.15" r=".9" fill="#fff"/></svg>',
+      error:'<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="7.35" y="4.5" width="1.3" height="5.75" rx=".3" fill="#fff"/><circle cx="8" cy="12.15" r=".9" fill="#fff"/></svg>'
+    };
+    return '<span class="badge-icon-frame">'+icons[key]+'</span>';
+  }
+  const SEM={info:{cls:'semantic-info',glyph:'info'},success:{cls:'semantic-success',glyph:'success'},warning:{cls:'semantic-warning',glyph:'warning'},error:{cls:'semantic-error',glyph:'error'}};
+  let dismissTimer=null,isPaused=false,dragStartX=null,dragOffsetX=0;
+  const ENTER_MS=500,EXIT_MS=300,AUTO_DISMISS_MS=6000;
+  const EXIT_CURVE='cubic-bezier(0.4,0,1,1)';
+  function reduced(){return reducedToggle.checked;}
+  function syncActionLink(){actionLink.hidden=!actionLinkToggle.checked;}
+  function applySemantic(){
+    const s=SEM[semanticSelect.value];
+    toast.classList.remove('semantic-info','semantic-success','semantic-warning','semantic-error');
+    toast.classList.add(s.cls);
+    toastBadgeIcon.innerHTML=dsIcon(s.glyph);
+  }
+  function setPhase(phase,cls){toast.classList.remove('is-hidden','is-entering','is-exiting');if(cls)toast.classList.add(cls);readout.textContent=phase;}
+  function clearTimer(){if(dismissTimer){clearTimeout(dismissTimer);dismissTimer=null;}isPaused=false;}
+  function scheduleDismiss(){clearTimer();if(actionLinkToggle.checked){lifecycle.textContent='Timer auto-dismiss: desactivado (Action Link)';return;}lifecycle.textContent='Timer auto-dismiss: 6s tras fin de entrada';dismissTimer=setTimeout(()=>runExit(false),AUTO_DISMISS_MS);}
+  function clearInlineMotion(){toast.style.transition='';toast.style.transform='';toast.style.opacity='';}
+  function applyDrag(){if(toast.classList.contains('is-entering')){toast.style.transform='translateY(0) translateX('+dragOffsetX+'px)';}}
+  function runExit(swipe){
+    clearTimer();
+    lifecycle.textContent='Timer auto-dismiss: —';
+    if(swipe){
+      const dir=dragOffsetX>=0?1:-1,targetX=dir*(toast.offsetWidth+80);
+      toast.classList.remove('is-hidden','is-entering','is-exiting');
+      toast.style.pointerEvents='auto';
+      toast.style.transform='translateY(0) translateX('+dragOffsetX+'px)';
+      toast.style.opacity='1';
+      toast.style.transition=reduced()?'none':'opacity '+EXIT_MS+'ms '+EXIT_CURVE+', transform '+EXIT_MS+'ms '+EXIT_CURVE;
+      requestAnimationFrame(()=>{toast.style.opacity='0';toast.style.transform='translateY(0) translateX('+targetX+'px)';});
+      setTimeout(()=>{clearInlineMotion();dragOffsetX=0;setPhase('hidden','is-hidden');},reduced()?0:EXIT_MS);
+      return;
+    }
+    dragOffsetX=0;clearInlineMotion();
+    setPhase('exiting','is-exiting');
+    setTimeout(()=>setPhase('hidden','is-hidden'),reduced()?0:EXIT_MS);
+  }
+  function runEnter(){applySemantic();clearTimer();dragOffsetX=0;clearInlineMotion();setPhase('entering','is-entering');setTimeout(()=>{if(toast.classList.contains('is-entering'))scheduleDismiss();},reduced()?0:ENTER_MS);}
+  document.getElementById('btnEnter').onclick=runEnter;
+  document.getElementById('btnExit').onclick=()=>runExit(false);
+  document.getElementById('btnReset').onclick=()=>{clearTimer();dragOffsetX=0;clearInlineMotion();setPhase('hidden','is-hidden');lifecycle.textContent='Timer auto-dismiss: —';};
+  const closeBtn=document.getElementById('closeBtn');
+  closeBtn.addEventListener('mousedown',(e)=>e.stopPropagation());
+  closeBtn.onclick=(e)=>{e.stopPropagation();runExit(false);};
+  actionLinkToggle.onchange=()=>{syncActionLink();if(toast.classList.contains('is-entering'))scheduleDismiss();};
+  reducedToggle.onchange=()=>lab.classList.toggle('reduced-motion',reducedToggle.checked);
+  semanticSelect.onchange=applySemantic;
+  toast.addEventListener('pointerdown',(e)=>{
+    if(!toast.classList.contains('is-entering'))return;
+    if(e.target.closest('#closeBtn,#actionLink'))return;
+    dragStartX=e.clientX;toast.classList.add('is-dragging');toast.setPointerCapture(e.pointerId);
+    if(dismissTimer&&!actionLinkToggle.checked){clearTimeout(dismissTimer);dismissTimer=null;isPaused=true;lifecycle.textContent='Timer auto-dismiss: pausado (long press)';}
+  });
+  toast.addEventListener('pointermove',(e)=>{if(dragStartX===null)return;dragOffsetX=e.clientX-dragStartX;applyDrag();});
+  toast.addEventListener('pointerup',()=>{
+    if(dragStartX===null)return;
+    toast.classList.remove('is-dragging');
+    if(Math.abs(dragOffsetX)>80)runExit(true);
+    else{dragOffsetX=0;clearInlineMotion();if(isPaused&&!actionLinkToggle.checked)scheduleDismiss();}
+    dragStartX=null;
+  });
+  toast.addEventListener('mousedown',(e)=>{
+    if(e.target.closest('#closeBtn,#actionLink'))return;
+    if(!dismissTimer||actionLinkToggle.checked)return;
+    clearTimeout(dismissTimer);dismissTimer=null;isPaused=true;lifecycle.textContent='Timer auto-dismiss: pausado (long press)';
+  });
+  window.addEventListener('mouseup',()=>{if(!isPaused)return;isPaused=false;if(toast.classList.contains('is-entering'))scheduleDismiss();});
+  actionLinkToggle.checked=false;syncActionLink();applySemantic();setPhase('hidden','is-hidden');
+})();
+</script></body></html>

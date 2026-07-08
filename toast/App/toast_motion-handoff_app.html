@@ -1,0 +1,267 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Motion Handoff — Toast (App)</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#fff;--bg-subtle:#f7f7f7;--border:#e8e8ec;--text:#252529;--muted:#6c6c78;--accent:#55555e;--radius:12px;--radius-sm:6px;--sans:'Inter',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--sans);font-size:14px;line-height:1.6;color:var(--text)}
+.page{max-width:920px;margin:0 auto;padding:2rem 1.5rem}.hero h1{font-size:3rem;font-weight:800}
+.hero-meta{display:flex;align-items:center;gap:1rem;color:var(--muted);margin:.6rem 0 1rem}
+.owner-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.3rem .65rem .3rem .3rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:999px;font-size:.82rem}
+.owner-avatar-img{width:28px;height:28px;border-radius:50%;object-fit:cover}
+.pill{display:inline-block;padding:.3rem .6rem;border:1px solid var(--border);border-radius:999px;background:var(--bg-subtle);font-size:.75rem}
+.pill.primary{border-color:rgba(37,37,41,.18);background:rgba(37,37,41,.06);color:var(--accent)}
+section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35rem;margin-bottom:.75rem}
+.motion-lab-disclaimer{font-size:.82rem;color:var(--muted);margin-bottom:.75rem;padding:.5rem .75rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.hint{font-size:.88rem;color:var(--muted);margin-bottom:1rem}
+.controls{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1rem}.controls label{cursor:pointer}
+.controls button{padding:.45rem .65rem;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;font:inherit;font-size:.84rem}
+.controls select{padding:.35rem .5rem;border:1px solid var(--border);border-radius:6px;background:#fff;font:inherit;font-size:.84rem}
+.readout{margin-top:.75rem;font-size:.78rem;color:var(--muted)}
+.haptic-readout{margin-top:.35rem;font-size:.78rem;color:var(--muted)}
+.implementation{margin-top:.75rem;border:1px solid var(--border);border-radius:var(--radius-sm);padding:.8rem;background:#fff}.implementation strong{display:block;font-size:.8rem;margin-bottom:.35rem;color:var(--muted)}.implementation pre{margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.75rem;line-height:1.45;white-space:pre-wrap;color:#404047}
+.mapping{margin-top:.75rem;border:1px solid rgba(37,37,41,.18);border-radius:var(--radius-sm);padding:.8rem;font-size:.78rem;color:var(--muted);line-height:1.5;background:rgba(37,37,41,.04)}
+.callout{border-left:4px solid var(--accent);background:rgba(37,37,41,.06);padding:.8rem 1rem;border-radius:0 6px 6px 0;margin-top:1rem;font-size:.88rem;color:#404047}
+.companion{margin-top:.75rem;font-size:.88rem}.companion a{color:var(--accent)}
+.doc-footer{text-align:center;padding:1.2rem 0;color:#8f8f9c;font-size:.8rem}
+
+
+.stage{position:relative;min-height:320px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.toast-viewport{position:absolute;right:24px;bottom:24px;width:320px;max-width:calc(100% - 48px);pointer-events:none}
+.toast{display:flex;gap:12px;align-items:flex-start;padding:8px 12px 12px 16px;width:320px;max-width:100%;background:#fff;border:.5px solid #a0a0aa;border-radius:8px;box-shadow:0 0 12px rgba(37,37,41,.08);opacity:0;transform:translateY(100%);pointer-events:none;touch-action:pan-y}
+.toast-badge{flex:0 0 auto;width:24px;height:24px;border-radius:999px;display:flex;align-items:center;justify-content:center;padding:2px;margin-top:8px}
+.badge-icon-frame{position:relative;display:flex;align-items:center;justify-content:center;width:16px;height:16px;flex-shrink:0;line-height:0}
+.badge-icon-frame svg{display:block;width:16px;height:16px;flex-shrink:0}
+.toast.semantic-info{border-color:#004799}.toast.semantic-info .toast-badge{background:#1d85fc}
+.toast.semantic-success{border-color:#146542}.toast.semantic-success .toast-badge{background:#16a366}
+.toast.semantic-warning{border-color:#664400}.toast.semantic-warning .toast-badge{background:#ea9e06}
+.toast.semantic-error{border-color:#d3315f}.toast.semantic-error .toast-badge{background:#d3315f}
+.toast-link[hidden]{display:none!important}
+.toast-body{flex:1;min-width:0;padding-top:8px}
+.toast-title{font-size:16px;font-weight:600;line-height:24px;color:#252529;margin:0 0 2px}
+.toast-desc{font-size:14px;line-height:20px;color:#252529;margin:0}
+.toast-link{display:inline-block;margin-top:4px;padding:12px 0;font-size:12px;color:#252529;text-decoration:underline;background:none;border:none;cursor:pointer;font-family:inherit}
+.toast-close{flex:0 0 36px;width:36px;height:36px;border:none;background:transparent;border-radius:4px;cursor:pointer;color:#6c6c78;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center}
+.toast-close:hover{background:#f7f7f7}
+.toast.is-dragging{transition:none!important}
+.lifecycle{margin-top:.5rem;font-size:.8rem;color:var(--muted)}
+
+
+#motion-lab.reduced-motion .toast{transition:none!important}
+
+</style></head><body><div class="page">
+<header class="hero"><h1>Toast</h1><div class="hero-meta"><span class="owner-badge"><img class="owner-avatar-img" src="data:image/jpeg;base64,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" alt="Nehuén Benitez"/> Nehuén Benitez</span><span>App · GGDS · 2026-06-24</span></div><span class="pill primary">motion-spring-lg</span></header>
+<section id="motion-lab"><h2>Preview de motion</h2>
+<p class="motion-lab-disclaimer">Motion lab — no es el componente de la librería. Validá motion y tokens; la UI final está en Figma.</p>
+<p class="hint">Entrada · Salida · Reset. Arrastrá horizontalmente el toast para dismiss — sale por el costado. Por defecto sin Action Link (auto-dismiss 6s).</p>
+<div class="stage"><div class="toast-viewport"><article class="toast semantic-info" id="toast" role="status"><span class="toast-badge" aria-hidden="true"><span id="toastBadgeIcon"></span></span>
+<div class="toast-body"><p class="toast-title">Title</p><p class="toast-desc">Description</p><button type="button" class="toast-link" id="actionLink" hidden>Action link</button></div>
+<button type="button" class="toast-close" id="closeBtn" aria-label="Cerrar">×</button></article></div></div>
+<div class="controls"><button type="button" id="btnEnter">Entrada</button><button type="button" id="btnExit">Salida</button><button type="button" id="btnReset">Reset</button>
+<label>Semántica <select id="semanticSelect"><option value="info">Information</option><option value="success">Success</option><option value="warning">Warning</option><option value="error">Error</option></select></label>
+<label><input type="checkbox" id="actionLinkToggle"/> Action Link (sin timer)</label><label><input type="checkbox" id="reducedToggle"/> disableAnimations</label></div>
+<div class="callout">Este preview simula el spring en el navegador. No es Flutter. Implementá con los parámetros del Token Mapping.</div>
+<div class="readout">Estado: <span id="readout">hidden</span></div>
+<div class="haptic-readout">Último haptic: <span id="hapticReadout">—</span></div>
+<p class="lifecycle" id="lifecycle">Timer: —</p>
+<div class="mapping"><strong>Token Mapping</strong><br/>Entrada: motion-spring-lg → mass 1.0 · stiffness 200 · damping 30<br/>Salida estándar: paridad motion-exit → Curves.easeIn · 300ms<br/>Salida swipe: motion-spring-lg · translateX</div></section>
+<section><h2>Implementación Dart (Flutter)</h2><div class="implementation"><pre>const motionSpringLg = SpringDescription(
+  mass: 1.0,
+  stiffness: 200,
+  damping: 30,
+);
+
+final disableAnimations = MediaQuery.of(context).disableAnimations;
+
+Future<void> showToast(ToastData data) async {
+  if (disableAnimations) {
+    toastController.setVisible();
+    return;
+  }
+
+  await toastController.animateIn(
+    spring: motionSpringLg,
+    opacity: const Tuple2(0.0, 1.0),
+    translateY: const Tuple2(1.0, 0.0),
+  );
+}
+
+Future<void> dismissToast({required DismissReason reason}) async {
+  if (disableAnimations) {
+    toastController.setHidden();
+    return;
+  }
+
+  await toastController.animateOut(
+    curve: Curves.easeIn,
+    duration: const Duration(milliseconds: 300),
+    opacity: const Tuple2(1.0, 0.0),
+    translateY: const Tuple2(0.0, 1.0),
+  );
+}
+
+Future<void> dismissToastSwipe({
+  required DismissReason reason,
+  required double dragOffsetX,
+}) async {
+  if (disableAnimations) {
+    toastController.setHidden();
+    return;
+  }
+
+  final sign = dragOffsetX >= 0 ? 1.0 : -1.0;
+  await toastController.animateOut(
+    spring: motionSpringLg,
+    opacity: const Tuple2(1.0, 0.0),
+    translateX: Tuple2(dragOffsetX, sign * toastWidth),
+    // translateY se mantiene en 0 — salida lateral
+  );
+}
+
+// Swipe: seguir gesto en translateX; al threshold → dismissToastSwipe(...)
+// Tap X / auto-dismiss: dismissToast() con translateY
+// Long press: pausar timer auto-dismiss</pre></div></section>
+<section class="haptics-section"><h2>Haptics</h2><div class="mapping"><strong>Mapping por variante</strong><br/>Information → none<br/>Success → haptic-feedback-success → lightImpact()<br/>Warning → haptic-feedback-warning → mediumImpact()<br/>Error → haptic-feedback-error → heavyImpact() (solo crítico)</div><div class="implementation"><pre>ToastSemantic semantic = toastData.semantic ?? ToastSemantic.information;
+
+HapticFeedback? hapticForSemantic(ToastSemantic semantic) {
+  switch (semantic) {
+    case ToastSemantic.information:
+      return null; // none
+    case ToastSemantic.success:
+      return () => HapticFeedback.lightImpact();
+    case ToastSemantic.warning:
+      return () => HapticFeedback.mediumImpact();
+    case ToastSemantic.error:
+      return () => HapticFeedback.heavyImpact();
+  }
+}
+
+Future<void> onToastShown() async {
+  final trigger = hapticForSemantic(semantic);
+  if (trigger != null) trigger();
+}</pre></div></section>
+<footer class="doc-footer">Motion System GGDS · Toast Handoff App · 2026-06-24<br/>DesignOps @ itti</footer>
+</div><script>
+(()=>{
+  const STIFFNESS=200,DAMPING=30,MASS=1,EXIT_MS=300,EXIT_CURVE='cubic-bezier(0.4,0,1,1)';
+  const lab=document.getElementById('motion-lab');
+  const toast=document.getElementById('toast');
+  const toastBadgeIcon=document.getElementById('toastBadgeIcon');
+  const readout=document.getElementById('readout');
+  const hapticReadout=document.getElementById('hapticReadout');
+  const lifecycle=document.getElementById('lifecycle');
+  const actionLink=document.getElementById('actionLink');
+  const reducedToggle=document.getElementById('reducedToggle');
+  const actionLinkToggle=document.getElementById('actionLinkToggle');
+  const semanticSelect=document.getElementById('semanticSelect');
+  function dsIcon(key){
+    const icons={
+      info:'<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="4.375" r="1.125" fill="#fff"/><rect x="7.125" y="6.75" width="1.75" height="5.5" rx=".875" fill="#fff"/></svg>',
+      success:'<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path fill="#fff" d="M6.05 10.52 3.4 7.87a.85.85 0 1 1 1.2-1.2l1.45 1.45 3.85-3.85a.85.85 0 1 1 1.2 1.2L6.05 10.52Z"/></svg>',
+      warning:'<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="7.35" y="4.5" width="1.3" height="5.75" rx=".3" fill="#fff"/><circle cx="8" cy="12.15" r=".9" fill="#fff"/></svg>',
+      error:'<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="7.35" y="4.5" width="1.3" height="5.75" rx=".3" fill="#fff"/><circle cx="8" cy="12.15" r=".9" fill="#fff"/></svg>'
+    };
+    return '<span class="badge-icon-frame">'+icons[key]+'</span>';
+  }
+  const SEM={
+    info:{cls:'semantic-info',glyph:'info',haptic:null,label:'none'},
+    success:{cls:'semantic-success',glyph:'success',haptic:'haptic-feedback-success · lightImpact()',label:'lightImpact'},
+    warning:{cls:'semantic-warning',glyph:'warning',haptic:'haptic-feedback-warning · mediumImpact()',label:'mediumImpact'},
+    error:{cls:'semantic-error',glyph:'error',haptic:'haptic-feedback-error · heavyImpact()',label:'heavyImpact'}
+  };
+  let dismissTimer=null,isPaused=false,phase='hidden';
+  let opacity=0,translateY=1,dragStartX=null,dragOffsetX=0;
+  const rafOp={v:null},rafY={v:null},rafX={v:null};
+
+  function noAnim(){return reducedToggle.checked;}
+  function applySemantic(){
+    const s=SEM[semanticSelect.value];
+    toast.classList.remove('semantic-info','semantic-success','semantic-warning','semantic-error');
+    toast.classList.add(s.cls);
+    toastBadgeIcon.innerHTML=dsIcon(s.glyph);
+  }
+  function setPhase(next){phase=next;readout.textContent=next;}
+  function applyStyles(){
+    toast.style.opacity=String(opacity);
+    toast.style.transform='translateY(calc('+translateY+' * 100%)) translateX('+dragOffsetX+'px)';
+    toast.style.pointerEvents=opacity>0.05?'auto':'none';
+  }
+  function cancelSprings(){[rafOp,rafY,rafX].forEach(r=>{if(r.v)cancelAnimationFrame(r.v);r.v=null;});}
+  function springTo(from,to,setter,done,rafRef){
+    if(noAnim()){setter(to);if(done)done();return;}
+    if(rafRef.v)cancelAnimationFrame(rafRef.v);
+    let x=from,v=0,last=performance.now();
+    const frame=(now)=>{
+      if(noAnim()){setter(to);rafRef.v=null;if(done)done();return;}
+      const dt=Math.min((now-last)/1000,.064);last=now;
+      const a=(-STIFFNESS*(x-to)-DAMPING*v)/MASS;v+=a*dt;x+=v*dt;setter(x);
+      if(Math.abs(x-to)<.001&&Math.abs(v)<.001){setter(to);rafRef.v=null;if(done)done();return;}
+      rafRef.v=requestAnimationFrame(frame);
+    };
+    rafRef.v=requestAnimationFrame(frame);
+  }
+  function clearTimer(){if(dismissTimer){clearTimeout(dismissTimer);dismissTimer=null;}isPaused=false;}
+  function syncActionLink(){actionLink.hidden=!actionLinkToggle.checked;}
+  function scheduleDismiss(){
+    clearTimer();
+    if(actionLinkToggle.checked){lifecycle.textContent='Timer: off (Action Link)';return;}
+    lifecycle.textContent='Timer: 6s post-entrada';
+    dismissTimer=setTimeout(()=>runExit('auto-dismiss'),6000);
+  }
+  function fireHaptic(){
+    const s=SEM[semanticSelect.value];
+    if(!s.haptic){hapticReadout.textContent='none';return;}
+    hapticReadout.textContent=s.haptic+' · '+new Date().toLocaleTimeString();
+  }
+  function runEnter(){
+    applySemantic();
+    cancelSprings();clearTimer();dragOffsetX=0;translateY=1;toast.style.transition='none';setPhase('entering');
+    if(noAnim()){opacity=1;translateY=0;applyStyles();fireHaptic();scheduleDismiss();return;}
+    springTo(0,1,v=>{opacity=v;applyStyles();},fireHaptic,rafOp);
+    springTo(1,0,v=>{translateY=v;applyStyles();},scheduleDismiss,rafY);
+  }
+  function runExit(reason,swipeFromX){
+    cancelSprings();clearTimer();setPhase('exiting');lifecycle.textContent='Timer: —';
+    if(reason==='swipe'&&typeof swipeFromX==='number'){
+      toast.style.transition='none';
+      const dir=swipeFromX>=0?1:-1;const targetX=dir*(toast.offsetWidth+80);translateY=0;
+      if(noAnim()){opacity=0;dragOffsetX=targetX;applyStyles();setPhase('hidden');return;}
+      springTo(opacity,0,v=>{opacity=v;applyStyles();},null,rafOp);
+      springTo(swipeFromX,targetX,v=>{dragOffsetX=v;applyStyles();},()=>{opacity=0;translateY=1;dragOffsetX=0;applyStyles();setPhase('hidden');},rafX);
+      return;
+    }
+    dragOffsetX=0;
+    if(noAnim()){opacity=0;translateY=1;toast.style.transition='';applyStyles();setPhase('hidden');return;}
+    toast.style.transition='opacity '+EXIT_MS+'ms '+EXIT_CURVE+', transform '+EXIT_MS+'ms '+EXIT_CURVE;
+    opacity=0;translateY=1;applyStyles();
+    setTimeout(()=>{toast.style.transition='';setPhase('hidden');},EXIT_MS);
+  }
+  document.getElementById('btnEnter').onclick=runEnter;
+  document.getElementById('btnExit').onclick=()=>runExit('manual');
+  document.getElementById('btnReset').onclick=()=>{
+    cancelSprings();clearTimer();opacity=0;translateY=1;dragOffsetX=0;applyStyles();setPhase('hidden');
+    lifecycle.textContent='Timer: —';hapticReadout.textContent='—';
+  };
+  const closeBtn=document.getElementById('closeBtn');
+  closeBtn.addEventListener('pointerdown',(e)=>e.stopPropagation());
+  closeBtn.onclick=(e)=>{e.stopPropagation();runExit('tap X');};
+  reducedToggle.onchange=()=>{
+    lab.classList.toggle('reduced-motion',reducedToggle.checked);
+    if(noAnim()) cancelSprings();
+  };
+  actionLinkToggle.onchange=()=>{syncActionLink();if(phase==='entering')scheduleDismiss();};
+  semanticSelect.onchange=applySemantic;
+  toast.addEventListener('pointerdown',(e)=>{
+    if(phase!=='entering')return;
+    if(e.target.closest('#closeBtn,#actionLink'))return;
+    dragStartX=e.clientX;toast.classList.add('is-dragging');toast.setPointerCapture(e.pointerId);
+    if(dismissTimer&&!actionLinkToggle.checked){clearTimeout(dismissTimer);dismissTimer=null;isPaused=true;lifecycle.textContent='Timer: pausado';}
+  });
+  toast.addEventListener('pointermove',(e)=>{if(dragStartX===null)return;dragOffsetX=e.clientX-dragStartX;applyStyles();});
+  toast.addEventListener('pointerup',()=>{
+    if(dragStartX===null)return;toast.classList.remove('is-dragging');
+    if(Math.abs(dragOffsetX)>80){runExit('swipe',dragOffsetX);}
+    else{dragOffsetX=0;applyStyles();if(isPaused&&!actionLinkToggle.checked)scheduleDismiss();}
+    dragStartX=null;
+  });
+  actionLinkToggle.checked=false;syncActionLink();applySemantic();applyStyles();setPhase('hidden');
+})();
+</script></body></html>
