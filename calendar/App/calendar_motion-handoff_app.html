@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Motion Handoff — Calendar (App)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --bg:#fff; --bg-subtle:#f7f7f7; --border:#e8e8ec; --text:#252529; --muted:#6c6c78; --subtle:#8f8f9c; --accent:#7373e5; --radius:12px; --radius-sm:6px; --sans:'Inter',sans-serif; --mono:'SF Mono','Fira Code','Consolas',monospace; --day-active-bg:#6b2d3c; --day-active-text:#fff; --day-pressed-bg:#f3e8ea; --day-range-mid:rgba(232,140,114,.35); --day-radius:4px; --day-picker-selected:rgba(232,140,114,.45); }
+    *{box-sizing:border-box} body{margin:0;font-family:var(--sans);font-size:14px;line-height:1.6;color:var(--text)}
+    .page{max-width:980px;margin:0 auto;padding:20px} section{padding:22px 0;border-bottom:1px solid var(--border)}
+    h1{margin:0;font-size:3rem;font-weight:800;letter-spacing:-.03em} h2{margin:0 0 12px;font-size:1.35rem;font-weight:700;letter-spacing:-.02em}
+    .hero-meta{display:flex;gap:12px;align-items:center;margin:10px 0 14px;color:var(--muted);flex-wrap:wrap}
+    .owner-badge{display:inline-flex;align-items:center;gap:8px;padding:4px 10px 4px 4px;border:1px solid var(--border);border-radius:999px;background:var(--bg-subtle);font-size:12px}
+    .owner-avatar-img{width:28px;height:28px;border-radius:50%;object-fit:cover}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid rgba(115,115,229,.35);background:rgba(115,115,229,.1);color:var(--accent);font-size:12px}
+    .motion-lab-disclaimer,.callout,.scope-note{font-size:12px;color:var(--muted);margin:0 0 16px;padding:10px 12px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm);line-height:1.55}
+    .callout,.scope-note{border-left:4px solid var(--accent);color:#404047}
+    .scope-note a{color:var(--accent)}
+    .stage-wrap{display:flex;justify-content:center}
+    .motion-stage{width:100%;max-width:390px;border:1px solid var(--border);background:var(--bg-subtle);border-radius:var(--radius);padding:20px}
+    .cal{background:#fff;border-radius:12px;padding:12px 12px 16px;border:1px solid var(--border)}
+    .cal__nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+    .cal__month{display:inline-flex;align-items:center;gap:4px;font-size:15px;font-weight:600;border:0;background:transparent;padding:0;font:inherit;color:var(--text);cursor:pointer;touch-action:manipulation}
+    .cal__month svg{width:14px;height:14px;color:var(--muted)}
+    .cal__nav-arrows{display:flex;gap:2px}
+    .cal__nav-arrows button{border:0;background:transparent;padding:8px;cursor:pointer;border-radius:8px;touch-action:manipulation;font-size:18px;line-height:1;color:var(--text)}
+    .cal__weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:8px;font-size:11px;color:var(--muted);text-align:center}
+    .cal__weekdays span{display:block;padding:4px 0}
+    .cal__viewport{overflow:hidden;position:relative}
+    .cal__grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;will-change:transform,opacity;transform:translateX(0);opacity:1}
+    .cal__day{position:relative;aspect-ratio:1;border:0;border-radius:var(--day-radius);background:transparent;font-size:13px;cursor:pointer;touch-action:manipulation;color:var(--text);transition:none;font-weight:400;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:2px 0}
+    .cal__day-num{line-height:1.1}
+    .cal__day-dot{display:none;width:4px;height:4px;border-radius:50%;background:var(--text);flex-shrink:0}
+    .cal__day.is-today .cal__day-dot{display:block}
+    .cal__day.is-active .cal__day-dot{background:var(--day-active-text)}
+    .cal__day.is-out{color:var(--subtle);opacity:.55}
+    .cal__day.is-pressed{background:var(--day-pressed-bg)}
+    .cal__day.is-active{background:var(--day-active-bg);color:var(--day-active-text);font-weight:600}
+    .cal__day.is-range{border-radius:0;background:var(--day-range-mid);color:var(--text)}
+    .cal__day.is-range-start,.cal__day.is-range-end{background:var(--day-active-bg);color:var(--day-active-text);font-weight:600}
+    .cal__day.is-range-start{border-radius:var(--day-radius) 0 0 var(--day-radius)}
+    .cal__day.is-range-end{border-radius:0 var(--day-radius) var(--day-radius) 0}
+    .cal__day.is-range-start.is-range-end{border-radius:var(--day-radius)}
+    .cal__panels{position:relative;height:292px}
+    .cal__panel{position:absolute;left:0;right:0;top:0;transition:none}
+    .cal__panel.is-hidden{opacity:0;visibility:hidden;pointer-events:none}
+    #yearPanel{display:flex;align-items:center}
+    .cal__picker{position:relative;height:220px;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px;overflow:hidden}
+    .cal__picker::before{content:"";position:absolute;left:0;right:0;top:50%;height:40px;transform:translateY(-50%);background:var(--day-picker-selected);border-radius:var(--day-radius);pointer-events:none;z-index:0}
+    .cal__picker-col{position:relative;height:100%;overflow:hidden;touch-action:none;cursor:grab}
+    .cal__picker-col.is-dragging{cursor:grabbing}
+    .cal__picker-list{will-change:transform}
+    .cal__picker-item{height:40px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;color:var(--muted);user-select:none}
+    .cal__month.is-open svg{transform:rotate(180deg)}
+    .cal__month svg{transition:none}
+    .cal.is-year-view .cal__nav-arrows{visibility:hidden;pointer-events:none}
+
+    .mapping-rows{margin:8px 0 0;padding:0;list-style:none}
+    .mapping-rows li{padding:6px 0;border-top:1px solid rgba(115,115,229,.2)}
+    .mapping-rows li:first-child{border-top:0;padding-top:0}
+    .motion-controls{display:flex;flex-wrap:wrap;gap:12px;margin:16px 0;align-items:center}
+    .motion-controls label{font-size:13px;color:#404047}
+    .motion-token-readout{margin:0 0 12px;font-size:12px;font-family:var(--mono);color:var(--muted)}
+    .mapping{margin:0 0 14px;padding:12px;border:1px solid rgba(115,115,229,.35);border-radius:var(--radius-sm);background:rgba(115,115,229,.1);font-size:12px;color:#404047;line-height:1.55}
+    .implementation pre{background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;font-size:.75rem;white-space:pre-wrap}
+    .doc-footer{text-align:center;color:var(--subtle);font-size:12px;padding:16px 0 8px}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <h1>Calendar</h1>
+      <div class="hero-meta">
+        <span class="owner-badge"><img class="owner-avatar-img" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBAUEBAYFBQUGBgYHCQ4JCQgICRINDQoOFRIWFhUSFBQXGiEcFxgfGRQUHScdHyIjJSUlFhwpLCgkKyEkJST/2wBDAQYGBgkICREJCREkGBQYJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCT/wAARCABQAFADASIAAhEBAxEB/8QAHAAAAgMBAQEBAAAAAAAAAAAABQYCBAcDCAEA/8QAORAAAgECBAMGAwUHBQAAAAAAAQIDBBEABRIhBhMxByJBUWFxFDKBI0JSocEVJIKRsdHxFjNy4fD/xAAaAQACAwEBAAAAAAAAAAAAAAADBAACBQEG/8QAJREAAgICAQMDBQAAAAAAAAAAAQIAEQMhEgQiMSNBURNhcbHR/9oADAMBAAIRAxEAPwB2mVp65pCkFHJCwieFWALHULE6Tud+t97Y4yM0VdUcyWWZhUKtw/NidgguF/GPO5vjqs00FXVU8HJWJZC8tOqGTVuCWIOxIuRsfYeOO70c9KY5+WYaCtsYmZe84AAF7bgg+XpjWU8alCb8xbz0t/q3hK1Q7rGahlK2Sx5Z71m+Xew9hg7S0lT+3lkmo4rsJGs4Z+Zdhb5d9Jv7YpZyhHE/BEr1Ei2mqUMgsGH2Z8D4+l/64vUpigrpZjPDBFEkjmZ5SHUB9yQN+m1vXEUFuVSDVSzURyIZdFRSh4rsH0BXsSuxLdAOm+59sVOTPU5g1RHOJZ5kmRlhYxhwWFwLDqDY79cJGZ9rwq8zaiyzLo6qjW6H4i7Pp2Ntum4JHjviplPa7QVVeuVZpR/Bklgswd103IuxHsLEj3wMsvudy3BvM0LMBSxZVbkyTTuXKNUhiSRs5JBABG2xvtb3xBA9FRLDPIoL8sinjGmQtYaV32Rb2IJBxYzho0ilTLJJ3iZTrqGZRGTb7pA6ED67Y/UikQTvTvTLUEBnM1QdLRgd4EkfL16G+IQSJUAVKj5Ywo6epnqFmllD/uyrrMIGq5ZR1O5t67nA0UqwZpnULpy9QpGjGoF1YR3Fz7Xv7jBvKZTNFWA0608Rg164w2+1tjvfrfqN8U6Ws+OzzPJRFBES8Pf56KFIh7tha97i5UdOmJkIDUfaQDU7Sx0wqzTU0VNRymPlSR/EllJ6ko/Ta1tPp9MSGaVUdUGpYtDpblG1hFdNwFv1IJ97YkpiSJuZUxCRW1FOfG8YUrfUhvcnYbb/AKY+w1FPLTzRSw0wlWILFVI4BUkXJcfesPQdPbBRYWc4m7griCSOXi3hiDRJPDE8vLCoUd2ZGBB63/rtgb2l5gy5eKCJtNVXaotVrMqhvK3nb9cFM+YLxfw2IK3mR8+R0ZgCQTG2p7i+xPh19BhPz2ujz7tPly+ORRLAkkgI7yKUF7D3JLfQDAGbiphunxXkCmWMoyWgymhipaMRvoUB3VgxLeNz54B8f5DE+VLmUcamakkVybb6Ts35HB/KMpmo5KydpklViF06QCG63uAPXA48OVEtPmHMNO0c8TqzqpDDbbe/5WxmWA13PQvhY4+PGMfAWaDNeCoYJ+/LQaqYk+MZ3W/r1H+MOOZhKSAskgenEgd3+HusMukgL03sDcqOvU4yPsbzAVP7QpiVYTU111C4Dqw6/Qt+WNkzCnnost5iVLc6Z+W6ELqK+IA/K53tboMaSbQTzzr3GpRkrlaOpMNQkVNpEMcbOGZVIFtBNt7jptgfQ1skGd50/wAKtQ4qGhkLRWRkESXLdd72Fwb3O+L3JWOSR0pZoYS2lapEErR961nF9h038CB54DZXDUzzZvLM7hDmMqsqkLzmUKoCj8XifQjF2Xk24IaNiEIqCgHMIo8qmWJX1uh0xE6d+X5H3vvfH2GDJ/iJJ3y9TCFT92VtzdNxqO5UkDe22wxbRIZ5eZQR0s0wJ17Wija9rRr426bjrviwkFVQVEU7Mr83TomAUl109B1Atff1tgwW5VT8xTz+Gjg4q4bnWCGOFXkMkKtY2EbHvevl7eeMgyjiSDK+0wZhWWipZppIZWJ3iVwQD7C4v6Y2PtOaGnFJJTtpdFkKszaibgrcHY2IudwN8eds3gLxySnvNLJf36j9MKubYrHFBxqMg8/yegJ6RqKJIZJGXW5YGFLh/wDl3uvqPDATivNRw7w/mVVUMsTToYqeFDu7sCB9bbm3kcWeF8znmyGjWZhI0UYVGbc7C1j7YRe0GWWtzmmSeTmCIGwPRSeu3sMZ4Tk/2m7mz8cPJfJlnscdY81po9kWRSrE32JB/sMbrmGT5UKWN46eSXU9tRqTp3Hzbb+dvPbGEcD18WW8RUqLpUxSI7FjYbna/wBN8egK6oeOm+zqBEJiOcQlzYkArsLH8Qta2HcRJBqYPULQUiBHy3Looypid1aXStRzXU/N8iL0ZyOtzbATIcooBLXxTfEKGr6lY5lZjezDusp3vYjfDg9DFSA006SGRZkMfMspXvXAUE+PU/TAPhUSZjRVwHMaH46pepEkh1I3MsDrPiVBW/0wW+64sWABaEYZ2kWWKOSnHMcl5njEekgWspG9ugHrY4Su0DjWq4czD9g5fEIqh40eWVgCyFlI0p4D39cO6Q2RypllhWXQzMl41a1gB1uLXA+hxhfaFm8eZ8b1MtKFPLQQI6gAOVUgNt6WH0wdyVXRkWmIMiMwmqL812cykuzM2okdAST1J6/XCpYTSzId1jJkFj8pwzVSiljLAWSOJU/iPh/IDCvACFqW8ShsfK5GEk3uO9QeNLDOW8f5nlFPyORSVCRnqwZWufA2NjivNnsueCSonhiRlDt3L+nngM0KrZfM3b1tjtRMwjqR0UxkD0JIxd8ajYEXx9TkNKx1C2WTGKqlqL/asyk/y/tjXOFO06jzRaTKc0C0s68tIaxXIUfd7w87+J2PpjGqVwZio6sgP1H/AFitVVJp5gAbMPD3wJCQ2ofKfTnq1ElSOPmVEhllnjVV1AH5tjuT4jrbwwvcLHXl1TGQZmlq5zK6ylj/ALu57tlaw38OuF7sm4yruKKRspr4pJRSSRaKpbb3uAjk+O1wR5b4NcMz/CZMUUskzSy95lDcoCUksCNidrbYOByMVAIEYRDPTBNUE0MYkudalwxtsOu4sbA22uN8ZT2pcL0dJxHl+YZfFyzWTWnAUKuvTfZRsOh6dcbBV8qOoWopa2pSVNRcJZtLHpYjbQdrnwuMIfHZjqX74W9O6OLdNQG/9Tvi+ZuwGG6RPqOR8b/Uy3iNmjQRqbKbyke+y/lvhdXZJk21FQfzw0cWxKtRPp6BBY+nhhUgWyyuWuzWHv8A+tgWIds71jepIuVkqHSMNYAWBNzv/jE4E+zmPQd259ASf0xWhk1TzkeYF/bHUSWiMe/eN/e3+cEYaiSGjcv0O1VHtsdt/XbArPrx5q6+gGDFChIVvvakFv4sQmysZtxnS0ZvonlRSQei2ufyvhZTT2ZoOpbGAPczSOwzNaGSgqcrmhjNRBUCpUJGebKrDSbP0FiALH8Qw6cMTTw8OwQfY0cTzSGSr063Dazs9ulh4DbHTgzIcmyCjpXy/K4RIqyRmSNS0uq+zSN1PoOm2JcKrbJVMc8ILs0UnOQFFDMdLbDzBH1wwjWARFzjKsUb8T//2Q==" alt="Teresa Mendez" /> Teresa Mendez</span>
+        <span>App · GGDS · 2026-07-03</span>
+      </div>
+      <span class="pill">motion-spring-md · motion-spring-sm</span>
+    </header>
+
+    <section class="motion-lab">
+      <h2>Preview de motion</h2>
+      <p class="motion-lab-disclaimer">Motion lab — no es el componente de la libreria. Valida motion y tokens; la UI final esta en Figma.</p>
+      <div class="stage-wrap">
+        <div class="motion-stage">
+          <div class="cal" id="cal">
+            <div class="cal__nav">
+              <button type="button" class="cal__month" id="title" aria-expanded="false">
+                <span id="titleText">Julio 2026</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+              </button>
+              <div class="cal__nav-arrows">
+                <button type="button" id="prev" aria-label="Mes anterior">‹</button>
+                <button type="button" id="next" aria-label="Mes siguiente">›</button>
+              </div>
+            </div>
+            <div class="cal__panels">
+              <div class="cal__panel" id="monthPanel">
+                <div class="cal__weekdays" aria-hidden="true"><span>Dom</span><span>Lun</span><span>Mar</span><span>Mie</span><span>Jue</span><span>Vie</span><span>Sab</span></div>
+                <div class="cal__viewport"><div class="cal__grid" id="grid"></div></div>
+              </div>
+              <div class="cal__panel is-hidden" id="yearPanel" aria-label="Selector mes y anio">
+                <div class="cal__picker" id="picker">
+                  <div class="cal__picker-col" id="monthWheel" aria-label="Mes"></div>
+                  <div class="cal__picker-col" id="yearWheel" aria-label="Anio"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="motion-controls">
+        <label><input type="radio" name="mode" value="single" checked /> Single</label>
+        <label><input type="radio" name="mode" value="range" /> Range</label>
+        <label><input type="checkbox" id="reducedToggle" /> disableAnimations</label>
+      </div>
+      <p class="scope-note">Icon Buttons del header: handoff <a href="../../icon-button/App/icon-button_motion-handoff_app.html">Icon Button</a>. Consumido por <a href="../../date-picker/App/date-picker_motion-handoff_app.html">Date Picker</a>.</p>
+      <p class="callout">Tap en mes/anio abre vista Year con ruedas (scroll + snap <code>motion-spring-md</code>). Dia actual: punto debajo del numero. Seleccion: cuadrado 4px.</p>
+      <div class="motion-token-readout" id="readout">State: idle</div>
+      <div class="mapping">
+        <strong>Token Mapping</strong>
+        <ul class="mapping-rows">
+          <li><strong>Cambio de mes (flechas)</strong> · <code>motion-spring-md</code> · m:1.0 · k:300 · d:28 · translateX + opacity</li>
+          <li><strong>Vista Year — snap rueda</strong> · <code>motion-spring-md</code> · m:1.0 · k:300 · d:28 · translateY</li>
+          <li><strong>Day Item — cambio de estado</strong> · <code>motion-spring-sm</code> · m:1.0 · k:400 · d:35 · backgroundColor</li>
+          <li><strong>Relleno de rango</strong> · none · instantaneo</li>
+        </ul>
+      </div>
+    </section>
+
+    <section><h2>Implementacion Dart (Flutter)</h2><div class="implementation"><pre>const _calendarMonthSpring = SpringDescription(
+  mass: 1.0,
+  stiffness: 300.0,
+  damping: 28.0,
+);
+
+const _calendarDaySpring = SpringDescription(
+  mass: 1.0,
+  stiffness: 400.0,
+  damping: 35.0,
+);
+
+// Vista Year: CupertinoPicker / ListWheelScrollView + snap spring
+// Present (hoy): dot debajo del numero, sin ring
+// Active: borderRadius 4px</pre></div></section>
+    <footer class="doc-footer"><p>Motion System GGDS · Calendar Handoff App · 2026-07-03</p><p>DesignOps @ itti</p></footer>
+  </div>
+  <script>
+(() => {
+  const STIFF_MD = { k: 300, d: 28, m: 1 };
+  const ITEM_H = 40;
+  const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const years = Array.from({length: 21}, (_, i) => 2016 + i);
+
+  const cal = document.getElementById('cal');
+  const grid = document.getElementById('grid');
+  const title = document.getElementById('title');
+  const titleText = document.getElementById('titleText');
+  const monthPanel = document.getElementById('monthPanel');
+  const yearPanel = document.getElementById('yearPanel');
+  const readout = document.getElementById('readout');
+  const reducedToggle = document.getElementById('reducedToggle');
+
+  let viewYear = 2026, viewMonth = 6;
+  let mode = 'single';
+  let active = null, rangeStart = null, rangeEnd = null;
+  let yearView = false;
+  let monthRaf = { id: null };
+  let panelRaf = { id: null };
+
+  function spring(cfg, from, to, onUpdate, onComplete, rafRef) {
+    const slot = rafRef || { id: null };
+    if (slot.id) cancelAnimationFrame(slot.id);
+    if (reducedToggle.checked) { onUpdate(to); onComplete?.(); return; }
+    let x = from, v = 0, last = performance.now(), started = last;
+    (function frame(now) {
+      const dt = Math.min((now - last) / 1000, 0.032);
+      last = now;
+      const a = (-cfg.k * (x - to) - cfg.d * v) / cfg.m;
+      v += a * dt; x += v * dt;
+      onUpdate(x);
+      const settled = Math.abs(x - to) < 0.004 && Math.abs(v) < 0.04;
+      const timedOut = now - started > 280 && Math.abs(x - to) < 0.06;
+      if (settled || timedOut) { onUpdate(to); slot.id = null; onComplete?.(); return; }
+      slot.id = requestAnimationFrame(frame);
+    })(performance.now());
+  }
+
+  function sameDay(a, b) { return a && b && a.toDateString() === b.toDateString(); }
+  function updateTitle() { titleText.textContent = months[viewMonth] + ' ' + viewYear; }
+
+  function makeDayButton(cell, d, interactive) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'cal__day';
+    const num = document.createElement('span');
+    num.className = 'cal__day-num';
+    num.textContent = String(d);
+    b.appendChild(num);
+    const today = new Date(2026, 6, 3);
+    if (sameDay(cell, today)) {
+      b.classList.add('is-today');
+      const dot = document.createElement('span');
+      dot.className = 'cal__day-dot';
+      dot.setAttribute('aria-hidden', 'true');
+      b.appendChild(dot);
+    }
+    applyDayClasses(b, cell);
+    if (interactive) {
+      b.addEventListener('pointerdown', () => b.classList.add('is-pressed'));
+      b.addEventListener('pointerup', () => b.classList.remove('is-pressed'));
+      b.addEventListener('pointerleave', () => b.classList.remove('is-pressed'));
+      b.addEventListener('click', () => {
+        if (mode === 'single') {
+          active = cell;
+          grid.querySelectorAll('.cal__day').forEach(el => el.classList.remove('is-active', 'is-pressed'));
+          b.classList.add('is-active');
+          readout.textContent = 'State: Active · motion-spring-sm';
+        } else {
+          if (!rangeStart || (rangeStart && rangeEnd)) { rangeStart = cell; rangeEnd = null; }
+          else { rangeEnd = cell; }
+          renderMonth(false);
+          readout.textContent = rangeEnd ? 'State: range complete · fill instant' : 'State: range start · motion-spring-sm';
+        }
+      });
+    } else b.disabled = true;
+    return b;
+  }
+
+  function inRange(y, m, d) {
+    if (!rangeStart || !rangeEnd) return false;
+    const t = new Date(y, m, d).getTime();
+    const lo = Math.min(rangeStart.getTime(), rangeEnd.getTime());
+    const hi = Math.max(rangeStart.getTime(), rangeEnd.getTime());
+    return t >= lo && t <= hi;
+  }
+
+  function applyDayClasses(b, cell) {
+    b.classList.toggle('is-out', cell.getMonth() !== viewMonth);
+    b.classList.toggle('is-active', mode === 'single' && sameDay(cell, active));
+    b.classList.remove('is-range', 'is-range-start', 'is-range-end');
+    if (mode === 'range') {
+      if (sameDay(cell, rangeStart)) b.classList.add('is-range-start');
+      if (sameDay(cell, rangeEnd)) b.classList.add('is-range-end');
+      if (inRange(cell.getFullYear(), cell.getMonth(), cell.getDate()) && !sameDay(cell, rangeStart) && !sameDay(cell, rangeEnd)) b.classList.add('is-range');
+    }
+  }
+
+  function buildGrid() {
+    grid.innerHTML = '';
+    const first = new Date(viewYear, viewMonth, 1);
+    const start = first.getDay();
+    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+    const prevDays = new Date(viewYear, viewMonth, 0).getDate();
+    for (let i = 0; i < start; i++) {
+      const d = prevDays - start + i + 1;
+      grid.appendChild(makeDayButton(new Date(viewYear, viewMonth - 1, d), d, false));
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      grid.appendChild(makeDayButton(new Date(viewYear, viewMonth, d), d, true));
+    }
+    const total = start + daysInMonth;
+    const trailing = total % 7 === 0 ? 0 : 7 - (total % 7);
+    for (let d = 1; d <= trailing; d++) {
+      grid.appendChild(makeDayButton(new Date(viewYear, viewMonth + 1, d), d, false));
+    }
+  }
+
+  function renderMonth(animateMonth, direction) {
+    updateTitle();
+    if (!animateMonth) {
+      buildGrid();
+      grid.style.opacity = '1';
+      grid.style.transform = 'translateX(0)';
+      return;
+    }
+    if (monthRaf.id) { cancelAnimationFrame(monthRaf.id); monthRaf.id = null; }
+    const dir = direction || 1;
+    const slidePx = Math.min(grid.offsetWidth || 280, 320) * 0.14;
+    let swapped = false;
+    spring(STIFF_MD, 0, 1, v => {
+      if (v < 0.42) {
+        const t = v / 0.42;
+        grid.style.opacity = String(1 - t * 0.45);
+        grid.style.transform = 'translateX(' + (-dir * slidePx * t) + 'px)';
+        return;
+      }
+      if (!swapped) { buildGrid(); swapped = true; }
+      const t = (v - 0.42) / 0.58;
+      grid.style.opacity = String(0.55 + t * 0.45);
+      grid.style.transform = 'translateX(' + (dir * slidePx * (1 - t)) + 'px)';
+    }, () => {
+      grid.style.opacity = '1';
+      grid.style.transform = 'translateX(0)';
+      readout.textContent = 'State: month changed · motion-spring-md';
+    }, monthRaf);
+  }
+
+  function Wheel(col, items, getIndex, setIndex) {
+    const list = document.createElement('div');
+    list.className = 'cal__picker-list';
+    items.forEach((label) => {
+      const el = document.createElement('div');
+      el.className = 'cal__picker-item';
+      el.textContent = label;
+      list.appendChild(el);
+    });
+    col.appendChild(list);
+
+    let offset = 0;
+    let velocity = 0;
+    let dragging = false;
+    let startY = 0;
+    let startOffset = 0;
+    let wheelRaf = null;
+    const center = () => col.clientHeight / 2 - ITEM_H / 2;
+
+    const clampOffset = (o) => {
+      const min = center() - (items.length - 1) * ITEM_H;
+      const max = center();
+      return Math.max(min, Math.min(max, o));
+    };
+
+    const snapTo = (idx, fromVelocity) => {
+      const target = center() - idx * ITEM_H;
+      if (reducedToggle.checked) {
+        offset = target; paint(); setIndex(idx); return;
+      }
+      let x = offset, v = fromVelocity || 0;
+      const to = target;
+      let last = performance.now(), started = last;
+      if (wheelRaf) cancelAnimationFrame(wheelRaf);
+      (function frame(now) {
+        const dt = Math.min((now - last) / 1000, 0.032);
+        last = now;
+        const a = (-STIFF_MD.k * (x - to) - STIFF_MD.d * v) / STIFF_MD.m;
+        v += a * dt; x += v * dt;
+        offset = x; paint();
+        const settled = Math.abs(x - to) < 0.5 && Math.abs(v) < 0.5;
+        const timedOut = now - started > 320;
+        if (settled || timedOut) {
+          offset = to; paint(); setIndex(idx);
+          readout.textContent = 'State: wheel snap · motion-spring-md';
+          wheelRaf = null; return;
+        }
+        wheelRaf = requestAnimationFrame(frame);
+      })(performance.now());
+    };
+
+    const nearestIndex = () => {
+      const raw = Math.round((center() - offset) / ITEM_H);
+      return Math.max(0, Math.min(items.length - 1, raw));
+    };
+
+    const paint = () => {
+      list.style.transform = 'translateY(' + offset + 'px)';
+      const mid = -offset + center();
+      list.querySelectorAll('.cal__picker-item').forEach((el, i) => {
+        const dist = Math.abs(i * ITEM_H - mid);
+        const t = Math.min(dist / (ITEM_H * 2), 1);
+        el.style.opacity = String(1 - t * 0.55);
+        el.style.fontWeight = dist < ITEM_H * 0.5 ? '600' : '500';
+        el.style.color = dist < ITEM_H * 0.5 ? 'var(--text)' : 'var(--muted)';
+      });
+    };
+
+    const setOffsetIndex = (idx, animate) => {
+      const target = center() - idx * ITEM_H;
+      if (animate) snapTo(idx, 0);
+      else { offset = target; paint(); setIndex(idx); }
+    };
+
+    col.addEventListener('pointerdown', (e) => {
+      dragging = true;
+      startY = e.clientY;
+      startOffset = offset;
+      velocity = 0;
+      col.classList.add('is-dragging');
+      col.setPointerCapture(e.pointerId);
+      if (wheelRaf) cancelAnimationFrame(wheelRaf);
+    });
+    col.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      offset = clampOffset(startOffset + (e.clientY - startY));
+      velocity = e.movementY;
+      paint();
+    });
+    const endDrag = (e) => {
+      if (!dragging) return;
+      dragging = false;
+      col.classList.remove('is-dragging');
+      const idx = nearestIndex();
+      snapTo(idx, velocity * 12);
+    };
+    col.addEventListener('pointerup', endDrag);
+    col.addEventListener('pointercancel', endDrag);
+
+    return { setOffsetIndex, getOffset: () => offset };
+  }
+
+  const monthWheel = Wheel(document.getElementById('monthWheel'), months, () => viewMonth, (i) => { viewMonth = i; updateTitle(); });
+  const yearWheel = Wheel(document.getElementById('yearWheel'), years.map(String), () => years.indexOf(viewYear), (i) => { viewYear = years[i]; updateTitle(); });
+
+  function toggleYearView() {
+    yearView = !yearView;
+    title.setAttribute('aria-expanded', String(yearView));
+    title.classList.toggle('is-open', yearView);
+    cal.classList.toggle('is-year-view', yearView);
+
+    const showYear = yearView;
+
+    const finish = (visibleYear) => {
+      monthPanel.style.opacity = '';
+      yearPanel.style.opacity = '';
+      if (visibleYear) {
+        monthPanel.classList.add('is-hidden');
+        monthWheel.setOffsetIndex(viewMonth, false);
+        yearWheel.setOffsetIndex(years.indexOf(viewYear), false);
+        readout.textContent = 'State: year view · scroll ruedas';
+      } else {
+        yearPanel.classList.add('is-hidden');
+        renderMonth(false);
+        readout.textContent = 'State: month view';
+      }
+    };
+
+    if (reducedToggle.checked) {
+      monthPanel.classList.toggle('is-hidden', showYear);
+      yearPanel.classList.toggle('is-hidden', !showYear);
+      if (showYear) {
+        monthWheel.setOffsetIndex(viewMonth, false);
+        yearWheel.setOffsetIndex(years.indexOf(viewYear), false);
+        readout.textContent = 'State: year view';
+      } else {
+        renderMonth(false);
+        readout.textContent = 'State: month view';
+      }
+      return;
+    }
+
+    monthPanel.classList.remove('is-hidden');
+    yearPanel.classList.remove('is-hidden');
+    monthPanel.style.opacity = showYear ? '1' : '0';
+    yearPanel.style.opacity = showYear ? '0' : '1';
+
+    spring(STIFF_MD, 0, 1, v => {
+      monthPanel.style.opacity = String(showYear ? 1 - v : v);
+      yearPanel.style.opacity = String(showYear ? v : 1 - v);
+    }, () => finish(showYear), panelRaf);
+  }
+
+  title.addEventListener('click', toggleYearView);
+  document.getElementById('prev').addEventListener('click', () => { if (yearView) return; viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; } renderMonth(true, -1); });
+  document.getElementById('next').addEventListener('click', () => { if (yearView) return; viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; } renderMonth(true, 1); });
+  document.querySelectorAll('input[name="mode"]').forEach(r => r.addEventListener('change', e => {
+    if (!e.target.checked) return;
+    mode = e.target.value;
+    active = null; rangeStart = null; rangeEnd = null;
+    if (!yearView) renderMonth(false);
+    readout.textContent = 'State: idle';
+  }));
+
+  renderMonth(false);
+  monthWheel.setOffsetIndex(viewMonth, false);
+  yearWheel.setOffsetIndex(years.indexOf(viewYear), false);
+})();
+  </script>
+</body>
+</html>

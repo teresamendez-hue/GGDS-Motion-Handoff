@@ -1,0 +1,104 @@
+---
+component: Select
+component_slug: select
+platform: app
+category: default
+semantic_token_enter: motion-spring-md
+semantic_token_exit: motion-spring-md
+owner: Teresa Mendez
+date: 2026-06-23
+design_system: GGDS
+status: draft
+preview_type: internal_state
+spring_token: motion-spring-md
+companion_web_handoff: select_motion-handoff_web.html
+web_parity_token: motion-curve-md
+---
+
+## Descripcion
+
+Field de seleccion unica para App. Tap en field colapsado abre Bottom Sheet con lista cerrada. Sin busqueda. Valor unico en el field. Motion del field en este handoff; sheet y filas en handoffs enlazados.
+
+## Tokens
+
+### Field colapsado
+- semantic: motion-spring-md
+- mass: 1.0
+- stiffness: 300
+- damping: 28
+- note: "Mismo token en entrada y salida de estados del field"
+
+### Bottom Sheet (referencia)
+- semantic: motion-spring-md
+- note: "Ver handoff Bottom Sheet"
+
+## Propiedades animadas
+
+### SelectFieldTrigger
+| propiedad | de | a | token |
+|---|---|---|---|
+| opacity | default | pressed | motion-spring-md |
+| opacity | 1 | 0.45 (disabled) | none |
+
+### SelectRing
+| propiedad | de | a | token |
+|---|---|---|---|
+| opacity | 0 | 1 | motion-spring-md |
+| borderColor | neutral | focus/error | motion-spring-md |
+
+## Triggers
+
+### Sheet open
+- evento: tap en field colapsado
+- tipo: user-action
+- delay_ms: 0
+
+### Sheet close
+- evento: seleccion de Option Item, dismiss del sheet
+- tipo: user-action
+- auto_delay_ms: null
+
+## Estados intermedios
+
+### Focused
+- trigger: focus visible en field colapsado
+- propiedades: ring opacity, ring borderColor
+- token: motion-spring-md
+
+### Pressed
+- trigger: tap down en field
+- propiedades: opacity
+- token: motion-spring-md
+
+### Filled
+- trigger: opcion seleccionada y sheet cerrado
+- propiedades: none
+- token: none
+
+### Error
+- trigger: validation fail
+- propiedades: ring borderColor, helper color
+- token: motion-spring-md
+
+### Disabled
+- trigger: disabled true
+- propiedades: opacity
+- token: none
+
+## Coherencia sistemica
+
+- componentes_relacionados: [Select Web, Multiple Select, Combobox, Bottom Sheet, Option Item]
+- token_mismo_que: [Multiple Select, Combobox, Bottom Sheet]
+- razon: misma familia selection fields App; lista cerrada sin filtro.
+
+## Accesibilidad
+
+- prefers_reduced_motion: no aplica en App
+- flutter_disable_animations: "MediaQuery.of(context).disableAnimations"
+
+## Referencias
+
+- material_design: https://m3.material.io/components/menus/overview
+- apple_hig: https://developer.apple.com/design/human-interface-guidelines/pickers
+- tokens_file: tokens-motion.md
+- related_handoffs: [Select Web, Bottom Sheet, Option Item]

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Motion Handoff — Combobox (App)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --bg:#fff; --bg-subtle:#f7f7f7; --border:#e8e8ec; --text:#252529; --muted:#6c6c78; --subtle:#8f8f9c; --accent:#7373e5; --danger:#d64545; --radius:12px; --radius-sm:6px; --sans:'Inter',sans-serif; --mono:'SF Mono','Fira Code','Consolas',monospace; }
+    *{box-sizing:border-box} body{margin:0;font-family:var(--sans);font-size:14px;line-height:1.6;color:var(--text)}
+    .page{max-width:980px;margin:0 auto;padding:20px} section{padding:22px 0;border-bottom:1px solid var(--border)}
+    h1{margin:0;font-size:3rem;font-weight:800;letter-spacing:-.03em} h2{margin:0 0 12px;font-size:1.35rem;font-weight:700;letter-spacing:-.02em}
+    .hero-meta{display:flex;gap:12px;align-items:center;margin:10px 0 14px;color:var(--muted);flex-wrap:wrap}
+    .owner-badge{display:inline-flex;align-items:center;gap:8px;padding:4px 10px 4px 4px;border:1px solid var(--border);border-radius:999px;background:var(--bg-subtle);font-size:12px}
+    .owner-avatar-img{width:28px;height:28px;border-radius:50%;object-fit:cover}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid rgba(115,115,229,.35);background:rgba(115,115,229,.1);color:var(--accent);font-size:12px}
+    .motion-lab-disclaimer,.callout,.scope-note{font-size:12px;color:var(--muted);margin:0 0 16px;padding:10px 12px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm);line-height:1.55}
+    .callout,.scope-note{border-left:4px solid var(--accent);color:#404047}
+    .scope-note a{color:var(--accent)}
+    .stage-wrap{display:flex;justify-content:center;margin-bottom:0}
+    .motion-stage{width:100%;max-width:390px;min-height:240px;border:1px solid var(--border);background:var(--bg-subtle);border-radius:var(--radius);padding:20px;display:flex;align-items:center;justify-content:center}
+    .combobox{width:100%}
+    .combobox__label{font-size:12px;color:var(--muted);margin-bottom:6px}
+    .combobox__wrapper{position:relative;display:flex;align-items:center;gap:8px;min-height:46px;padding:8px 12px;border:1px solid #cfcfda;border-radius:10px;background:#fff}
+    .combobox__ring{position:absolute;inset:-4px;border:2px solid var(--accent);border-radius:12px;opacity:0;pointer-events:none}
+    .combobox__trigger{display:flex;align-items:center;gap:8px;flex:1;min-width:0;border:0;background:transparent;padding:0;font:inherit;text-align:left;cursor:pointer;color:inherit;touch-action:manipulation}
+    .combobox__value{flex:1;font-size:14px;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .combobox__value.is-placeholder{color:var(--muted)}
+    .combobox__icon{flex:0 0 auto;width:16px;height:16px;color:var(--muted);will-change:opacity}
+    .combobox__helper{margin-top:6px;font-size:12px;color:var(--muted)}
+    .combobox.is-error .combobox__wrapper{border-color:var(--danger)}
+    .motion-controls{display:flex;flex-wrap:wrap;gap:12px;margin:16px 0;align-items:center}
+    .motion-controls label{font-size:13px;color:#404047}
+    .motion-token-readout{margin:0 0 12px;font-size:12px;font-family:var(--mono);color:var(--muted)}
+    .mapping{margin:0 0 14px;padding:12px;border:1px solid rgba(115,115,229,.35);border-radius:var(--radius-sm);background:rgba(115,115,229,.1);font-size:12px;color:#404047}
+    .companion-link{margin-top:12px;font-size:13px;color:var(--muted)} .companion-link a{color:var(--accent)}
+    .implementation pre{background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;font-size:.75rem;white-space:pre-wrap}
+    .doc-footer{text-align:center;color:var(--subtle);font-size:12px;padding:16px 0 8px}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <h1>Combobox</h1>
+      <div class="hero-meta">
+        <span class="owner-badge"><img class="owner-avatar-img" src="data:image/jpeg;base64,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" alt="Teresa Mendez" /> Teresa Mendez</span>
+        <span>App · GGDS · 2026-06-23</span>
+      </div>
+      <span class="pill">motion-spring-md</span>
+    </header>
+
+    <section class="motion-lab" id="motion-lab">
+      <h2>Preview de motion</h2>
+      <p class="motion-lab-disclaimer">Motion lab — no es el componente de la libreria. Valida motion del field colapsado; la UI final esta en Figma. Hace tap en el field para simular apertura del sheet.</p>
+      <div class="stage-wrap">
+        <div class="motion-stage">
+          <div class="combobox" id="field">
+            <div class="combobox__label">Label</div>
+            <div class="combobox__wrapper">
+              <div class="combobox__ring" id="ring"></div>
+              <button type="button" class="combobox__trigger" id="trigger" aria-label="Open combobox" aria-haspopup="listbox">
+                <span class="combobox__value is-placeholder" id="value">Buscar entidad</span>
+                <svg class="combobox__icon" id="chevron" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+              </button>
+            </div>
+            <div class="combobox__helper" id="helper">Helper text</div>
+          </div>
+        </div>
+      </div>
+      <div class="motion-controls">
+        <label><input type="checkbox" id="filledToggle" /> Filled</label>
+        <label><input type="checkbox" id="errorToggle" /> Error</label>
+        <label><input type="checkbox" id="disabledToggle" /> Disabled</label>
+        <label><input type="checkbox" id="reducedToggle" /> disableAnimations</label>
+      </div>
+      <p class="scope-note">Al hacer <strong>tap</strong> en el field se abre un <a href="../../bottom-sheet/App/bottom-sheet_motion-handoff_app.html">Bottom Sheet</a> con input de busqueda en focus y teclado activo. El body lista <a href="../../option-item/App/option-item_motion-handoff_app.html">Option Items</a> filtrados desde el <strong>1.er caracter</strong> (Search filtra desde el 3.er). Altura minima del sheet: <strong>2 opciones</strong> visibles. Motion del sheet y de las filas: handoffs enlazados.</p>
+      <p class="callout">Este preview es una representacion visual del motion, no una simulacion fisica real de Flutter. Implementa con los parametros del Token Mapping.</p>
+      <div class="motion-token-readout" id="readout">State: empty</div>
+      <div class="mapping"><strong>Token Mapping:</strong> motion-spring-md → mass 1.0 · stiffness 300 · damping 28</div>
+      <p class="companion-link">Referencia visual Web (misma intencion): <a href="../../autocomplete/Web/autocomplete_motion-handoff_web.html">abrir preview Autocomplete</a></p>
+    </section>
+
+    <section><h2>Implementacion Dart (Flutter)</h2><div class="implementation"><pre>const _comboboxFieldSpring = SpringDescription(
+  mass: 1.0,
+  stiffness: 300.0,
+  damping: 28.0,
+);
+
+void animateComboboxFieldFocus({
+  required AnimationController controller,
+  required bool focused,
+  required BuildContext context,
+}) {
+  if (MediaQuery.of(context).disableAnimations) return;
+  controller.animateWith(
+    SpringSimulation(
+      _comboboxFieldSpring,
+      focused ? 0.0 : 1.0,
+      focused ? 1.0 : 0.0,
+      0.0,
+    ),
+  );
+}</pre></div></section>
+
+    <footer class="doc-footer"><p>Motion System GGDS · Combobox Handoff App · 2026-06-23</p><p>DesignOps @ itti</p></footer>
+  </div>
+
+  <script>
+(() => {
+  const STIFFNESS = 300, DAMPING = 28, MASS = 1;
+  const field = document.getElementById("field");
+  const trigger = document.getElementById("trigger");
+  const chevron = document.getElementById("chevron");
+  const ring = document.getElementById("ring");
+  const value = document.getElementById("value");
+  const helper = document.getElementById("helper");
+  const readout = document.getElementById("readout");
+  const filledToggle = document.getElementById("filledToggle");
+  const errorToggle = document.getElementById("errorToggle");
+  const disabledToggle = document.getElementById("disabledToggle");
+  const reducedToggle = document.getElementById("reducedToggle");
+
+  const FILLED_TEXT = "Banco Altos S.A.";
+  const PLACEHOLDER = "Buscar entidad";
+
+  function springTo(from, to, onUpdate) {
+    let x = from, v = 0, last = performance.now();
+    function frame(now) {
+      const dt = Math.min((now - last) / 1000, 0.064); last = now;
+      const a = (-STIFFNESS * (x - to) - DAMPING * v) / MASS;
+      v += a * dt; x += v * dt; onUpdate(x);
+      if (Math.abs(x - to) < 0.002 && Math.abs(v) < 0.002) { onUpdate(to); return; }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  const set = (label) => { readout.textContent = "State: " + label; };
+  const isFocused = () => document.activeElement === trigger;
+  const setRingColor = (color) => { ring.style.borderColor = color; };
+  const isFilled = () => filledToggle.checked;
+
+  function animateRing(target) {
+    const from = parseFloat(ring.style.opacity || "0");
+    if (reducedToggle.checked) { ring.style.opacity = String(target); return; }
+    springTo(from, target, (val) => { ring.style.opacity = String(val); });
+  }
+
+  function pulseChevron() {
+    if (reducedToggle.checked) return;
+    const from = parseFloat(chevron.style.opacity || "1");
+    springTo(from, 0.55, (val) => { chevron.style.opacity = String(val); });
+    window.setTimeout(() => springTo(0.55, 1, (val) => { chevron.style.opacity = String(val); }), 120);
+  }
+
+  function syncValue() {
+    if (isFilled()) {
+      value.textContent = FILLED_TEXT;
+      value.classList.remove("is-placeholder");
+    } else {
+      value.textContent = PLACEHOLDER;
+      value.classList.add("is-placeholder");
+    }
+  }
+
+  function baseState() {
+    if (disabledToggle.checked) return "disabled · sin transicion";
+    if (errorToggle.checked) return isFilled() ? "error · filled" : "error · empty";
+    return isFilled() ? "filled" : "empty";
+  }
+
+  function syncState() {
+    field.classList.toggle("is-error", errorToggle.checked);
+    trigger.disabled = disabledToggle.checked;
+    syncValue();
+
+    if (disabledToggle.checked) {
+      field.style.opacity = "0.45";
+      ring.style.opacity = "0";
+      helper.textContent = "Helper text";
+      set(baseState());
+      return;
+    }
+
+    field.style.opacity = "1";
+    if (errorToggle.checked) {
+      setRingColor("#D64545");
+      helper.style.color = "#D64545";
+      helper.textContent = "Error text";
+      animateRing(isFocused() ? 1 : 0);
+      set(baseState());
+      return;
+    }
+
+    setRingColor("#7373E5");
+    helper.style.color = "#6C6C78";
+    helper.textContent = "Helper text";
+    animateRing(isFocused() ? 1 : 0);
+    set(baseState());
+  }
+
+  trigger.addEventListener("focus", () => {
+    if (trigger.disabled) return;
+    if (!errorToggle.checked) setRingColor("#7373E5");
+    animateRing(1);
+    set(errorToggle.checked ? "error · focused" : "focused");
+  });
+
+  trigger.addEventListener("blur", () => {
+    if (!isFocused()) animateRing(0);
+    if (!isFocused()) syncState();
+  });
+
+  trigger.addEventListener("pointerdown", () => {
+    if (trigger.disabled) return;
+    set(errorToggle.checked ? "error · pressed" : "pressed");
+  });
+
+  trigger.addEventListener("pointerup", () => {
+    if (trigger.disabled) return;
+    pulseChevron();
+    set(errorToggle.checked ? "error · sheet opened" : "sheet opened");
+    window.setTimeout(syncState, 180);
+  });
+
+  [filledToggle, errorToggle, disabledToggle, reducedToggle].forEach((el) => el.addEventListener("change", syncState));
+  syncState();
+})();
+  </script>
+</body>
+</html>

@@ -133,6 +133,26 @@ Si el componente **no** requiere haptics, aclararlo explícitamente en App para 
 | Material M3 | [Búsqueda haptics](https://m3.material.io/search.html?q=haptics) |
 | Android | [Haptics principles](https://developer.android.com/develop/ui/views/haptics/haptics-principles) |
 
+### 1e. Skeleton — fuera de scope (política interna del skill)
+
+**Skeleton ya está implementado y validado por desarrollo** en la librería GGDS. Los motion handoffs documentan la **interacción animada del componente** (estados, triggers, tokens de motion) — no el estado de carga esqueleto.
+
+**Regla:** no incluir Skeleton en handoffs nuevos ni regenerados.
+
+| Incluir en entregables (HTML / MD / spec) | No incluir |
+|---|---|
+| Estados de interacción reales del componente | Checkbox o toggle **Skeleton** en el preview |
+| Loading solo si el componente lo define en Figma como estado de motion propio | Filas de timeline / triggers / propiedades animadas de skeleton |
+| Nota de exclusión en Fase 1 o Fase 3 **en chat** si la persona pregunta | Menciones de skeleton en `scope-note`, disclaimer, readout ni recomendaciones del HTML |
+
+Si en discovery alguien pide skeleton, responder en chat:
+
+> "Skeleton ya lo resolvieron los devs en la librería — queda fuera del motion handoff. Documentamos solo la interacción del componente."
+
+**No** agregar esa aclaración en los archivos HTML/MD del componente salvo que la persona lo pida explícitamente como nota de scope (caso excepcional).
+
+Los archivos en `references/history/` (ej. button 2026-06-05) pueden conservar skeleton como referencia histórica — **no replicar** ese patrón en handoffs nuevos.
+
 ---
 
 ## FASE 2 — Confirmación o ajustes
@@ -570,7 +590,7 @@ Leer [references/html-live-preview.md](references/html-live-preview.md). Impleme
 | **Viewport** | Modal, Sidesheet, Toast, Drawer | Entrada · Salida · Reset · reduced-motion |
 | **Estado interno** | Button, Icon Button, Checkbox, Radio, Switch, Toggle | **Interactuar con el componente** (click/tap y Tab). Solo **checkboxes** auxiliares: Loading, Disabled, reduced-motion. **Prohibido** botonera Default/Hover/Pressed/Focus y **prohibido** control manual `Selected` en checkbox/radio |
 
-Para estado interno en Web: usar `:hover`, `:active`, `:focus-visible` con `transition` y tokens del handoff. Para App: usar `pressed`, `focus`, `disabled`, `loading/skeleton` y selección por interacción real; **no modelar `hover` en App**. Animar con `springTo()` y parámetros del token.
+Para estado interno en Web: usar `:hover`, `:active`, `:focus-visible` con `transition` y tokens del handoff. Para App: usar `pressed`, `focus`, `disabled`, `loading` (si aplica en Figma) y selección por interacción real; **no modelar `hover` en App**. Animar con `springTo()` y parámetros del token.
 
 **Copy del hint (estado interno):** usar *checkboxes*, nunca *toggles* — ej.: *"Los checkboxes de abajo solo simulan Loading y Disabled."*
 
@@ -618,8 +638,36 @@ Todo `.html` de App incluye:
 Reglas específicas para App en componentes de estado interno:
 
 - **No usar estado `hover`** en preview ni en documentación App.
+- **Prohibido en App HTML:** reglas CSS `:hover` que cambien el preview; listeners `mouseenter`/`mouseleave` que actualicen el readout a `hover`/`hovered`.
+- **Permitido:** `mouseleave` solo para **liberar `pressed`** en componentes táctiles (Button, Link, Quick Action) — nunca para modelar hover.
 - En **checkbox/radio**, la selección debe cambiar por interacción directa (click/tap o teclado) y no por checkbox auxiliar `Selected`.
-- Mantener solo controles auxiliares necesarios (`Disabled`, `Loading`, `Skeleton`, `disableAnimations`) según corresponda.
+- Mantener solo controles auxiliares necesarios (`Disabled`, `Loading`, `disableAnimations`) según corresponda — **nunca Skeleton** (ver §1e).
+- **Iconos en preview:** usar SVG inline (p. ej. Heroicons outline) — no emojis.
+
+### Validación obligatoria antes de entregar Fase 4 (App)
+
+Ejecutar auditoría sobre todos los `App/*_motion-handoff_app.html` del entregable (y corregir si falla):
+
+```bash
+python3 - <<'PY'
+from pathlib import Path
+import re, sys
+root = Path("~/motion").expanduser()  # o ruta del componente
+bad = []
+for f in sorted(root.glob("**/App/*_motion-handoff_app.html")):
+    t = f.read_text()
+    issues = []
+    if ":hover" in t: issues.append(":hover CSS")
+    if re.search(r"mouseenter|'hovered'|\"hovered\"|set\([^)]*hover", t): issues.append("hover en JS/readout")
+    if issues: bad.append((f, issues))
+if bad:
+    for f, issues in bad: print(f, "->", ", ".join(issues))
+    sys.exit(1)
+print("OK: sin hover en App")
+PY
+```
+
+Readout App válido: `pressed`, `focused`, `typing`, `filled`, `error`, `disabled`, `visibility toggled` — **nunca** `hover`/`hovered`.
 
 ---
 
@@ -758,6 +806,7 @@ Verificar antes de entregar cada archivo:
 - [ ] App: callout + link companion Web (si existe) + spring simulado
 - [ ] App con haptics: sección `Haptics` después de Implementación Dart, con Token Mapping y snippet haptic-only
 - [ ] App sin haptics: no incluir sección Haptics vacía
+- [ ] Sin Skeleton en preview, timeline, spec ni scope-note (política §1e)
 - [ ] Archivo autocontenido (sin dependencias externas rotas)
 
 ---

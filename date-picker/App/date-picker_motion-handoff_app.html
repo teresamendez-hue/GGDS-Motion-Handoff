@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Motion Handoff — Date Picker (App)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --bg:#fff; --bg-subtle:#f7f7f7; --border:#e8e8ec; --text:#252529; --muted:#6c6c78; --subtle:#8f8f9c; --accent:#7373e5; --danger:#d64545; --radius:12px; --radius-sm:6px; --sans:'Inter',sans-serif; --mono:'SF Mono','Fira Code','Consolas',monospace; --day-active-bg:#6b2d3c; --day-active-text:#fff; --day-pressed-bg:#f3e8ea; --day-focused-ring:#7373e5; }
+    *{box-sizing:border-box} body{margin:0;font-family:var(--sans);font-size:14px;line-height:1.6;color:var(--text)}
+    .page{max-width:980px;margin:0 auto;padding:20px} section{padding:22px 0;border-bottom:1px solid var(--border)}
+    h1{margin:0;font-size:3rem;font-weight:800;letter-spacing:-.03em} h2{margin:0 0 12px;font-size:1.35rem;font-weight:700;letter-spacing:-.02em}
+    .hero-meta{display:flex;gap:12px;align-items:center;margin:10px 0 14px;color:var(--muted);flex-wrap:wrap}
+    .owner-badge{display:inline-flex;align-items:center;gap:8px;padding:4px 10px 4px 4px;border:1px solid var(--border);border-radius:999px;background:var(--bg-subtle);font-size:12px}
+    .owner-avatar-img{width:28px;height:28px;border-radius:50%;object-fit:cover}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid rgba(115,115,229,.35);background:rgba(115,115,229,.1);color:var(--accent);font-size:12px}
+    .motion-lab-disclaimer,.callout,.scope-note{font-size:12px;color:var(--muted);margin:0 0 16px;padding:10px 12px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm);line-height:1.55}
+    .callout,.scope-note{border-left:4px solid var(--accent);color:#404047}
+    .scope-note a{color:var(--accent)}
+    .stage-wrap{display:flex;justify-content:center;margin-bottom:0}
+    .motion-stage{position:relative;width:100%;max-width:390px;min-height:680px;border:1px solid var(--border);background:var(--bg-subtle);border-radius:var(--radius);padding:20px;overflow:hidden}
+    .dp{width:100%}
+    .dp__label{font-size:12px;color:var(--muted);margin-bottom:6px}
+    .dp__wrapper{position:relative;display:flex;align-items:center;gap:8px;min-height:46px;padding:8px 12px;border:1px solid #cfcfda;border-radius:10px;background:#fff}
+    .dp__ring{position:absolute;inset:-4px;border:2px solid var(--accent);border-radius:12px;opacity:0;pointer-events:none;will-change:opacity}
+    .dp__trigger{display:flex;align-items:center;gap:8px;flex:1;min-width:0;border:0;background:transparent;padding:0;font:inherit;text-align:left;cursor:pointer;color:inherit;touch-action:manipulation}
+    .dp__value{flex:1;font-size:14px;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .dp__value.is-placeholder{color:var(--muted)}
+    .dp__icon{flex:0 0 auto;width:16px;height:16px;color:var(--muted)}
+    .dp__helper{margin-top:6px;font-size:12px;color:var(--muted)}
+    .dp.is-error .dp__wrapper{border-color:var(--danger)}
+    .dp.is-disabled{opacity:.45;pointer-events:none}
+    .scrim{position:absolute;inset:0;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;z-index:10}
+    .scrim.is-open{pointer-events:auto}
+    .sheet{position:absolute;left:0;right:0;bottom:0;z-index:11;background:#fff;border-radius:16px 16px 0 0;box-shadow:0 -8px 32px rgba(0,0,0,.12);transform:translateY(100%);opacity:0;will-change:transform,opacity;display:flex;flex-direction:column}
+    .sheet__handle{width:36px;height:4px;background:#d8d8e0;border-radius:2px;margin:10px auto 4px;flex-shrink:0}
+    .sheet__body{padding:8px 16px 12px;overflow:visible;flex-shrink:0}
+    .cal-mini__nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+    .cal-mini__month{display:inline-flex;align-items:center;gap:4px;font-size:15px;font-weight:600;border:0;background:transparent;padding:0;font:inherit;color:var(--text)}
+    .cal-mini__month svg{width:14px;height:14px;color:var(--muted)}
+    .cal-mini__nav-arrows{display:flex;gap:2px}
+    .cal-mini__nav-arrows button{border:0;background:transparent;padding:8px;cursor:pointer;color:var(--text);touch-action:manipulation;border-radius:8px;font-size:18px;line-height:1}
+    .cal-mini__body{margin-top:4px}
+    .cal-mini__weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:8px;font-size:11px;color:var(--muted);text-align:center}
+    .cal-mini__weekdays span{display:block;padding:4px 0}
+    .cal-mini__grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+    .cal-mini__day{position:relative;aspect-ratio:1;border:0;border-radius:4px;background:transparent;font-size:13px;cursor:pointer;touch-action:manipulation;color:var(--text);transition:none;font-weight:400;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:2px 0}
+    .cal-mini__day-num{line-height:1.1}
+    .cal-mini__day-dot{display:none;width:4px;height:4px;border-radius:50%;background:var(--text);flex-shrink:0}
+    .cal-mini__day.is-today .cal-mini__day-dot{display:block}
+    .cal-mini__day.is-draft .cal-mini__day-dot{background:var(--day-active-text)}
+    .cal-mini__day.is-out{color:var(--subtle);opacity:.55}
+    .cal-mini__day.is-pressed{background:var(--day-pressed-bg)}
+    .cal-mini__day.is-draft{background:var(--day-active-bg);color:var(--day-active-text);font-weight:600}
+    .cal-mini__day:disabled{opacity:.32;cursor:not-allowed;pointer-events:none}
+    .sheet__footer{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 24px;border-top:1px solid var(--border);flex-shrink:0}
+    .btn-text{border:0;background:transparent;font:inherit;font-weight:600;color:var(--text);cursor:pointer;touch-action:manipulation;padding:10px 4px}
+    .btn-filled{border:0;background:#3a3a42;color:#fff;font:inherit;font-weight:600;border-radius:10px;min-height:44px;padding:0 20px;cursor:pointer;touch-action:manipulation}
+    .btn-filled:disabled{background:#c8c8d0;color:#fff;opacity:1;cursor:not-allowed}
+    .motion-controls{display:flex;flex-wrap:wrap;gap:12px;margin:16px 0;align-items:center}
+    .motion-controls label{font-size:13px;color:#404047}
+    .motion-token-readout{margin:0 0 12px;font-size:12px;font-family:var(--mono);color:var(--muted)}
+    .mapping{margin:0 0 14px;padding:12px;border:1px solid rgba(115,115,229,.35);border-radius:var(--radius-sm);background:rgba(115,115,229,.1);font-size:12px;color:#404047;line-height:1.55}
+    .implementation pre{background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;font-size:.75rem;white-space:pre-wrap}
+    .doc-footer{text-align:center;color:var(--subtle);font-size:12px;padding:16px 0 8px}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <h1>Date Picker</h1>
+      <div class="hero-meta">
+        <span class="owner-badge"><img class="owner-avatar-img" src="data:image/jpeg;base64,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" alt="Teresa Mendez" /> Teresa Mendez</span>
+        <span>App · GGDS · 2026-07-03</span>
+      </div>
+      <span class="pill">motion-spring-md</span>
+    </header>
+
+    <section class="motion-lab" id="motion-lab">
+      <h2>Preview de motion</h2>
+      <p class="motion-lab-disclaimer">Motion lab — no es el componente de la libreria. Valida motion y tokens; la UI final esta en Figma.</p>
+      <div class="stage-wrap">
+        <div class="motion-stage" id="stage">
+          <div class="dp" id="dp">
+            <div class="dp__label">Fecha de nacimiento</div>
+            <div class="dp__wrapper">
+              <div class="dp__ring" id="ring"></div>
+              <button type="button" class="dp__trigger" id="trigger" aria-haspopup="dialog">
+                <span class="dp__value is-placeholder" id="value">00/00/0000</span>
+                <svg class="dp__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M4.5 8.25h15M4.5 19.5h15a1.5 1.5 0 0 0 1.5-1.5V7.5a1.5 1.5 0 0 0-1.5-1.5h-15A1.5 1.5 0 0 0 3 7.5v10.5a1.5 1.5 0 0 0 1.5 1.5Z" /></svg>
+              </button>
+            </div>
+            <div class="dp__helper" id="helper">Helper text</div>
+          </div>
+          <div class="scrim" id="scrim" aria-hidden="true"></div>
+          <div class="sheet" id="sheet" role="dialog" aria-label="Seleccionar fecha">
+            <div class="sheet__handle" id="dragZone"></div>
+            <div class="sheet__body">
+              <div class="cal-mini" id="calMini">
+                <div class="cal-mini__nav">
+                  <button type="button" class="cal-mini__month" id="monthLabel" aria-haspopup="listbox">
+                    Julio 2026
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                  </button>
+                  <div class="cal-mini__nav-arrows">
+                    <button type="button" id="prevMonth" aria-label="Mes anterior">‹</button>
+                    <button type="button" id="nextMonth" aria-label="Mes siguiente">›</button>
+                  </div>
+                </div>
+                <div class="cal-mini__body">
+                  <div class="cal-mini__weekdays" aria-hidden="true"><span>Dom</span><span>Lun</span><span>Mar</span><span>Mie</span><span>Jue</span><span>Vie</span><span>Sab</span></div>
+                  <div class="cal-mini__grid" id="grid"></div>
+                </div>
+              </div>
+            </div>
+            <div class="sheet__footer">
+              <button type="button" class="btn-text" id="btnBorrar">Borrar</button>
+              <button type="button" class="btn-filled" id="btnAceptar" disabled>Aceptar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="motion-controls">
+        <label><input type="checkbox" id="filledToggle" /> Filled</label>
+        <label><input type="checkbox" id="errorToggle" /> Error</label>
+        <label><input type="checkbox" id="disabledToggle" /> Disabled</label>
+        <label><input type="checkbox" id="reducedToggle" /> disableAnimations</label>
+      </div>
+      <p class="scope-note">Tap en field abre <a href="../../bottom-sheet/App/bottom-sheet_motion-handoff_app.html">Bottom Sheet</a> con <a href="../../calendar/App/calendar_motion-handoff_app.html">Calendar</a> y <a href="../../button/App/button_motion-handoff_app.html">Buttons</a> (link) en el footer.</p>
+      <p class="callout">Este preview es una representacion visual del motion, no una simulacion fisica real de Flutter.</p>
+      <div class="motion-token-readout" id="readout">State: empty</div>
+      <div class="mapping"><strong>Token Mapping:</strong> motion-spring-md → mass 1.0 · stiffness 300 · damping 28</div>
+    </section>
+
+    <section><h2>Implementacion Dart (Flutter)</h2><div class="implementation"><pre>const _datePickerFieldSpring = SpringDescription(
+  mass: 1.0,
+  stiffness: 300.0,
+  damping: 28.0,
+);
+
+void animateDatePickerFieldFocus({
+  required AnimationController ringController,
+  required bool focused,
+  required BuildContext context,
+}) {
+  if (MediaQuery.of(context).disableAnimations) {
+    ringController.value = focused ? 1.0 : 0.0;
+    return;
+  }
+  ringController.animateWith(
+    SpringSimulation(
+      _datePickerFieldSpring,
+      ringController.value,
+      focused ? 1.0 : 0.0,
+      0.0,
+    ),
+  );
+}
+
+// Sheet: handoff Bottom Sheet
+// Calendar + Day Item: handoff Calendar</pre></div></section>
+    <footer class="doc-footer"><p>Motion System GGDS · Date Picker Handoff App · 2026-07-03</p><p>DesignOps @ itti</p></footer>
+  </div>
+  <script>
+(() => {
+  const STIFFNESS = 300, DAMPING = 28, MASS = 1;
+  const ring = document.getElementById('ring');
+  const trigger = document.getElementById('trigger');
+  const valueEl = document.getElementById('value');
+  const dp = document.getElementById('dp');
+  const sheet = document.getElementById('sheet');
+  const scrim = document.getElementById('scrim');
+  const grid = document.getElementById('grid');
+  const monthLabel = document.getElementById('monthLabel');
+  const btnAceptar = document.getElementById('btnAceptar');
+  const readout = document.getElementById('readout');
+  const reducedToggle = document.getElementById('reducedToggle');
+
+  let committed = null;
+  let draft = null;
+  let viewYear = 2026, viewMonth = 6;
+  let progress = 0, rafId = null, ringVal = 0;
+
+  const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const weekdaysSun = ['Dom','Lun','Mar','Mie','Jue','Vie','Sab'];
+
+  function springTo(from, to, onUpdate, onComplete) {
+    if (rafId) cancelAnimationFrame(rafId);
+    if (reducedToggle.checked) { onUpdate(to); onComplete?.(); return; }
+    let x = from, v = 0, last = performance.now();
+    (function frame(now) {
+      const dt = Math.min((now - last) / 1000, 0.064);
+      last = now;
+      const a = (-STIFFNESS * (x - to) - DAMPING * v) / MASS;
+      v += a * dt; x += v * dt;
+      onUpdate(x);
+      if (Math.abs(x - to) < 0.002 && Math.abs(v) < 0.002) { onUpdate(to); rafId = null; onComplete?.(); return; }
+      rafId = requestAnimationFrame(frame);
+    })(performance.now());
+  }
+
+  function fmt(d) {
+    const pad = n => String(n).padStart(2, '0');
+    return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear();
+  }
+
+  function syncField() {
+    if (committed) { valueEl.textContent = fmt(committed); valueEl.classList.remove('is-placeholder'); }
+    else { valueEl.textContent = '00/00/0000'; valueEl.classList.add('is-placeholder'); }
+    document.getElementById('filledToggle').checked = !!committed;
+  }
+
+  function setReadout(s) { readout.textContent = 'State: ' + s; }
+
+  function applySheet() {
+    const visible = Math.max(0, Math.min(1, progress));
+    sheet.style.transform = 'translateY(' + ((1 - visible) * 100) + '%)';
+    sheet.style.opacity = String(visible);
+    scrim.style.opacity = String(visible * 0.45);
+    scrim.classList.toggle('is-open', visible > 0.02);
+  }
+
+  function openSheet() {
+    if (dp.classList.contains('is-disabled')) return;
+    draft = committed ? new Date(committed) : null;
+    renderGrid();
+    btnAceptar.disabled = !draft;
+    springTo(ringVal, 1, v => { ringVal = v; ring.style.opacity = String(v); }, () => {
+      setReadout('sheet opening');
+      springTo(progress, 1, v => { progress = v; applySheet(); }, () => setReadout('borrador activo'));
+    });
+  }
+
+  function closeSheet(discard) {
+    if (discard) draft = null;
+    setReadout('sheet closing');
+    springTo(progress, 0, v => { progress = v; applySheet(); }, () => {
+      springTo(ringVal, 0, v => { ringVal = v; ring.style.opacity = String(v); }, () => setReadout(committed ? 'filled' : 'empty'));
+    });
+  }
+
+  function sameDay(a, b) { return a && b && a.toDateString() === b.toDateString(); }
+
+  function bindDay(btn, cellDate) {
+    btn.addEventListener('pointerdown', () => btn.classList.add('is-pressed'));
+    btn.addEventListener('pointerup', () => btn.classList.remove('is-pressed'));
+    btn.addEventListener('pointerleave', () => btn.classList.remove('is-pressed'));
+    btn.addEventListener('click', () => {
+      draft = cellDate;
+      btnAceptar.disabled = false;
+      grid.querySelectorAll('.cal-mini__day').forEach(el => {
+        el.classList.remove('is-draft', 'is-active');
+      });
+      btn.classList.add('is-draft');
+      setReadout('dia en borrador · motion-spring-sm');
+    });
+  }
+
+  function makeMiniDay(d, cellDate, interactive) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'cal-mini__day';
+    const num = document.createElement('span');
+    num.className = 'cal-mini__day-num';
+    num.textContent = String(d);
+    b.appendChild(num);
+    const today = new Date(2026, 6, 3);
+    if (sameDay(cellDate, today)) {
+      b.classList.add('is-today');
+      const dot = document.createElement('span');
+      dot.className = 'cal-mini__day-dot';
+      dot.setAttribute('aria-hidden', 'true');
+      b.appendChild(dot);
+    }
+    if (cellDate.getMonth() !== viewMonth) b.classList.add('is-out');
+    if (sameDay(cellDate, draft)) b.classList.add('is-draft');
+    if (!interactive) b.disabled = true;
+    else bindDay(b, cellDate);
+    return b;
+  }
+
+  function renderGrid() {
+    monthLabel.childNodes[0].textContent = months[viewMonth] + ' ' + viewYear + ' ';
+    const first = new Date(viewYear, viewMonth, 1);
+    const start = first.getDay();
+    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+    const prevDays = new Date(viewYear, viewMonth, 0).getDate();
+    grid.innerHTML = '';
+    for (let i = 0; i < start; i++) {
+      const d = prevDays - start + i + 1;
+      grid.appendChild(makeMiniDay(d, new Date(viewYear, viewMonth - 1, d), false));
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      grid.appendChild(makeMiniDay(d, new Date(viewYear, viewMonth, d), true));
+    }
+    const total = start + daysInMonth;
+    const trailing = total % 7 === 0 ? 0 : 7 - (total % 7);
+    for (let d = 1; d <= trailing; d++) {
+      grid.appendChild(makeMiniDay(d, new Date(viewYear, viewMonth + 1, d), false));
+    }
+  }
+
+  trigger.addEventListener('click', openSheet);
+  scrim.addEventListener('click', () => closeSheet(true));
+  document.getElementById('btnBorrar').addEventListener('click', () => { committed = null; draft = null; syncField(); closeSheet(false); setReadout('cleared'); });
+  btnAceptar.addEventListener('click', () => { if (!draft) return; committed = new Date(draft); syncField(); closeSheet(false); setReadout('aceptado'); });
+  document.getElementById('prevMonth').addEventListener('click', () => { viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; } renderGrid(); });
+  document.getElementById('nextMonth').addEventListener('click', () => { viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; } renderGrid(); });
+
+  document.getElementById('filledToggle').addEventListener('change', e => {
+    if (e.target.checked) { committed = new Date(2026, 6, 11); syncField(); }
+    else { committed = null; syncField(); }
+  });
+  document.getElementById('errorToggle').addEventListener('change', e => dp.classList.toggle('is-error', e.target.checked));
+  document.getElementById('disabledToggle').addEventListener('change', e => dp.classList.toggle('is-disabled', e.target.checked));
+
+  applySheet(); syncField(); setReadout('empty');
+})();
+  </script>
+</body>
+</html>
