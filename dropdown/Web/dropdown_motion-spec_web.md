@@ -43,11 +43,6 @@ Panel flotante anclado a Button o Icon Button. Lista de acciones (List) o slot c
 - semantic: none
 - duration_ms: 0
 
-### Estados ítem
-- semantic: motion-curve-sm
-- primitive_duration: duration-150
-- duration_ms: 150
-
 ## Propiedades animadas
 
 ### Panel — Entrada
@@ -67,12 +62,6 @@ Panel flotante anclado a Button o Icon Button. Lista de acciones (List) o slot c
 |---|---|---|---|
 | opacity | 1 | 0 | none (instantáneo) |
 | translateY | 0 | -4px | none (instantáneo) |
-
-### Ítem — Hover / pressed / focus
-| propiedad | de | a | token |
-|---|---|---|---|
-| background-color | enabled | hover/pressed | motion-curve-sm |
-| opacity (ring) | 0 | 1 | motion-curve-sm |
 
 ## Triggers
 
@@ -107,8 +96,8 @@ Omitir.
 ## Coherencia sistémica
 
 - componentes_relacionados: [Button, Icon Button, Tooltip]
-- token_mismo_que: [Pagination estados ítem, Tooltip salida forzada]
-- razon: panel flotante Default con salida forzada en selección; ítems comparten motion-curve-sm con controles de lista
+- related_handoffs: [Button, Icon Button]
+- razon: panel flotante Default con salida forzada en selección; trigger e ítems con handoffs propios
 
 ## Accesibilidad
 

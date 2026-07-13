@@ -8,7 +8,6 @@
 | **Design system** | GGDS |
 | **Token entrada panel** | `motion-curve-sm` |
 | **Token salida suave** | `motion-exit` |
-| **Token estados ítem** | `motion-curve-sm` |
 | **Categoría** | Default |
 | **Fecha** | 2026-06-29 |
 | **Figma** | [Core — Web Components](https://www.figma.com/design/7zqh3EGXWDVhqvY6Fwk1tH/Core---Web-Components?node-id=10025-9193) |
@@ -17,11 +16,11 @@
 
 ## Motion Specification
 
-Dropdown en Web despliega un panel flotante (`List` o `Slot`) anclado a un **trigger** (`Button` o `Icon Button`). El motion del trigger reutiliza los handoffs de Button / Icon Button — este documento cubre **panel** e **ítems**.
+Dropdown en Web despliega un panel flotante (`List` o `Slot`) anclado a un **trigger** (`Button` o `Icon Button`). El motion del trigger vive en los handoffs de [Button](../../button/Web/button_motion-handoff_web.html) e [Icon Button](../../icon-button/Web/icon-button_motion-handoff_web.html) — **este documento cubre solo entrada y salida del panel**.
 
 **Panel (`List` / `Slot`):** entrada con `opacity` 0→1 y `translateY` −4px→0 (desliza desde arriba del anclaje). Token: `motion-curve-sm` (150ms). Salida suave — click fuera, `Escape`, segundo click en trigger — con `motion-exit` (100ms) en las mismas propiedades. **Cierre al seleccionar ítem:** instantáneo (`transition: none`). Sin scrim. **Ancho:** el panel **crece horizontalmente** según el contenido (`width: max-content`); **sin scroll horizontal**.
 
-**Ítems (`_Dropdown/Dropdown Item`):** hover, pressed y focus en `background-color` y focus ring (`opacity`). Token: `motion-curve-sm` (150ms). **Header:** sin estados interactivos — sin motion. **Disabled:** sin transición. **Submenú / Second Level / ítem con Action:** excluidos de este handoff.
+**Ítems (`_Dropdown/Dropdown Item`):** fuera de scope de este handoff — hover, pressed y focus no se documentan acá. **Header:** sin estados interactivos. **Submenú / Second Level / ítem con Action:** excluidos de este handoff.
 
 **Variantes** `Alignment` (Left / Center / Right), `List` ↔ `Slot`, cambio de trigger: **sin animación** — swap instantáneo. **Scroll vertical** en lista larga: funcional, sin motion. **Skeleton:** excluido del handoff.
 
@@ -39,16 +38,8 @@ Dropdown en Web despliega un panel flotante (`List` o `Slot`) anclado a un **tri
 | 4 | Response | Salida suave panel | `.dropdown-panel` | `opacity`, `translateY` | 1, 0 | 0, −4px | `motion-exit` | 100ms | * | *+100 |
 | 5 | Trigger | Click en ítem (selección) | — | — | — | — | — | — | * | — |
 | 6 | Response | Cierre forzado panel | `.dropdown-panel` | `opacity`, `translateY` | visible | oculto | **sin animación** | — | — | — |
-| 7 | Trigger | Pointer enter ítem | `.dropdown-item` | — | — | — | — | — | * | — |
-| 8 | Response | Hovered | `.dropdown-item` | `background-color` | enabled | hover | `motion-curve-sm` | 150ms | * | *+150 |
-| 9 | Trigger | Pointer down ítem | — | — | — | — | — | — | * | — |
-| 10 | Response | Pressed | `.dropdown-item` | `background-color` | hover/default | pressed | `motion-curve-sm` | 150ms | * | *+150 |
-| 11 | Trigger | Focus visible ítem | — | — | — | — | — | — | * | — |
-| 12 | Response | Focus ring | `.dropdown-item` | `opacity` (ring) | 0 | 1 | `motion-curve-sm` | 150ms | * | *+150 |
-| 13 | Trigger | Disabled ítem | — | — | — | — | — | — | * | — |
-| 14 | Response | Disabled | `.dropdown-item` | — | — | — | **sin animación** | — | — | — |
 
-> `*` = momento variable según interacción.
+> `*` = momento variable según interacción. Motion de ítems y trigger: ver handoffs enlazados.
 
 ---
 
@@ -58,9 +49,7 @@ Dropdown en Web despliega un panel flotante (`List` o `Slot`) anclado a un **tri
 |---|---|---|---|---|---|
 | Entrada panel | `motion-curve-sm` | `easing-standard` | `cubic-bezier(0.4, 0, 0.2, 1)` | `duration-150` | 150ms |
 | Salida suave panel | `motion-exit` | `easing-accelerate` | `cubic-bezier(0.4, 0, 1, 1)` | `duration-100` | 100ms |
-| Ítem hover / pressed / focus | `motion-curve-sm` | `easing-standard` | `cubic-bezier(0.4, 0, 0.2, 1)` | `duration-150` | 150ms |
 | Cierre al seleccionar ítem | — | — | — | — | instantáneo |
-| Header / disabled | — | — | — | — | instantáneo |
 
 ---
 
@@ -108,27 +97,8 @@ Dropdown en Web despliega un panel flotante (`List` o `Slot`) anclado a un **tri
   pointer-events: none;
 }
 
-.dropdown-item {
-  white-space: nowrap;
-  transition: background-color var(--duration-150) var(--motion-curve-sm);
-}
-
-.dropdown-item::after {
-  opacity: 0;
-  transition: opacity var(--duration-150) var(--motion-curve-sm);
-}
-
-.dropdown-item:focus-visible::after {
-  opacity: 1;
-}
-
-.dropdown-item:disabled {
-  transition: none;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .dropdown-panel,
-  .dropdown-item {
+  .dropdown-panel {
     transition: none !important;
   }
 }
@@ -140,8 +110,9 @@ Dropdown en Web despliega un panel flotante (`List` o `Slot`) anclado a un **tri
 
 | Tema | Criterio |
 |---|---|
-| Trigger | Reutilizar motion de Button / Icon Button — no duplicar tokens |
+| Trigger | Handoffs de [Button](../../button/Web/button_motion-handoff_web.html) e [Icon Button](../../icon-button/Web/icon-button_motion-handoff_web.html) — no duplicar tokens |
 | Panel | `motion-curve-sm` entrada · `motion-exit` salida suave |
+| Ítems | Fuera de scope — no documentar hover/pressed/focus en este handoff |
 | Selección | Cierre instantáneo al elegir ítem |
 | Ancho panel | Crece con el contenido — sin scroll horizontal |
 | Header | Sin transición |
