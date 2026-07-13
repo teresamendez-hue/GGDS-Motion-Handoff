@@ -29,14 +29,17 @@
 | Type Default/Container | sin animación | sin animación |
 | Viewport enter/exit | no | no |
 | motion-exit | no | no |
-| Haptic toggle | no aplica | `haptic-selection-change` |
+| Haptic toggle | no aplica | `haptic-selection-change` (propio del accordion) |
 
 Regla: no traducir ms de Web a duración fija en Flutter. El spring define el asentamiento.
+
+**Tokens alineados con Dropdown (Web):** `motion-curve-sm` en Web ↔ `motion-spring-sm` en App para microinteracciones de ítem (hover/pressed en dropdown; expand/header en accordion).
 
 ## Nota para desarrollo
 
 - **Fuente de verdad:** Token Mapping + snippet Dart de este documento.
 - **Preview HTML App:** representación visual con spring en JS; parámetros idénticos al token.
+- **Composición:** chevron → [Icon Button](../../icon-button/App/icon-button_motion-handoff_app.html).
 - **Figma:** referencia visual del componente; motion se implementa en código.
 - **QA final:** validar en dispositivo con `SpringDescription` / `flutter_animate` del design system.
 
@@ -54,7 +57,16 @@ El Accordion en App es un **ítem único**: header de 48dp (título + chevron) y
 
 Sin entrada/salida del viewport. Sin stagger.
 
-**Haptics:** `haptic-selection-change` en cada toggle expand/collapse (tap header).
+**Haptics:** `haptic-selection-change` en toggle expand/collapse. Chevron → handoff [Icon Button](../../icon-button/App/icon-button_motion-handoff_app.html).
+
+---
+
+## Composición
+
+| Pieza | Handoff |
+|---|---|
+| Expand/collapse + header pressed | este documento |
+| Chevron | [Icon Button](../../icon-button/App/icon-button_motion-handoff_app.html) |
 
 ---
 
@@ -79,10 +91,10 @@ Sin entrada/salida del viewport. Sin stagger.
 
 ## Token Mapping
 
-| Momento | Token semántico | mass | stiffness | damping |
-|---|---|---|---|---|
-| Expand / collapse | `motion-spring-sm` | 1.0 | 400 | 35 |
-| Header pressed | `motion-spring-sm` | 1.0 | 400 | 35 |
+| Momento | Token semántico | Spring primitivo | mass | stiffness | damping |
+|---|---|---|---:|---:|---:|
+| Expand / collapse | `motion-spring-sm` | `spring-standard-sm` | 1.0 | 400 | 35 |
+| Header pressed | `motion-spring-sm` | `spring-standard-sm` | 1.0 | 400 | 35 |
 
 ---
 
@@ -114,18 +126,13 @@ Future<void> toggleAccordion({required bool expanded}) async {
 
 ---
 
-## Haptics Specification
+## Haptics
 
-| Acción | Token | Trigger |
-|---|---|---|
-| Tap header (expand/collapse) | `haptic-selection-change` | `onTap` |
-| Cambio Type | none | — |
-
-### Token Mapping Haptics
-
-`haptic-selection-change` → `haptic-selection-click` → `HapticFeedback.selectionClick()`
-
-### Implementación Haptics
+| Acción | Token |
+|---|---|
+| Tap header (expand/collapse) | `haptic-selection-change` |
+| Chevron press | ver handoff [Icon Button](../../icon-button/App/icon-button_motion-handoff_app.html) |
+| Cambio Type | none |
 
 ```dart
 void onHeaderTap() {
@@ -144,5 +151,5 @@ void onHeaderTap() {
 | Ítem único | No documentar accordion group en este handoff |
 | Type | Default / Container: swap instantáneo |
 | `disableAnimations` | Estado final sin spring |
-| Haptics | Solo en toggle; no en cambio de Type |
+| Haptics | `haptic-selection-change` en toggle; chevron → Icon Button |
 | Figma | Solo referencia visual; motion en código |
