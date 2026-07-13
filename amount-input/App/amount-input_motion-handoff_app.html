@@ -35,15 +35,18 @@
     .pills { display: flex; gap: 8px; flex-wrap: wrap; }
     .pill { display: inline-block; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(37,37,41,.18); background: rgba(37,37,41,.06); color: var(--accent); font-size: 12px; }
     .motion-lab-disclaimer { font-size: 12px; color: var(--muted); margin-bottom: 10px; padding: 8px 10px; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+    .scope-note { font-size: 12px; color: var(--muted); margin: 0 0 10px; padding: 8px 10px; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-sm); line-height: 1.55; }
+    .scope-note a { color: var(--accent); }
     .motion-stage { min-height: 260px; border: 1px solid var(--border); background: var(--bg-subtle); border-radius: var(--radius); padding: 24px; display: flex; align-items: center; justify-content: center; }
-    .amount-input { width: min(320px, 100%); display: flex; flex-direction: column; gap: 8px; align-items: center; }
+    .amount-input { width: min(320px, 100%); display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .amount-input > .amount-row-wrap { margin-bottom: -4px; }
     .amount-input.is-disabled { opacity: 0.45; }
     .slot-wrap { width: 100%; display: flex; justify-content: center; overflow: hidden; }
     .text-badge { display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; border-radius: 4px; background: var(--badge-bg); color: var(--badge-text); font-size: 12px; font-weight: 600; line-height: 16px; }
-    .amount-row-wrap { width: 100%; display: flex; justify-content: center; }
+    .amount-row-wrap { width: 100%; display: flex; justify-content: center; line-height: 0; }
     .amount-row {
       display: inline-flex; align-items: center; justify-content: center; gap: 0;
-      padding: 0; border: 0; background: transparent; position: relative;
+      padding: 0; border: 0; background: transparent; position: relative; line-height: normal;
     }
     .amount-hidden-input {
       position: absolute; inset: 0; width: 100%; height: 100%;
@@ -51,24 +54,29 @@
       font-size: 16px; z-index: 2;
     }
     .amount-display {
-      display: flex; align-items: baseline; gap: 4px; flex-shrink: 0;
+      display: inline-flex; align-items: baseline; gap: 4px; flex-shrink: 0;
       font-family: var(--display); font-weight: 800;
       font-variant-numeric: tabular-nums lining-nums;
       transition: none;
     }
     .amount-prefix { flex-shrink: 0; }
     .amount-value-wrap {
-      position: relative; display: grid; grid-template: 1fr / auto; align-items: baseline;
+      display: inline-grid; grid-template-columns: max-content; flex-shrink: 0;
     }
-    .amount-value, .amount-masked {
+    .amount-value-sizer,
+    .amount-value,
+    .amount-masked {
       grid-area: 1 / 1; white-space: nowrap;
+    }
+    .amount-value-sizer {
+      visibility: hidden; pointer-events: none;
     }
     .amount-masked {
       opacity: 0; pointer-events: none;
     }
     .amount-caret {
       font-family: var(--sans); font-weight: 600; line-height: 1;
-      color: var(--text); margin-left: 0; flex-shrink: 0;
+      color: currentColor; margin-left: 0; flex-shrink: 0;
       animation: blink 1s step-end infinite;
     }
     .amount-caret[hidden] { display: none; }
@@ -76,7 +84,8 @@
     .visibility-btn {
       flex-shrink: 0; border: 0; background: transparent;
       border-radius: 4px; display: flex; align-items: center; justify-content: center;
-      cursor: pointer; color: var(--muted); padding: 0; z-index: 3;
+      cursor: pointer; color: currentColor; padding: 0; z-index: 3; margin-left: 4px;
+      align-self: center;
     }
     .visibility-btn:disabled { cursor: not-allowed; }
     .visibility-btn .eye-icon { display: none; width: 100%; height: 100%; }
@@ -115,6 +124,7 @@
     <section class="motion-lab" id="motion-lab">
       <h2>Preview de motion</h2>
       <p class="motion-lab-disclaimer">Motion lab — no es el componente de la librería. Validá motion y tokens; la UI final está en Figma.</p>
+      <p class="scope-note">El icono de visibilidad es un <a href="../../icon-button/App/icon-button_motion-handoff_app.html">Icon Button</a> compuesto. Press y focus del botón están en su handoff; este preview cubre el field (tipografía, crossfade del valor enmascarado, badge y helper).</p>
 
       <div class="motion-stage">
         <div class="amount-input" id="root">
@@ -127,16 +137,17 @@
               <input type="text" class="amount-hidden-input" id="hiddenInput" inputmode="decimal" autocomplete="off" aria-label="Amount input" />
               <div class="amount-display" id="display">
                 <span class="amount-prefix" id="prefix">Gs.</span>
-                <span class="amount-value-wrap">
+                <span class="amount-value-wrap" id="valueWrap">
+                  <span class="amount-value-sizer" id="valueSizer" aria-hidden="true">0,00</span>
                   <span class="amount-value" id="valueVisible">0,00</span>
                   <span class="amount-masked" id="valueMasked">•,••</span>
                 </span>
+                <span class="amount-caret" id="caret" hidden>|</span>
+                <button type="button" class="visibility-btn" id="eyeBtn" aria-label="Toggle visibility" tabindex="-1">
+                  <svg class="eye-icon eye-icon--open" id="eyeOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg class="eye-icon eye-icon--closed" id="eyeClosed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3l18 18M10.58 10.58A3 3 0 0 0 12 15a3 3 0 0 0 2.42-4.42M9.88 4.24A10.94 10.94 0 0 1 12 4c6.5 0 10 7 10 7a18.45 18.45 0 0 1-2.16 3.19M6.12 6.12A18.49 18.49 0 0 0 2 12s3.5 7 10 7a10.8 10.8 0 0 0 5.12-1.28"/></svg>
+                </button>
               </div>
-              <span class="amount-caret" id="caret" hidden>|</span>
-              <button type="button" class="visibility-btn" id="eyeBtn" aria-label="Toggle visibility" tabindex="-1">
-                <svg class="eye-icon eye-icon--open" id="eyeOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                <svg class="eye-icon eye-icon--closed" id="eyeClosed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3l18 18M10.58 10.58A3 3 0 0 0 12 15a3 3 0 0 0 2.42-4.42M9.88 4.24A10.94 10.94 0 0 1 12 4c6.5 0 10 7 10 7a18.45 18.45 0 0 1-2.16 3.19M6.12 6.12A18.49 18.49 0 0 0 2 12s3.5 7 10 7a10.8 10.8 0 0 0 5.12-1.28"/></svg>
-              </button>
             </div>
           </div>
 
@@ -185,14 +196,18 @@
       <div class="mapping">
         <strong>Token Mapping</strong><br/>
         Focus · typing · filled: motion-spring-md → mass 1.0 · stiffness 300 · damping 28<br/>
-        Muted · badge · helper: motion-spring-sm → mass 1.0 · stiffness 400 · damping 35<br/>
-        Disabled · currency · size: instantáneo
+        Value mask crossfade · badge · helper: motion-spring-sm → mass 1.0 · stiffness 400 · damping 35<br/>
+        Disabled · currency · size: instantáneo<br/>
+        Icon Button (eye): <a href="../../icon-button/App/icon-button_motion-handoff_app.html">handoff enlazado</a>
       </div>
     </section>
 
     <section>
       <h2>Implementación Dart (Flutter)</h2>
-      <div class="implementation"><pre>const amountInputSpringMd = SpringDescription(mass: 1.0, stiffness: 300, damping: 28);
+      <div class="implementation"><pre>// Componer GgdsIconButton para el eye — ver handoff Icon Button.
+// Este snippet cubre solo el field: tipografía activa, crossfade de máscara y slots.
+
+const amountInputSpringMd = SpringDescription(mass: 1.0, stiffness: 300, damping: 28);
 const amountInputSpringSm = SpringDescription(mass: 1.0, stiffness: 400, damping: 35);
 
 void animateAmountActive({
@@ -211,20 +226,20 @@ void animateAmountActive({
   );
 }
 
-void animateAmountVisibility({
+void animateAmountMaskCrossfade({
   required AnimationController controller,
-  required bool visible,
+  required bool masked,
   required BuildContext context,
 }) {
   if (MediaQuery.of(context).disableAnimations) {
-    controller.value = visible ? 1.0 : 0.0;
+    controller.value = masked ? 1.0 : 0.0;
     return;
   }
   controller.animateWith(
     SpringSimulation(
       amountInputSpringSm,
-      visible ? 0.0 : 1.0,
-      visible ? 1.0 : 0.0,
+      masked ? 0.0 : 1.0,
+      masked ? 1.0 : 0.0,
       0.0,
     ),
   );
@@ -248,15 +263,6 @@ void animateSlotVisibility({
     ),
   );
 }</pre></div>
-    </section>
-
-    <section class="haptics-section">
-      <h2>Haptics</h2>
-      <div class="mapping">
-        <strong>No requiere haptics</strong><br/>
-        Tratar Amount Input como Field Text, Field Prefix y Text Area.<br/>
-        Focus · typing · visibility toggle (eye) · badge · helper: <code>none</code>
-      </div>
     </section>
 
     <footer class="doc-footer">
@@ -290,6 +296,7 @@ void animateSlotVisibility({
   const prefix = document.getElementById('prefix');
   const valueVisible = document.getElementById('valueVisible');
   const valueMasked = document.getElementById('valueMasked');
+  const valueSizer = document.getElementById('valueSizer');
   const caret = document.getElementById('caret');
   const eyeBtn = document.getElementById('eyeBtn');
   const eyeOpen = document.getElementById('eyeOpen');
@@ -369,13 +376,14 @@ void animateSlotVisibility({
 
   function applySizes() {
     const s = SIZES[sizeSelect.value];
-    row.style.minHeight = s.rowH;
     prefix.style.fontSize = s.prefix;
     prefix.style.lineHeight = s.prefixLh;
     valueVisible.style.fontSize = s.amount;
     valueVisible.style.lineHeight = s.amountLh;
     valueMasked.style.fontSize = s.amount;
     valueMasked.style.lineHeight = s.amountLh;
+    valueSizer.style.fontSize = s.amount;
+    valueSizer.style.lineHeight = s.amountLh;
     caret.style.fontSize = s.caret;
     caret.style.lineHeight = s.caretLh;
     eyeBtn.style.width = s.iconBtn;
@@ -403,6 +411,7 @@ void animateSlotVisibility({
     valueMasked.textContent = masked;
     valueVisible.style.opacity = String(visOp);
     valueMasked.style.opacity = String(1 - visOp);
+    valueSizer.textContent = visOp >= 0.5 ? formatted : masked;
     eyeOpen.classList.toggle('is-active', !isMuted());
     eyeClosed.classList.toggle('is-active', isMuted());
   }

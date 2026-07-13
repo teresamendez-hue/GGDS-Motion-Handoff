@@ -26,6 +26,7 @@
 - **Fuente de verdad:** Token Mapping + snippet Dart de este documento.
 - **Preview HTML App:** representación visual con spring en JS; parámetros idénticos al token.
 - **Figma:** referencia visual del componente; skeleton no documentado (ver Recomendaciones).
+- **Composición:** el icono de visibilidad (eye) es un [Icon Button](../../icon-button/App/icon-button_motion-handoff_app.html) — press, focus y estados del botón están en su handoff; este documento cubre el field (tipografía, crossfade del valor enmascarado, badge y helper).
 - **QA final:** validar en dispositivo o simulador con `flutter_animate` / `SpringDescription` del design system.
 
 ---
@@ -38,7 +39,18 @@ Estados cubiertos: `Enabled`, `Focused`, `Typing`, `Filled`, `Muted` (valor enma
 
 El foco y el tipeo animan el **color de tipografía** del monto (`neutral-alt` → `on-input`) con `motion-spring-md`, en paridad con Field Text pero **sin borders ni ring** — el componente en Figma no usa contorno. El prefijo de moneda (`Gs.`, `US$`, `R$` o ninguno) es estático: cambios de variante de currency o size no animan.
 
-La visibilidad del monto (visible ↔ bullets `••••`) usa crossfade con `motion-spring-sm`. Badge y helper text entran/salen con `motion-spring-sm` (opacity + height). Disabled aplica opacity final de forma instantánea.
+El valor enmascarado (visible ↔ bullets `••••`) usa crossfade con `motion-spring-sm`. Badge y helper text entran/salen con `motion-spring-sm` (opacity + height). Disabled aplica opacity final de forma instantánea.
+
+El toggle de visibilidad se implementa con [Icon Button](../../icon-button/App/icon-button_motion-handoff_app.html); el swap de ícono (eye open/closed) es instantáneo en este handoff.
+
+---
+
+## Composición
+
+| Pieza | Handoff |
+|---|---|
+| Field de monto (tipografía, máscara, badge, helper) | este documento |
+| Icono de visibilidad (eye) | [Icon Button](../../icon-button/App/icon-button_motion-handoff_app.html) |
 
 ---
 
@@ -52,9 +64,9 @@ La visibilidad del monto (visible ↔ bullets `••••`) usa crossfade con 
 | 4 | Response | Typography color | `Amount` text | `color` | neutral-alt | on-input | `motion-spring-md` | m:1.0, k:300, d:28 | 0 | settle* |
 | 5 | Trigger | Blur (empty) | `AmountInput` | — | — | — | — | — | 0 | 0 |
 | 6 | Response | Typography color | `Amount` text | `color` | on-input | neutral-alt | `motion-spring-md` | m:1.0, k:300, d:28 | 0 | settle* |
-| 7 | Trigger | Visibility toggle (eye) | `IconButton` | — | — | — | — | — | 0 | 0 |
-| 8 | Response | Value crossfade | amount text layer | `opacity` | visible / bullets | bullets / visible | `motion-spring-sm` | m:1.0, k:400, d:35 | 0 | settle† |
-| 9 | Response | Icon swap | eye icon | `asset` | open / closed | closed / open | none | instantáneo | 0 | 0 |
+| 7 | Trigger | Visibility toggle (eye) | `IconButton` | — | — | — | — | ver handoff Icon Button | 0 | 0 |
+| 8 | Response | Value mask crossfade | amount text layer | `opacity` | visible / bullets | bullets / visible | `motion-spring-sm` | m:1.0, k:400, d:35 | 0 | settle† |
+| 9 | Response | Icon asset swap | eye icon | `asset` | open / closed | closed / open | none | instantáneo; estados del botón en handoff Icon Button | 0 | 0 |
 | 10 | Trigger | Badge show | `TextBadge` slot | — | — | — | — | — | 0 | 0 |
 | 11 | Response | Badge enter | `TextBadge` | `opacity`, `height` | `0`, `0` | `1`, intrinsic | `motion-spring-sm` | m:1.0, k:400, d:35 | 0 | settle† |
 | 12 | Trigger | Badge hide | `TextBadge` slot | — | — | — | — | — | 0 | 0 |
@@ -72,6 +84,8 @@ La visibilidad del monto (visible ↔ bullets `••••`) usa crossfade con 
 
 †Asentamiento perceptual definido por el spring (`motion-spring-sm`).
 
+Filas 7 y 9: motion del [Icon Button](../../icon-button/App/icon-button_motion-handoff_app.html) enlazado. Este documento cubre el crossfade del valor enmascarado (fila 8).
+
 ---
 
 ## Token Mapping (App)
@@ -79,14 +93,19 @@ La visibilidad del monto (visible ↔ bullets `••••`) usa crossfade con 
 | Momento | Token semántico | Spring primitivo | mass | stiffness | damping |
 |---|---|---|---:|---:|---:|
 | Focus · typing · filled | `motion-spring-md` | `spring-standard-md` | 1.0 | 300 | 28 |
-| Muted crossfade · badge · helper | `motion-spring-sm` | `spring-standard-sm` | 1.0 | 400 | 35 |
+| Value mask crossfade · badge · helper | `motion-spring-sm` | `spring-standard-sm` | 1.0 | 400 | 35 |
 | Disabled · currency · size | none | — | — | — | — |
+
+> El icono de visibilidad es un [Icon Button](../../icon-button/App/icon-button_motion-handoff_app.html) compuesto — no incluir su motion en este mapping.
 
 ---
 
 ## Implementación Flutter (Dart)
 
 ```dart
+// Componer GgdsIconButton para el eye — ver handoff Icon Button.
+// Este snippet cubre solo el field: tipografía activa, crossfade de máscara y slots.
+
 const _amountInputSpringMd = SpringDescription(
   mass: 1.0,
   stiffness: 300.0,
@@ -115,20 +134,20 @@ void animateAmountActive({
   );
 }
 
-void animateAmountVisibility({
+void animateAmountMaskCrossfade({
   required AnimationController controller,
-  required bool visible,
+  required bool masked,
   required BuildContext context,
 }) {
   if (MediaQuery.of(context).disableAnimations) {
-    controller.value = visible ? 1.0 : 0.0;
+    controller.value = masked ? 1.0 : 0.0;
     return;
   }
   controller.animateWith(
     SpringSimulation(
       _amountInputSpringSm,
-      visible ? 0.0 : 1.0,
-      visible ? 1.0 : 0.0,
+      masked ? 0.0 : 1.0,
+      masked ? 1.0 : 0.0,
       0.0,
     ),
   );
@@ -156,21 +175,6 @@ void animateSlotVisibility({
 
 ---
 
-## Haptics
-
-**No requiere haptics.** Tratar Amount Input como Field Text, Field Prefix y Text Area: ni el campo, ni el icono de visibilidad, ni el badge disparan feedback táctil.
-
-| Evento | Haptic |
-|---|---|
-| Focus / typing | none |
-| Visibility toggle (eye) | none |
-| Badge / helper | none |
-| Disabled | none |
-
-No hay snippet de implementación — el componente no registra triggers táctiles en el design system.
-
----
-
 ## Recomendaciones
 
 | Tema | Criterio |
@@ -178,7 +182,8 @@ No hay snippet de implementación — el componente no registra triggers táctil
 | Scope | solo estados internos |
 | Hover | no aplica en App |
 | Currency / Size | sin transición al cambiar variante |
-| Muted | cada dígito → `•`; separadores (`.`, `,`) visibles; crossfade con `motion-spring-sm` |
+| Muted (estado Figma) | cada dígito → `•`; separadores (`.`, `,`) visibles; crossfade del valor con `motion-spring-sm` — no confundir con motion del Icon Button |
+| Composición | eye → [Icon Button](../../icon-button/App/icon-button_motion-handoff_app.html) |
 | Skeleton | omitido del handoff — el shimmer de Figma no se replica fielmente en el preview HTML |
 | Disabled | sin transición |
 | A11y | `disableAnimations` aplica estado final |

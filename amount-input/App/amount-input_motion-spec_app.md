@@ -13,9 +13,6 @@ preview_type: internal_state
 spring_token: motion-spring-md
 companion_web_handoff: null
 web_parity_token: null
-haptic_semantic_default: none
-haptic_override_allowed: false
-haptic_trigger: none
 figma_url: "https://www.figma.com/design/7rFqT5ZUPPXd40dKQVAd7N/Core---App-Components?node-id=7020-1468"
 ---
 
@@ -32,12 +29,12 @@ Campo de monto monetario para App con prefijo de moneda estático, icono de visi
 - damping: 28
 - note: "Color de tipografía neutral-alt → on-input. Sin borders ni ring."
 
-### Muted · badge · helper
+### Value mask · badge · helper
 - semantic: motion-spring-sm
 - mass: 1.0
 - stiffness: 400
 - damping: 35
-- note: "Crossfade visible↔bullets; show/hide badge y helper (opacity + height)"
+- note: "Crossfade visible↔bullets del monto; show/hide badge y helper (opacity + height)"
 
 ### Sin motion
 - semantic: none
@@ -50,16 +47,16 @@ Campo de monto monetario para App con prefijo de moneda estático, icono de visi
 |---|---|---|---|
 | color | `#6C6C78` (neutral-alt) | `#252529` (on-input) | motion-spring-md |
 
-### Amount value — Muted toggle
+### Amount value — mask crossfade
 | propiedad | de | a | token |
 |---|---|---|---|
 | opacity (visible layer) | 1 | 0 | motion-spring-sm |
 | opacity (bullets layer) | 0 | 1 | motion-spring-sm |
 
-### Eye icon — Muted toggle
-| propiedad | de | a | token |
-|---|---|---|---|
-| asset | Eye Open | Eye Closed | none |
+### Eye icon — visibility toggle
+- composicion: Icon Button — ver handoff `icon-button`
+- propiedades_en_este_spec: asset swap instantáneo (Eye Open ↔ Eye Closed)
+- motion_del_boton: handoff Icon Button (pressed, focus)
 
 ### TextBadge — Show / hide
 | propiedad | de | a | token |
@@ -107,10 +104,11 @@ Campo de monto monetario para App con prefijo de moneda estático, icono de visi
 
 ## Estados intermedios
 
-### Muted
+### Muted (estado Figma)
 - trigger: visibility off o prop input=Muted
-- propiedades: cada dígito del monto formateado se reemplaza por `•` (separadores visibles); crossfade visible ↔ enmascarado
+- propiedades: cada dígito del monto formateado se reemplaza por `•` (separadores visibles); crossfade visible ↔ enmascarado del **valor**
 - token: motion-spring-sm
+- nota: "El toggle usa Icon Button enlazado — no documentar su motion aquí"
 
 ### Typing
 - trigger: edición activa con caret
@@ -131,14 +129,10 @@ Campo de monto monetario para App con prefijo de moneda estático, icono de visi
 
 ## Coherencia sistémica
 
-- componentes_relacionados: [Field Text, Field Prefix, Text Area]
+- componentes_relacionados: [Field Text, Field Prefix, Text Area, Icon Button]
 - token_mismo_que: [Field Text — motion-spring-md para color de tipografía en focus/typing]
-- razon: "Campo de formulario sin borders; legibilidad en tipeo; microinteracciones de slot con motion-spring-sm"
-
-## Haptics
-
-- requiere: false
-- nota: "Form input — sin haptic en campo ni icono de visibilidad"
+- razon: "Campo de formulario sin borders; legibilidad en tipeo; microinteracciones de slot con motion-spring-sm; eye compuesto con Icon Button"
+- related_handoffs: [Icon Button]
 
 ## Accesibilidad
 
