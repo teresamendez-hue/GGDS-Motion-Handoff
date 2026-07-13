@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Motion Handoff — Carousel (Web)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #FFFFFF;
+  --bg-subtle: #F7F7F7;
+  --surface: #FFFFFF;
+  --border: #E8E8EC;
+  --border-strong: #D8D8DE;
+  --text: #252529;
+  --text-2: #404047;
+  --muted: #6C6C78;
+  --subtle: #8F8F9C;
+  --accent: #7373E5;
+  --accent-soft: rgba(115, 115, 229, 0.10);
+  --shadow-sm: 0px 0px 24px 0px rgba(37, 37, 41, 0.08);
+  --radius: 12px;
+  --radius-sm: 6px;
+  --mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  --sans: 'Inter', sans-serif;
+  --motion-curve-sm: cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-curve-md: cubic-bezier(0, 0, 0.2, 1);
+  --duration-150: 150ms;
+  --duration-300: 300ms;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--sans); font-size: 14px; line-height: 1.6; color: var(--text); background: var(--bg); }
+.page { max-width: 920px; margin: 0 auto; padding: 2rem 1.5rem; }
+.hero h1 { font-size: 3rem; font-weight: 800; letter-spacing: -0.03em; }
+.hero-meta { display: flex; align-items: center; gap: 1rem; color: var(--muted); margin: 0.6rem 0 1rem; flex-wrap: wrap; }
+.owner-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.65rem 0.3rem 0.3rem; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 999px; font-size: 0.82rem; }
+.owner-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; }
+.pill { display: inline-block; padding: 0.3rem 0.6rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg-subtle); font-size: 0.75rem; margin-right: 0.35rem; margin-bottom: 0.35rem; }
+.pill.primary { border-color: rgba(115, 115, 229, 0.35); background: var(--accent-soft); color: var(--accent); }
+section { padding: 1.5rem 0; border-bottom: 1px solid var(--border); }
+h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.75rem; }
+.motion-lab-disclaimer { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.75rem; padding: 0.5rem 0.75rem; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.hint { font-size: 0.88rem; color: var(--muted); margin-bottom: 1rem; max-width: 72ch; }
+.stage { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 0 1rem; }
+.carousel-ui { position: relative; padding: 0 2.5rem; }
+.viewport { overflow: hidden; border-radius: var(--radius-sm); }
+.track { display: flex; gap: 12px; padding: 0 9%; will-change: transform; cursor: grab; touch-action: pan-y; transition: transform var(--duration-300) var(--motion-curve-md); }
+.track.dragging, .track.no-transition { cursor: grabbing; transition: none !important; }
+.slide { flex: 0 0 82%; min-height: 140px; border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 600; color: var(--text-2); user-select: none; }
+.slide.clone { opacity: 0.85; border-style: dashed; }
+.arrows { display: flex; justify-content: space-between; position: absolute; inset: 0; pointer-events: none; padding: 0 0.25rem; }
+.arrow { pointer-events: auto; width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 50%; background: var(--surface); font: inherit; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; align-self: center; }
+.arrow:disabled { opacity: 0.35; cursor: not-allowed; }
+.dots { display: flex; justify-content: center; gap: 8px; margin-top: 1rem; }
+.dot { width: 8px; height: 8px; border-radius: 50%; border: none; background: var(--border); cursor: pointer; padding: 0; transition: transform var(--duration-150) var(--motion-curve-sm), opacity var(--duration-150) var(--motion-curve-sm), background-color var(--duration-150) var(--motion-curve-sm); }
+.dot[aria-current="true"] { background: var(--accent); transform: scale(1.25); opacity: 1; }
+.dot:not([aria-current="true"]) { opacity: 0.45; }
+.controls { display: flex; gap: 1.25rem; flex-wrap: wrap; margin: 1rem 1.25rem 0; align-items: center; }
+.controls label { cursor: pointer; font-size: 0.88rem; color: var(--text-2); display: inline-flex; align-items: center; gap: 0.35rem; }
+.variant-group { display: inline-flex; gap: 0.75rem; }
+.readout { margin: 0.75rem 1.25rem 0; font-size: 0.78rem; color: var(--muted); line-height: 1.7; }
+.readout code { font-family: var(--mono); font-size: 0.76rem; }
+.mapping { margin: 0.75rem 1.25rem 0; border: 1px solid rgba(115, 115, 229, 0.35); border-radius: var(--radius-sm); padding: 0.8rem; font-size: 0.78rem; color: var(--muted); line-height: 1.6; background: var(--accent-soft); }
+.implementation { margin-top: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.8rem; background: var(--surface); }
+.implementation pre { margin: 0; font-family: var(--mono); font-size: 0.75rem; line-height: 1.45; white-space: pre-wrap; color: var(--text-2); }
+.spec p { color: var(--text-2); margin-bottom: 0.5rem; max-width: 72ch; }
+.rec-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 0.5rem; }
+.rec-table th, .rec-table td { border: 1px solid var(--border); padding: 0.5rem 0.65rem; text-align: left; vertical-align: top; }
+.rec-table th { background: var(--bg-subtle); font-weight: 600; }
+#motion-lab.reduced-motion .track,
+#motion-lab.reduced-motion .dot { transition: none !important; }
+.doc-footer { text-align: center; padding: 1.2rem 0; color: var(--subtle); font-size: 0.8rem; }
+.doc-footer-brand { font-size: 0.75rem; margin-top: 0.25rem; }
+</style>
+</head>
+<body>
+<div class="page">
+<header class="hero">
+  <h1>Carousel</h1>
+  <div class="hero-meta">
+    <span class="owner-badge"><div class="owner-avatar">EA</div> Ezequiel Arguello</span>
+    <span>Web · GGDS · 2026-07-08</span>
+  </div>
+  <span class="pill primary">motion-curve-md · slide</span>
+  <span class="pill">motion-curve-sm · dots</span>
+</header>
+
+<section id="motion-lab">
+  <h2>Preview de motion</h2>
+  <p class="motion-lab-disclaimer">Motion lab — no es el componente de la librería. Validá motion y tokens; la UI final está en Figma.</p>
+  <p class="hint">Arrastrá el carousel, usá flechas o dots. Modo peek con slides adyacentes visibles. Cambiá la variante <strong>infinite</strong> / <strong>finite</strong>. Las flechas no animan acá — ver handoff de Icon Button.</p>
+  <div class="stage">
+    <div class="carousel-ui">
+      <div class="arrows">
+        <button class="arrow" id="prev" type="button" aria-label="Anterior">‹</button>
+        <button class="arrow" id="next" type="button" aria-label="Siguiente">›</button>
+      </div>
+      <div class="viewport">
+        <div class="track" id="track"></div>
+      </div>
+      <div class="dots" id="dots" role="tablist" aria-label="Paginación"></div>
+    </div>
+    <div class="controls">
+      <span class="variant-group">
+        <label><input type="radio" name="variant" value="infinite" checked/> infinite</label>
+        <label><input type="radio" name="variant" value="finite"/> finite</label>
+      </span>
+      <label><input type="checkbox" id="reduced"/> prefers-reduced-motion</label>
+    </div>
+    <div class="readout" id="readout"></div>
+    <div class="mapping">
+      <strong>Token Mapping</strong><br/>
+      Slide: motion-curve-md → easing-decelerate → cubic-bezier(0.0, 0, 0.2, 1) → duration-300 (300ms)<br/>
+      Dots: motion-curve-sm → easing-standard → cubic-bezier(0.4, 0, 0.2, 1) → duration-150 (150ms)<br/>
+      Infinite reset: transition none (0ms) · Flechas: ver Icon Button
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Implementación CSS</h2>
+  <div class="implementation"><pre>/* Track — cambio de slide (peek) */
+.carousel__track {
+  transition-property: transform;
+  transition-duration: var(--motion-duration-from-motion-curve-md);
+  transition-timing-function: var(--motion-curve-md);
+}
+
+/* Infinite — reset instantáneo al clonar */
+.carousel__track--no-transition {
+  transition: none;
+}
+
+/* Dots — indicador activo */
+.carousel__dot {
+  transition-property: transform, opacity;
+  transition-duration: var(--motion-duration-from-motion-curve-sm);
+  transition-timing-function: var(--motion-curve-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carousel__track,
+  .carousel__dot {
+    transition: none;
+  }
+}</pre></div>
+</section>
+
+<footer class="doc-footer">
+  <p>Motion System GGDS · Carousel Handoff Web · 2026-07-08</p>
+  <p class="doc-footer-brand">DesignOps @ itti</p>
+</footer>
+</div>
+<script>
+(() => {
+  const SLIDES = ['Slide 1', 'Slide 2', 'Slide 3', 'Slide 4', 'Slide 5'];
+  const track = document.getElementById('track');
+  const dotsEl = document.getElementById('dots');
+  const prev = document.getElementById('prev');
+  const next = document.getElementById('next');
+  const readout = document.getElementById('readout');
+  const reduced = document.getElementById('reduced');
+  const lab = document.getElementById('motion-lab');
+  const variantInputs = [...document.querySelectorAll('input[name="variant"]')];
+
+  let variant = 'infinite';
+  let domIndex = 0;
+  let realIndex = 0;
+  let dragging = false;
+  let startX = 0;
+  let startTx = 0;
+  let currentTx = 0;
+  let slideEls = [];
+  let dots = [];
+
+  function isReduced() { return reduced.checked; }
+  function isInfinite() { return variant === 'infinite'; }
+
+  function buildDots() {
+    dotsEl.innerHTML = '';
+    SLIDES.forEach((_, i) => {
+      const b = document.createElement('button');
+      b.className = 'dot';
+      b.type = 'button';
+      b.role = 'tab';
+      b.setAttribute('aria-label', `Slide ${i + 1}`);
+      b.addEventListener('click', () => goToReal(i, 'dot'));
+      dotsEl.appendChild(b);
+    });
+    dots = [...dotsEl.querySelectorAll('.dot')];
+  }
+
+  function buildTrack() {
+    track.innerHTML = '';
+    const labels = isInfinite()
+      ? [SLIDES[SLIDES.length - 1], ...SLIDES, SLIDES[0]]
+      : [...SLIDES];
+    labels.forEach((label, i) => {
+      const el = document.createElement('div');
+      el.className = 'slide' + (isInfinite() && (i === 0 || i === labels.length - 1) ? ' clone' : '');
+      el.textContent = label + (el.classList.contains('clone') ? ' (clone)' : '');
+      track.appendChild(el);
+    });
+    slideEls = [...track.querySelectorAll('.slide')];
+    domIndex = isInfinite() ? 1 : 0;
+    realIndex = 0;
+  }
+
+  function realFromDom(i) {
+    if (!isInfinite()) return i;
+    if (i === 0) return SLIDES.length - 1;
+    if (i === slideEls.length - 1) return 0;
+    return i - 1;
+  }
+
+  function domFromReal(i) {
+    return isInfinite() ? i + 1 : i;
+  }
+
+  function slideOffset(i) {
+    const slide = slideEls[i];
+    const vp = track.parentElement;
+    const center = (vp.offsetWidth - slide.offsetWidth) / 2;
+    return center - slide.offsetLeft;
+  }
+
+  function applyTransform(x, animate) {
+    currentTx = x;
+    const dur = isReduced() ? 0 : 300;
+    const ease = 'cubic-bezier(0, 0, 0.2, 1)';
+    if (!animate || dragging) {
+      track.classList.add('no-transition');
+      track.style.transition = 'none';
+    } else {
+      track.classList.remove('no-transition');
+      track.style.transition = `transform ${dur}ms ${ease}`;
+    }
+    track.style.transform = `translateX(${x}px)`;
+  }
+
+  function updateReadout(trigger) {
+    const lines = [
+      `Variante: <strong>${variant}</strong>`,
+      `Slide: ${realIndex + 1} / ${SLIDES.length}${trigger ? ' · ' + trigger : ''}`,
+      `Token slide: <code>motion-curve-md</code> · Dots: <code>motion-curve-sm</code>`
+    ];
+    if (isInfinite() && trigger === 'loop-reset') {
+      lines.push('Reset de clone: <code>transition: none</code>');
+    }
+    readout.innerHTML = lines.join('<br/>');
+  }
+
+  function updateUI(trigger) {
+    dots.forEach((d, i) => d.setAttribute('aria-current', i === realIndex ? 'true' : 'false'));
+    if (isInfinite()) {
+      prev.disabled = false;
+      next.disabled = false;
+    } else {
+      prev.disabled = realIndex === 0;
+      next.disabled = realIndex === SLIDES.length - 1;
+    }
+    updateReadout(trigger);
+    applyTransform(slideOffset(domIndex), true);
+  }
+
+  function jumpWithoutAnimation(targetDom) {
+    domIndex = targetDom;
+    realIndex = realFromDom(domIndex);
+    track.classList.add('no-transition');
+    applyTransform(slideOffset(domIndex), false);
+    requestAnimationFrame(() => track.classList.remove('no-transition'));
+    updateUI('loop-reset');
+  }
+
+  function onTransitionEnd() {
+    if (!isInfinite()) return;
+    if (domIndex === 0) jumpWithoutAnimation(slideEls.length - 2);
+    else if (domIndex === slideEls.length - 1) jumpWithoutAnimation(1);
+  }
+
+  function goToDom(i, trigger) {
+    domIndex = Math.max(0, Math.min(slideEls.length - 1, i));
+    realIndex = realFromDom(domIndex);
+    updateUI(trigger);
+  }
+
+  function goToReal(i, trigger) {
+    goToDom(domFromReal(i), trigger);
+  }
+
+  function goNext() { goToDom(domIndex + 1, 'arrow'); }
+  function goPrev() { goToDom(domIndex - 1, 'arrow'); }
+
+  function init() {
+    buildDots();
+    buildTrack();
+    track.addEventListener('transitionend', onTransitionEnd);
+    updateUI();
+  }
+
+  function setVariant(v) {
+    variant = v;
+    init();
+  }
+
+  prev.addEventListener('click', goPrev);
+  next.addEventListener('click', goNext);
+
+  track.addEventListener('pointerdown', e => {
+    if (e.target.closest('.arrow')) return;
+    dragging = true;
+    track.classList.add('dragging');
+    startX = e.clientX;
+    startTx = currentTx;
+    track.setPointerCapture(e.pointerId);
+  });
+  track.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    applyTransform(startTx + (e.clientX - startX), false);
+  });
+  function endDrag(e) {
+    if (!dragging) return;
+    dragging = false;
+    track.classList.remove('dragging');
+    const dx = e.clientX - startX;
+    if (Math.abs(dx) > 40) {
+      if (dx < 0) goNext();
+      else goPrev();
+    } else updateUI('swipe-cancel');
+    try { track.releasePointerCapture(e.pointerId); } catch (_) {}
+  }
+  track.addEventListener('pointerup', endDrag);
+  track.addEventListener('pointercancel', endDrag);
+
+  variantInputs.forEach(input => {
+    input.addEventListener('change', () => {
+      if (input.checked) setVariant(input.value);
+    });
+  });
+  reduced.addEventListener('change', () => lab.classList.toggle('reduced-motion', reduced.checked));
+  window.addEventListener('resize', () => applyTransform(slideOffset(domIndex), false));
+
+  init();
+})();
+</script>
+</body>
+</html>

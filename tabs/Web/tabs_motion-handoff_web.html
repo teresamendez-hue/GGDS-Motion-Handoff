@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Motion Handoff — Tab (Web)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #FFFFFF;
+  --bg-subtle: #F7F7F7;
+  --surface: #FFFFFF;
+  --border: #E8E8EC;
+  --text: #252529;
+  --text-2: #404047;
+  --muted: #6C6C78;
+  --subtle: #8F8F9C;
+  --accent: #7373E5;
+  --accent-soft: rgba(115, 115, 229, 0.10);
+  --radius: 12px;
+  --radius-sm: 6px;
+  --mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  --sans: 'Inter', sans-serif;
+  --motion-curve-sm: cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-curve-md: cubic-bezier(0, 0, 0.2, 1);
+  --duration-150: 150ms;
+  --duration-300: 300ms;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--sans); font-size: 14px; line-height: 1.6; color: var(--text); background: var(--bg); }
+.page { max-width: 920px; margin: 0 auto; padding: 2rem 1.5rem; }
+.hero h1 { font-size: 3rem; font-weight: 800; letter-spacing: -0.03em; }
+.hero-meta { display: flex; align-items: center; gap: 1rem; color: var(--muted); margin: 0.6rem 0 1rem; flex-wrap: wrap; }
+.owner-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.65rem 0.3rem 0.3rem; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 999px; font-size: 0.82rem; }
+.owner-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; }
+.pill { display: inline-block; padding: 0.3rem 0.6rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg-subtle); font-size: 0.75rem; margin-right: 0.35rem; margin-bottom: 0.35rem; }
+.pill.primary { border-color: rgba(115, 115, 229, 0.35); background: var(--accent-soft); color: var(--accent); }
+section { padding: 1.5rem 0; border-bottom: 1px solid var(--border); }
+h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.75rem; }
+.motion-lab-disclaimer { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.75rem; padding: 0.5rem 0.75rem; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.hint { font-size: 0.88rem; color: var(--muted); margin-bottom: 1rem; max-width: 72ch; }
+.stage { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
+.tabs-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+.tab-bar-outer { position: relative; border-bottom: 1px solid var(--border); }
+.tab-scroll { display: flex; gap: 0; overflow-x: auto; scrollbar-width: thin; padding: 0 0.5rem; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
+.tab-scroll.scroll-instant { scroll-behavior: auto; }
+.tab-scroll::-webkit-scrollbar { height: 4px; }
+.tab-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.tab { position: relative; flex: 0 0 auto; border: none; background: transparent; font: inherit; font-size: 0.88rem; font-weight: 600; color: var(--muted); padding: 0.85rem 1rem; cursor: pointer; white-space: nowrap; transition: color var(--duration-150) var(--motion-curve-sm), opacity var(--duration-150) var(--motion-curve-sm); }
+.tab:hover:not(:disabled):not([aria-selected="true"]) { color: var(--text-2); }
+.tab:active:not(:disabled) { opacity: 0.85; }
+.tab[aria-selected="true"] { color: var(--accent); }
+.tab:disabled { opacity: 0.4; cursor: not-allowed; transition: none; }
+.tab .ring { position: absolute; inset: 4px 2px; border: 2px solid var(--accent); border-radius: var(--radius-sm); opacity: 0; pointer-events: none; transition: opacity var(--duration-150) var(--motion-curve-sm); }
+.tab:focus-visible .ring { opacity: 1; }
+.indicator-track { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; pointer-events: none; }
+.indicator { position: absolute; bottom: 0; height: 3px; background: var(--accent); border-radius: 3px 3px 0 0; transition: transform var(--duration-300) var(--motion-curve-md), width var(--duration-300) var(--motion-curve-md); }
+.tabs-wrap.segmented .indicator-track { bottom: 6px; height: calc(100% - 12px); }
+.tabs-wrap.segmented .indicator { height: 100%; background: var(--accent-soft); border-radius: var(--radius-sm); bottom: auto; top: 6px; }
+.panel-viewport { overflow: hidden; }
+.panel-track { display: flex; will-change: transform; transition: transform var(--duration-300) var(--motion-curve-md); }
+.panel { flex: 0 0 100%; min-height: 120px; padding: 1.25rem; color: var(--text-2); }
+.controls { display: flex; gap: 1.25rem; flex-wrap: wrap; margin-top: 1rem; align-items: center; }
+.controls label { cursor: pointer; font-size: 0.88rem; color: var(--text-2); display: inline-flex; align-items: center; gap: 0.35rem; }
+.variant-group { display: inline-flex; gap: 0.75rem; }
+.readout { margin-top: 0.75rem; font-size: 0.78rem; color: var(--muted); line-height: 1.7; }
+.readout code { font-family: var(--mono); font-size: 0.76rem; }
+.mapping { margin-top: 0.75rem; border: 1px solid rgba(115, 115, 229, 0.35); border-radius: var(--radius-sm); padding: 0.8rem; font-size: 0.78rem; color: var(--muted); line-height: 1.6; background: var(--accent-soft); }
+.implementation { margin-top: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.8rem; background: var(--surface); }
+.implementation pre { margin: 0; font-family: var(--mono); font-size: 0.75rem; line-height: 1.45; white-space: pre-wrap; color: var(--text-2); }
+.spec p { color: var(--text-2); margin-bottom: 0.5rem; max-width: 72ch; }
+.rec-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 0.5rem; }
+.rec-table th, .rec-table td { border: 1px solid var(--border); padding: 0.5rem 0.65rem; text-align: left; vertical-align: top; }
+.rec-table th { background: var(--bg-subtle); font-weight: 600; }
+#motion-lab.reduced-motion .indicator,
+#motion-lab.reduced-motion .panel-track,
+#motion-lab.reduced-motion .tab,
+#motion-lab.reduced-motion .tab .ring { transition: none !important; }
+.doc-footer { text-align: center; padding: 1.2rem 0; color: var(--subtle); font-size: 0.8rem; }
+.doc-footer-brand { font-size: 0.75rem; margin-top: 0.25rem; }
+</style>
+</head>
+<body>
+<div class="page">
+<header class="hero">
+  <h1>Tab</h1>
+  <div class="hero-meta">
+    <span class="owner-badge"><div class="owner-avatar">EA</div> Ezequiel Arguello</span>
+    <span>Web · GGDS · 2026-07-08</span>
+  </div>
+  <span class="pill primary">motion-curve-md · indicador + panel</span>
+  <span class="pill">motion-curve-sm · item</span>
+</header>
+
+<section id="motion-lab">
+  <h2>Preview de motion</h2>
+  <p class="motion-lab-disclaimer">Motion lab — no es el componente de la librería. Validá motion y tokens; la UI final está en Figma.</p>
+  <p class="hint"><strong>Cómo probarlo:</strong> hacé click en un tab (o usá ← → del teclado) para cambiar de panel. Usá los radios <strong>Line</strong> / <strong>Segmented</strong> para cambiar variante. El checkbox <strong>prefers-reduced-motion</strong> desactiva las transiciones.</p>
+  <div class="stage">
+    <div class="tabs-wrap line" id="tabsWrap">
+      <div class="tab-bar-outer">
+        <div class="tab-scroll" id="tabScroll" role="tablist" aria-label="Tabs"></div>
+        <div class="indicator-track"><div class="indicator" id="indicator"></div></div>
+      </div>
+      <div class="panel-viewport">
+        <div class="panel-track" id="panelTrack"></div>
+      </div>
+    </div>
+    <div class="controls">
+      <span class="variant-group">
+        <label><input type="radio" name="variant" value="line" checked/> Line</label>
+        <label><input type="radio" name="variant" value="segmented"/> Segmented</label>
+      </span>
+      <label><input type="checkbox" id="reduced"/> prefers-reduced-motion</label>
+    </div>
+    <div class="readout" id="readout"></div>
+    <div class="mapping">
+      <strong>Token Mapping</strong><br/>
+      Indicador + panel: motion-curve-md → easing-decelerate → cubic-bezier(0.0, 0, 0.2, 1) → duration-300 (300ms)<br/>
+      Tab item: motion-curve-sm → easing-standard → cubic-bezier(0.4, 0, 0.2, 1) → duration-150 (150ms)
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Implementación CSS</h2>
+  <div class="implementation"><pre>.tabs__indicator {
+  transition-property: transform, width;
+  transition-duration: var(--motion-duration-from-motion-curve-md);
+  transition-timing-function: var(--motion-curve-md);
+}
+
+.tabs__panel-track {
+  transition-property: transform;
+  transition-duration: var(--motion-duration-from-motion-curve-md);
+  transition-timing-function: var(--motion-curve-md);
+}
+
+.tabs__tab {
+  transition-property: color, opacity;
+  transition-duration: var(--motion-duration-from-motion-curve-sm);
+  transition-timing-function: var(--motion-curve-sm);
+}
+
+.tabs__tab:disabled { transition: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tabs__indicator,
+  .tabs__panel-track,
+  .tabs__tab { transition: none; }
+}</pre></div>
+</section>
+
+<footer class="doc-footer">
+  <p>Motion System GGDS · Tab Handoff Web · 2026-07-08</p>
+  <p class="doc-footer-brand">DesignOps @ itti</p>
+</footer>
+</div>
+<script>
+(() => {
+  const LABELS = ['Overview', 'Details', 'Settings', 'Billing', 'Team', 'Security', 'Integrations', 'Support'];
+  const tabScroll = document.getElementById('tabScroll');
+  const panelTrack = document.getElementById('panelTrack');
+  const indicator = document.getElementById('indicator');
+  const tabsWrap = document.getElementById('tabsWrap');
+  const readout = document.getElementById('readout');
+  const reduced = document.getElementById('reduced');
+  const lab = document.getElementById('motion-lab');
+  const variantInputs = [...document.querySelectorAll('input[name="variant"]')];
+
+  let active = 0;
+  let tabs = [];
+
+  function isReduced() { return reduced.checked; }
+  function durMd() { return isReduced() ? 0 : 300; }
+  function easeMd() { return 'cubic-bezier(0, 0, 0.2, 1)'; }
+
+  function build() {
+    tabScroll.innerHTML = '';
+    panelTrack.innerHTML = '';
+    LABELS.forEach((label, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'tab';
+      btn.type = 'button';
+      btn.role = 'tab';
+      btn.id = `tab-${i}`;
+      btn.setAttribute('aria-controls', `panel-${i}`);
+      btn.innerHTML = `<span class="ring"></span>${label}`;
+      btn.addEventListener('click', () => selectTab(i, 'click'));
+      tabScroll.appendChild(btn);
+
+      const panel = document.createElement('div');
+      panel.className = 'panel';
+      panel.role = 'tabpanel';
+      panel.id = `panel-${i}`;
+      panel.setAttribute('aria-labelledby', `tab-${i}`);
+      panel.textContent = `Contenido de ${label} — panel con slide horizontal al cambiar tab.`;
+      panelTrack.appendChild(panel);
+    });
+    tabs = [...tabScroll.querySelectorAll('.tab')];
+    selectTab(active, 'init');
+  }
+
+  function updateIndicator() {
+    const tab = tabs[active];
+    if (!tab) return;
+    const scrollLeft = tabScroll.scrollLeft;
+    const left = tab.offsetLeft - scrollLeft;
+    const width = tab.offsetWidth;
+    indicator.style.width = `${width}px`;
+    indicator.style.transform = `translateX(${left}px)`;
+  }
+
+  function hasScrollOverflow() {
+    return tabScroll.scrollWidth > tabScroll.clientWidth + 1;
+  }
+
+  function revealActiveTab(trigger) {
+    const tab = tabs[active];
+    if (!tab) return;
+    const tabLeft = tab.offsetLeft;
+    const tabRight = tabLeft + tab.offsetWidth;
+    const viewLeft = tabScroll.scrollLeft;
+    const viewRight = viewLeft + tabScroll.clientWidth;
+    let target = null;
+    if (tabLeft < viewLeft) target = tabLeft - 8;
+    else if (tabRight > viewRight) target = tabRight - tabScroll.clientWidth + 8;
+    if (target === null) return;
+    tabScroll.scrollTo({
+      left: Math.max(0, target),
+      behavior: isReduced() ? 'auto' : 'smooth'
+    });
+  }
+
+  function updateReadout(trigger) {
+    const variant = tabsWrap.classList.contains('segmented') ? 'Segmented' : 'Line';
+    const scrollLine = hasScrollOverflow()
+      ? `Scroll horizontal: <code>${Math.round(tabScroll.scrollLeft)}px</code> · overflow activo${trigger === 'scroll' ? ' · indicador sync' : ''}`
+      : 'Scroll horizontal: sin overflow';
+    readout.innerHTML = [
+      `Tab: <strong>${LABELS[active]}</strong>${trigger ? ' · ' + trigger : ''}`,
+      `Variante: <strong>${variant}</strong>`,
+      scrollLine,
+      `Indicador + panel: <code>motion-curve-md</code> · Item: <code>motion-curve-sm</code>`
+    ].join('<br/>');
+  }
+
+  function selectTab(index, trigger) {
+    active = index;
+    tabs.forEach((t, i) => {
+      t.setAttribute('aria-selected', i === active ? 'true' : 'false');
+      t.tabIndex = i === active ? 0 : -1;
+    });
+    const dur = durMd();
+    panelTrack.style.transition = `transform ${dur}ms ${easeMd()}`;
+    indicator.style.transition = `transform ${dur}ms ${easeMd()}, width ${dur}ms ${easeMd()}`;
+    panelTrack.style.transform = `translateX(-${active * 100}%)`;
+    updateIndicator();
+    if (trigger === 'click' || trigger === 'keyboard') {
+      tabs[active].focus({ preventScroll: true });
+      revealActiveTab(trigger);
+    }
+    updateReadout(trigger);
+  }
+
+  tabScroll.addEventListener('scroll', () => {
+    updateIndicator();
+    updateReadout('scroll');
+  });
+  window.addEventListener('resize', updateIndicator);
+
+  tabScroll.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') { e.preventDefault(); selectTab(Math.min(active + 1, tabs.length - 1), 'keyboard'); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); selectTab(Math.max(active - 1, 0), 'keyboard'); }
+  });
+
+  variantInputs.forEach(input => {
+    input.addEventListener('change', () => {
+      if (!input.checked) return;
+      tabsWrap.classList.toggle('segmented', input.value === 'segmented');
+      tabsWrap.classList.toggle('line', input.value === 'line');
+      updateIndicator();
+      updateReadout('variant');
+    });
+  });
+
+  reduced.addEventListener('change', () => {
+    lab.classList.toggle('reduced-motion', reduced.checked);
+    tabScroll.classList.toggle('scroll-instant', reduced.checked);
+  });
+
+  build();
+})();
+</script>
+</body>
+</html>

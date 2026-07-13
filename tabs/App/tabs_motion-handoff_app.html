@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Motion Handoff — Tab (App)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #FFFFFF; --bg-subtle: #F7F7F7; --surface: #FFFFFF; --border: #E8E8EC;
+  --text: #252529; --text-2: #404047; --muted: #6C6C78; --subtle: #8F8F9C;
+  --accent: #7373E5; --accent-soft: rgba(115, 115, 229, 0.10);
+  --radius: 12px; --radius-sm: 6px;
+  --mono: 'SF Mono', 'Fira Code', 'Consolas', monospace; --sans: 'Inter', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--sans); font-size: 14px; line-height: 1.6; color: var(--text); background: var(--bg); }
+.page { max-width: 920px; margin: 0 auto; padding: 2rem 1.5rem; }
+.hero h1 { font-size: 3rem; font-weight: 800; letter-spacing: -0.03em; }
+.hero-meta { display: flex; align-items: center; gap: 1rem; color: var(--muted); margin: 0.6rem 0 1rem; flex-wrap: wrap; }
+.owner-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.65rem 0.3rem 0.3rem; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 999px; font-size: 0.82rem; }
+.owner-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; }
+.pill { display: inline-block; padding: 0.3rem 0.6rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg-subtle); font-size: 0.75rem; margin-right: 0.35rem; margin-bottom: 0.35rem; }
+.pill.primary { border-color: rgba(115, 115, 229, 0.35); background: var(--accent-soft); color: var(--accent); }
+section { padding: 1.5rem 0; border-bottom: 1px solid var(--border); }
+h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.75rem; }
+.motion-lab-disclaimer { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.75rem; padding: 0.5rem 0.75rem; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.hint { font-size: 0.88rem; color: var(--muted); margin-bottom: 1rem; max-width: 72ch; }
+.stage { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
+.tabs-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+.tab-bar-outer { position: relative; border-bottom: 1px solid var(--border); }
+.tab-scroll { display: flex; overflow-x: auto; scrollbar-width: thin; padding: 0 0.5rem; position: relative; z-index: 1; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
+.tab-scroll.scroll-instant { scroll-behavior: auto; }
+.tab { position: relative; z-index: 1; flex: 0 0 auto; border: none; background: transparent; font: inherit; font-size: 0.88rem; font-weight: 600; color: var(--muted); padding: 0.85rem 1rem; cursor: pointer; white-space: nowrap; }
+.tab[aria-selected="true"] { color: var(--accent); }
+.tab:disabled { opacity: 0.4; cursor: not-allowed; }
+.tab.is-pressed:not(:disabled) { opacity: 0.85; }
+.tab .ring { position: absolute; inset: 4px 2px; border: 2px solid var(--accent); border-radius: var(--radius-sm); opacity: 0; pointer-events: none; transition: opacity 120ms ease; }
+.tab:focus-visible .ring { opacity: 1; }
+.indicator-track { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; pointer-events: none; z-index: 0; }
+.indicator { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--accent); border-radius: 3px 3px 0 0; will-change: transform, width; }
+.tabs-wrap.line .indicator { background: var(--accent); }
+.tabs-wrap.segmented .indicator-track { bottom: 6px; height: calc(100% - 12px); }
+.tabs-wrap.segmented .indicator { height: 100%; background: var(--accent-soft); border-radius: var(--radius-sm); bottom: auto; top: 6px; }
+.panel-viewport { overflow: hidden; }
+.panel-track { display: flex; will-change: transform; width: 100%; }
+.panel { flex: 0 0 100%; min-height: 120px; padding: 1.25rem; color: var(--text-2); }
+.controls { display: flex; gap: 1.25rem; flex-wrap: wrap; margin-top: 1rem; align-items: center; }
+.controls label { cursor: pointer; font-size: 0.88rem; color: var(--text-2); display: inline-flex; align-items: center; gap: 0.35rem; }
+.variant-group { display: inline-flex; gap: 0.75rem; }
+.readout { margin-top: 0.75rem; font-size: 0.78rem; color: var(--muted); line-height: 1.7; }
+.readout code { font-family: var(--mono); font-size: 0.76rem; }
+.companion { margin-top: 0.75rem; font-size: 0.88rem; }
+.companion a { color: var(--accent); }
+.callout { border-left: 4px solid var(--accent); background: var(--accent-soft); padding: 0.8rem 1rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin-top: 0.75rem; font-size: 0.88rem; color: var(--text-2); }
+.mapping { margin-top: 0.75rem; border: 1px solid rgba(115, 115, 229, 0.35); border-radius: var(--radius-sm); padding: 0.8rem; font-size: 0.78rem; color: var(--muted); line-height: 1.6; background: var(--accent-soft); }
+.implementation pre { margin: 0; font-family: var(--mono); font-size: 0.75rem; line-height: 1.45; white-space: pre-wrap; color: var(--text-2); }
+.implementation { margin-top: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.8rem; background: var(--surface); }
+.rec-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 0.5rem; }
+.rec-table th, .rec-table td { border: 1px solid var(--border); padding: 0.5rem 0.65rem; text-align: left; }
+.rec-table th { background: var(--bg-subtle); font-weight: 600; }
+.haptics-section .mapping { margin: 0 0 0.75rem; }
+.doc-footer { text-align: center; padding: 1.2rem 0; color: var(--subtle); font-size: 0.8rem; }
+.doc-footer-brand { font-size: 0.75rem; margin-top: 0.25rem; }
+</style>
+</head>
+<body>
+<div class="page">
+<header class="hero">
+  <h1>Tab</h1>
+  <div class="hero-meta">
+    <span class="owner-badge"><div class="owner-avatar">EA</div> Ezequiel Arguello</span>
+    <span>App · GGDS · 2026-07-08</span>
+  </div>
+  <span class="pill primary">motion-spring-md · indicador + panel</span>
+  <span class="pill">motion-spring-sm · item</span>
+</header>
+
+<section id="motion-lab">
+  <h2>Preview de motion</h2>
+  <p class="motion-lab-disclaimer">Motion lab — no es el componente de la librería. Validá motion y tokens; la UI final está en Figma.</p>
+  <p class="hint"><strong>Cómo probarlo:</strong> tocá un tab para cambiar de panel. Usá los radios <strong>Line</strong> / <strong>Segmented</strong> para cambiar variante. No hay hover en App; cada tap muestra el haptic simulado en el readout. El checkbox <strong>disableAnimations</strong> desactiva las transiciones.</p>
+  <div class="stage">
+    <div class="tabs-wrap line" id="tabsWrap">
+      <div class="tab-bar-outer">
+        <div class="tab-scroll" id="tabScroll" role="tablist" aria-label="Tabs"></div>
+        <div class="indicator-track"><div class="indicator" id="indicator"></div></div>
+      </div>
+      <div class="panel-viewport"><div class="panel-track" id="panelTrack"></div></div>
+    </div>
+    <div class="controls">
+      <span class="variant-group">
+        <label><input type="radio" name="variant" value="line" checked/> Line</label>
+        <label><input type="radio" name="variant" value="segmented"/> Segmented</label>
+      </span>
+      <label><input type="checkbox" id="reduced"/> disableAnimations (sin animación)</label>
+    </div>
+    <p class="companion">Referencia visual Web: <a href="../Web/tabs_motion-handoff_web.html">abrir preview Web</a></p>
+    <div class="callout">Este preview es una representación visual del motion, no una simulación física real. El navegador no soporta springs de Flutter. Los valores que el dev implementa son los parámetros de spring del Token Mapping.</div>
+    <div class="readout" id="readout"></div>
+    <div class="mapping">
+      <strong>Token Mapping</strong><br/>
+      Indicador + panel: motion-spring-md → mass 1.0 · stiffness 300 · damping 28<br/>
+      Tab item: motion-spring-sm → mass 1.0 · stiffness 400 · damping 35
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Implementación Dart (Flutter)</h2>
+  <div class="implementation"><pre>final springNav = context.motionTokens.springMd;
+final springItem = context.motionTokens.springSm;
+
+_indicatorController.animateWith(
+  SpringSimulation(springNav, _indicatorController.value, index.toDouble(), 0),
+);
+_panelController.animateWith(
+  SpringSimulation(springNav, _panelController.value, index.toDouble(), 0),
+);</pre></div>
+</section>
+
+<section class="haptics-section">
+  <h2>Haptics</h2>
+  <div class="mapping">haptic-selection-change → haptic-selection-click → HapticFeedback.selectionClick()</div>
+  <div class="implementation"><pre>void onTabSelected(int index) {
+  if (index != _currentIndex) {
+    context.haptics.trigger(GgdsHapticSemantic.selectionChange);
+  }
+}</pre></div>
+</section>
+
+<footer class="doc-footer">
+  <p>Motion System GGDS · Tab Handoff App · 2026-07-08</p>
+  <p class="doc-footer-brand">DesignOps @ itti</p>
+</footer>
+</div>
+<script>
+(() => {
+  const LABELS = ['Overview', 'Details', 'Settings', 'Billing', 'Team', 'Security', 'Integrations', 'Support'];
+  const S_MD = 300, D_MD = 28, M = 1;
+  const tabScroll = document.getElementById('tabScroll');
+  const panelTrack = document.getElementById('panelTrack');
+  const panelViewport = panelTrack.parentElement;
+  const indicator = document.getElementById('indicator');
+  const tabsWrap = document.getElementById('tabsWrap');
+  const readout = document.getElementById('readout');
+  const reduced = document.getElementById('reduced');
+  const variantInputs = [...document.querySelectorAll('input[name="variant"]')];
+
+  let active = 0;
+  let tabs = [];
+  let raf = null;
+  let animating = false;
+  let itemState = 'enabled';
+
+  const pos = { left: 0, width: 0, panel: 0, vLeft: 0, vWidth: 0, vPanel: 0 };
+  const target = { left: 0, width: 0, panel: 0 };
+
+  function metricsForTab(index) {
+    const tab = tabs[index];
+    if (!tab) return { left: 0, width: 0 };
+    return {
+      left: tab.offsetLeft - tabScroll.scrollLeft,
+      width: tab.offsetWidth
+    };
+  }
+
+  function paint() {
+    indicator.style.transform = `translateX(${pos.left}px)`;
+    indicator.style.width = `${pos.width}px`;
+    panelTrack.style.transform = `translateX(${pos.panel}px)`;
+  }
+
+  function snapTo(index) {
+    const m = metricsForTab(index);
+    pos.left = target.left = m.left;
+    pos.width = target.width = m.width;
+    pos.panel = target.panel = -index * panelViewport.offsetWidth;
+    pos.vLeft = pos.vWidth = pos.vPanel = 0;
+    paint();
+  }
+
+  function springStep(current, velocity, goal, S, D, dt) {
+    const a = (-S * (current - goal) - D * velocity) / M;
+    const v = velocity + a * dt;
+    const x = current + v * dt;
+    return { x, v };
+  }
+
+  function runSpringLoop() {
+    cancelAnimationFrame(raf);
+    animating = true;
+    let last = performance.now();
+
+    function frame(now) {
+      const dt = Math.min((now - last) / 1000, 0.064);
+      last = now;
+
+      const r1 = springStep(pos.left, pos.vLeft, target.left, S_MD, D_MD, dt);
+      pos.left = r1.x; pos.vLeft = r1.v;
+
+      const r2 = springStep(pos.width, pos.vWidth, target.width, S_MD, D_MD, dt);
+      pos.width = r2.x; pos.vWidth = r2.v;
+
+      const r3 = springStep(pos.panel, pos.vPanel, target.panel, S_MD, D_MD, dt);
+      pos.panel = r3.x; pos.vPanel = r3.v;
+
+      paint();
+
+      const settled =
+        Math.abs(pos.left - target.left) < 0.5 && Math.abs(pos.vLeft) < 0.5 &&
+        Math.abs(pos.width - target.width) < 0.5 && Math.abs(pos.vWidth) < 0.5 &&
+        Math.abs(pos.panel - target.panel) < 0.5 && Math.abs(pos.vPanel) < 0.5;
+
+      if (settled) {
+        animating = false;
+        raf = null;
+        snapTo(active);
+        return;
+      }
+      raf = requestAnimationFrame(frame);
+    }
+
+    raf = requestAnimationFrame(frame);
+  }
+
+  function animateTo(index) {
+    const m = metricsForTab(index);
+    target.left = m.left;
+    target.width = m.width;
+    target.panel = -index * panelViewport.offsetWidth;
+    if (reduced.checked) {
+      animating = false;
+      cancelAnimationFrame(raf);
+      raf = null;
+      snapTo(index);
+      return;
+    }
+    runSpringLoop();
+  }
+
+  function hasScrollOverflow() {
+    return tabScroll.scrollWidth > tabScroll.clientWidth + 1;
+  }
+
+  function revealActiveTab() {
+    const tab = tabs[active];
+    if (!tab) return;
+    const tabLeft = tab.offsetLeft;
+    const tabRight = tabLeft + tab.offsetWidth;
+    const viewLeft = tabScroll.scrollLeft;
+    const viewRight = viewLeft + tabScroll.clientWidth;
+    let target = null;
+    if (tabLeft < viewLeft) target = tabLeft - 8;
+    else if (tabRight > viewRight) target = tabRight - tabScroll.clientWidth + 8;
+    if (target === null) return;
+    tabScroll.scrollTo({
+      left: Math.max(0, target),
+      behavior: reduced.checked ? 'auto' : 'smooth'
+    });
+  }
+
+  function updateReadout(trigger) {
+    const variant = tabsWrap.classList.contains('segmented') ? 'Segmented' : 'Line';
+    const scrollLine = hasScrollOverflow()
+      ? `Scroll horizontal: <code>${Math.round(tabScroll.scrollLeft)}px</code> · overflow activo${trigger === 'scroll' ? ' · indicador sync' : ''}`
+      : 'Scroll horizontal: sin overflow';
+    const lines = [
+      `Tab: <strong>${LABELS[active]}</strong>${trigger ? ' · ' + trigger : ''}`,
+      `Estado item: <strong>${itemState}</strong>`,
+      `Variante: <strong>${variant}</strong>`,
+      scrollLine,
+      `Indicador + panel: <code>motion-spring-md</code> · Item: <code>motion-spring-sm</code>`
+    ];
+    if (trigger && trigger.includes('haptic')) lines.push('Haptic: <code>haptic-selection-change</code>');
+    readout.innerHTML = lines.join('<br/>');
+  }
+
+  function bindTabInteractions(btn) {
+    btn.addEventListener('mousedown', () => {
+      if (btn.disabled) return;
+      btn.classList.add('is-pressed');
+      itemState = 'pressed';
+      updateReadout('pressed');
+    });
+    btn.addEventListener('mouseup', () => {
+      btn.classList.remove('is-pressed');
+      itemState = btn.matches(':focus-visible') ? 'focused' : 'selected';
+      updateReadout('released');
+    });
+    btn.addEventListener('focus', () => {
+      if (btn.disabled) return;
+      itemState = btn.classList.contains('is-pressed') ? 'pressed' : (btn.getAttribute('aria-selected') === 'true' ? 'selected' : 'focused');
+      updateReadout('focus');
+    });
+    btn.addEventListener('blur', () => {
+      itemState = btn.getAttribute('aria-selected') === 'true' ? 'selected' : 'enabled';
+      updateReadout('blur');
+    });
+  }
+
+  function build() {
+    tabScroll.innerHTML = '';
+    panelTrack.innerHTML = '';
+    LABELS.forEach((label, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'tab';
+      btn.type = 'button';
+      btn.role = 'tab';
+      btn.id = `tab-${i}`;
+      btn.innerHTML = `<span class="ring"></span>${label}`;
+      btn.addEventListener('click', () => selectTab(i, 'tap · haptic-selection-change'));
+      bindTabInteractions(btn);
+      tabScroll.appendChild(btn);
+
+      const panel = document.createElement('div');
+      panel.className = 'panel';
+      panel.role = 'tabpanel';
+      panel.textContent = `Contenido de ${label} — slide horizontal con motion-spring-md.`;
+      panelTrack.appendChild(panel);
+    });
+    tabs = [...tabScroll.querySelectorAll('.tab')];
+    requestAnimationFrame(() => {
+      snapTo(active);
+      updateReadout('init');
+    });
+  }
+
+  function selectTab(index, trigger) {
+    active = index;
+    tabs.forEach((t, i) => {
+      t.setAttribute('aria-selected', i === active ? 'true' : 'false');
+      t.tabIndex = i === active ? 0 : -1;
+    });
+    itemState = 'selected';
+    animateTo(active);
+    if (trigger && (trigger.includes('tap') || trigger.includes('keyboard'))) {
+      tabs[active].focus({ preventScroll: true });
+      revealActiveTab();
+    }
+    updateReadout(trigger);
+  }
+
+  tabScroll.addEventListener('scroll', () => {
+    const m = metricsForTab(active);
+    target.left = m.left;
+    target.width = m.width;
+    if (reduced.checked || !animating) {
+      pos.left = m.left;
+      pos.width = m.width;
+      paint();
+    }
+    updateReadout('scroll');
+  });
+
+  tabScroll.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      selectTab(Math.min(active + 1, tabs.length - 1), 'keyboard · haptic-selection-change');
+    }
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      selectTab(Math.max(active - 1, 0), 'keyboard · haptic-selection-change');
+    }
+  });
+
+  variantInputs.forEach(input => {
+    input.addEventListener('change', () => {
+      if (!input.checked) return;
+      tabsWrap.classList.toggle('segmented', input.value === 'segmented');
+      tabsWrap.classList.toggle('line', input.value === 'line');
+      requestAnimationFrame(() => {
+        snapTo(active);
+        updateReadout('variant');
+      });
+    });
+  });
+
+  reduced.addEventListener('change', () => {
+    tabScroll.classList.toggle('scroll-instant', reduced.checked);
+    animating = false;
+    cancelAnimationFrame(raf);
+    raf = null;
+    snapTo(active);
+  });
+
+  window.addEventListener('resize', () => snapTo(active));
+
+  build();
+})();
+</script>
+</body>
+</html>
