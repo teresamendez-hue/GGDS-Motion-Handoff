@@ -58,7 +58,21 @@ Entrada y salida suave usan `motion-spring-md` (mass 1.0, stiffness 300, damping
 
 El avance entre pasos crossfadea el contenido interno con `motion-spring-sm` (mass 1.0, stiffness 400, damping 35). En saltos grandes de posición, el panel completo puede re-entrar con `motion-spring-md`.
 
-Variantes Top/Bottom + Left/Center/Right afectan layout, no tokens. Sin haptic en aparición; botones disparan `haptic-action-press` con override `none` opcional en pasos intermedios.
+Variantes Top/Bottom + Left/Center/Right afectan layout, no tokens.
+
+**Haptics:** sin haptic en aparición. Primary, Secondary y X son componentes compuestos — ver [Composición](#composición).
+
+---
+
+## Composición
+
+| Pieza | Handoff |
+|---|---|
+| Panel + motion del tour | este documento |
+| Primary / Secondary | [Button](../../button/App/button_motion-handoff_app.html) |
+| Cerrar (X) | [Icon Button](../../icon-button/App/icon-button_motion-handoff_app.html) |
+
+**Haptics:** el coachmark no dispara haptic al aparecer. Press en acciones compuestas según handoffs de Button e Icon Button. En pasos intermedios, el primary puede exponer override `none` para reducir fatiga táctil (criterio de producto).
 
 ---
 
@@ -157,39 +171,6 @@ Future<void> advanceStep(CoachmarkStep next) async {
 
 ---
 
-## Haptics Specification
-
-| Evento | Token | Override |
-|---|---|---|
-| Aparición del coachmark | ninguno | — |
-| Primary / Secondary / X | `haptic-action-press` | `none` \| `default` en primary de pasos intermedios |
-
-## Token Mapping Haptics
-
-| Token semántico | Token primitivo | Flutter API |
-|---|---|---|
-| `haptic-action-press` | `haptic-impact-light` | `HapticFeedback.lightImpact()` |
-
-## Implementación Haptics
-
-```dart
-final primaryHaptic = step.primaryHaptic ?? GgdsHapticSemantic.actionPress;
-
-void onPrimaryPressed() {
-  if (primaryHaptic != GgdsHapticSemantic.none) {
-    context.haptics.trigger(primaryHaptic);
-  }
-  advanceStep();
-}
-
-void onSecondaryPressed() {
-  context.haptics.trigger(GgdsHapticSemantic.actionPress);
-  dismissCoachmarkSoft();
-}
-```
-
----
-
 ## Recomendaciones
 
 | Tema | Criterio |
@@ -197,7 +178,7 @@ void onSecondaryPressed() {
 | Springs | `motion-spring-md` entrada/salida; `motion-spring-sm` cambio de step |
 | Salida forzada | Instantánea — no usar spring |
 | Scrim | Sin animación de overlay |
-| Haptics | Sin haptic en appear; `haptic-action-press` en botones |
+| Haptics | Sin haptic en appear; acciones compuestas → handoffs Button / Icon Button |
 | Override | `none` en primary de pasos intermedios si el tour es largo |
 | Scroll | Coachmark sigue target vía layout; auto-close off-screen |
 | Persistencia | X/Omitir dismiss permanente (lógica de negocio) |

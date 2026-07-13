@@ -13,9 +13,9 @@ preview_type: viewport
 spring_token: motion-spring-md
 companion_web_handoff: coachmark_motion-handoff_web.html
 web_parity_token: motion-curve-md
-haptic_semantic_default: haptic-action-press
+haptic_semantic_default: none
 haptic_override_allowed: true
-haptic_trigger: onPressed
+haptic_trigger: none
 ---
 
 ## Descripción
@@ -124,7 +124,7 @@ Tour contextual anclado a target en Flutter. Entra y sale con spring motion-spri
 
 ## Coherencia sistémica
 
-- componentes_relacionados: [Tooltip, Modal, Drawer, Bottom Sheet]
+- componentes_relacionados: [Tooltip, Modal, Drawer, Bottom Sheet, Button, Icon Button]
 - token_mismo_que: [Drawer, Bottom Sheet]
 - razon: categoría Guía; paridad Web con motion-curve-md
 
@@ -135,13 +135,11 @@ Tour contextual anclado a target en Flutter. Entra y sale con spring motion-spri
 
 ## Haptics
 
+- requiere: false
 - appear: none
-- semantic_default: haptic-action-press
-- primitive: haptic-impact-light
-- flutter_api: HapticFeedback.lightImpact()
-- override: none | default
-- trigger: onPressed (Primary, Secondary, X)
-- note: "Sin haptic en aparición; override none opcional en pasos intermedios"
+- composicion: [Button, Icon Button]
+- override_coachmark: "primary de pasos intermedios puede usar none (criterio de producto)"
+- nota: "Sin haptic en aparición; press en acciones compuestas según handoffs enlazados"
 
 ## Referencias
 
