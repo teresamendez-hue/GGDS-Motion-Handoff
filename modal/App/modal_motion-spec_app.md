@@ -104,7 +104,8 @@ Overlay bloqueante en Flutter. Default/Illustration: scrim + panel opacity, pane
 
 - componentes_relacionados: [Bottom Sheet, Sidesheet, Toast]
 - token_mismo_que: [Bottom Sheet — motion-spring-md para navegación vertical]
-- razon: Default centrado usa motion-spring-xl (Interactivos); Full Screen usa motion-spring-md (Guía) por deslizamiento espacial
+- razon: Default centrado usa motion-spring-xl (Interactivos); Full Screen usa motion-spring-md alineado con Bottom Sheet
+- related_handoffs: [Bottom Sheet]
 
 ## Accesibilidad
 

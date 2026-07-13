@@ -49,7 +49,9 @@ Regla: no traducir ms de Web a duración fija en Flutter. El spring define el as
 
 El Modal en App es un overlay bloqueante que cubre entrada y salida del viewport (scrim + panel). En **Default** e **Illustration**, el panel aparece centrado: se animan opacity del scrim y del panel, y **scale** del panel (0.92 → 1.0). No se usa `translateY` en estas variantes — un deslizamiento vertical se confundiría con Bottom Sheet.
 
-En **Full Screen**, el panel entra desde abajo (`Offset Y` 1.0 → 0.0). El scrim solo hace fade; el gesto principal lo lleva el panel con `motion-spring-md`.
+En **Full Screen**, el panel entra desde abajo (`Offset Y` 1.0 → 0.0). El scrim solo hace fade; el gesto principal lo lleva el panel con `motion-spring-md` — **misma intención y token que [Bottom Sheet](../../bottom-sheet/App/bottom-sheet_motion-handoff_app.html)** (deslizamiento vertical, no escala).
+
+**Default / Illustration** usan `motion-spring-xl` (categoría **Interactivos**): ritmo más pausado que un sheet, adecuado para diálogo centrado bloqueante con scale. No usar `motion-spring-md` en el panel centrado — compartiría el perfil del Bottom Sheet y debilitaría la jerarquía entre overlay lateral/inferior y modal de decisión.
 
 Entrada y salida usan **el mismo spring** de cada variante. La física del spring hace que el cierre se sienta ligeramente más ágil sin token de salida distinto.
 
@@ -98,15 +100,17 @@ Variantes de contenido (title, description, slot, close, **_Overlays Actions**) 
 
 ### Default / Illustration
 
-| Token semántico | mass | stiffness | damping |
-|---|---:|---:|---:|
-| `motion-spring-xl` | 1.0 | 100 | 20 |
+| Token semántico | Spring primitivo | mass | stiffness | damping |
+|---|---|---:|---:|---:|
+| `motion-spring-xl` | `spring-standard-xl` | 1.0 | 100 | 20 |
 
 ### Full Screen
 
-| Token semántico | mass | stiffness | damping |
-|---|---:|---:|---:|
-| `motion-spring-md` | 1.0 | 300 | 28 |
+| Token semántico | Spring primitivo | mass | stiffness | damping |
+|---|---|---:|---:|---:|
+| `motion-spring-md` | `spring-standard-md` | 1.0 | 300 | 28 |
+
+> Full Screen: paridad con Bottom Sheet (`motion-spring-md`). Default/Illustration: `motion-spring-xl` por categoría Interactivos.
 
 ---
 
@@ -192,6 +196,8 @@ if (MediaQuery.of(context).disableAnimations) {
 
 | Tema | Criterio |
 |---|---|
+| Default / Illustration | `motion-spring-xl` — Interactivos; más pausado que Bottom Sheet |
+| Full Screen | `motion-spring-md` — paridad Bottom Sheet; deslizamiento vertical |
 | Illustration = Default | Misma animación de overlay |
 | No `motion-spring-lg` | Reservado para toast/snackbar |
 | Haptics | Modal sin haptic; botones con `haptic-action-press` |

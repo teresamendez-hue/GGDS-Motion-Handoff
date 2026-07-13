@@ -90,7 +90,7 @@ section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35
 </div>
 <div class="callout">Este preview simula el spring en el navegador (mass / stiffness / damping del Token Mapping). No es Flutter. Los valores que implementás son los del Token Mapping.</div>
 <div class="readout">Estado: <span id="readout">hidden</span></div>
-<div class="mapping" id="mappingBox"><strong>Token Mapping</strong><br/>motion-spring-xl → mass 1.0 · stiffness 100 · damping 20</div></section>
+<div class="mapping" id="mappingBox"><strong>Token Mapping</strong><br/>Default / Illustration: motion-spring-xl → mass 1.0 · stiffness 100 · damping 20<br/>Full Screen: motion-spring-md → mass 1.0 · stiffness 300 · damping 28</div></section>
 <section><h2>Implementación Dart (Flutter)</h2><div class="implementation"><pre>const springXl = SpringDescription(mass: 1.0, stiffness: 100, damping: 20);
 const springMd = SpringDescription(mass: 1.0, stiffness: 300, damping: 28);
 
@@ -140,10 +140,13 @@ if (MediaQuery.of(context).disableAnimations) { /* estado final */ }</pre></div>
     panel.style.pointerEvents=panelOp>.05?'auto':'none';
   }
   function updateMapping(){
-    const sp=SPRINGS[springKey()];
-    mappingBox.innerHTML='<strong>Token Mapping</strong><br/>'+sp.label+' → mass '+sp.mass+' · stiffness '+sp.stiffness+' · damping '+sp.damping;
+    if(isFull()){
+      mappingBox.innerHTML='<strong>Token Mapping</strong><br/>Full Screen: motion-spring-md → mass 1.0 · stiffness 300 · damping 28<br/>Paridad con <a href="../../bottom-sheet/App/bottom-sheet_motion-handoff_app.html">Bottom Sheet</a> · translateY + opacity';
+    }else{
+      mappingBox.innerHTML='<strong>Token Mapping</strong><br/>Default / Illustration: motion-spring-xl → mass 1.0 · stiffness 100 · damping 20<br/>Scrim + panel opacity + scale 0.92→1 · categoría Interactivos';
+    }
   }
-  function updateReadout(){const sp=SPRINGS[springKey()];readout.textContent=phase+' · '+typeSelect.value+' · '+(reduced()?'instantáneo':sp.label)}
+  function updateReadout(){readout.textContent=phase}
   function applyVariant(){
     const isIllus=typeSelect.value==='illustration';
     panel.className='modal-panel '+(isFull()?'panel-full':'panel-default')+' '+(isIllus?'type-illustration':'type-default');
