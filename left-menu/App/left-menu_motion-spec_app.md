@@ -9,6 +9,8 @@ date: 2026-06-29
 design_system: GGDS
 status: draft
 preview_type: viewport
+haptic_semantic_default: haptic-action-press
+haptic_override_allowed: true
 ---
 
 ## Descripción
