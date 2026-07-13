@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Motion Handoff — Carousel (App)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #FFFFFF;
+  --bg-subtle: #F7F7F7;
+  --surface: #FFFFFF;
+  --border: #E8E8EC;
+  --text: #252529;
+  --text-2: #404047;
+  --muted: #6C6C78;
+  --subtle: #8F8F9C;
+  --accent: #7373E5;
+  --accent-soft: rgba(115, 115, 229, 0.10);
+  --radius: 12px;
+  --radius-sm: 6px;
+  --mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  --sans: 'Inter', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--sans); font-size: 14px; line-height: 1.6; color: var(--text); background: var(--bg); }
+.page { max-width: 920px; margin: 0 auto; padding: 2rem 1.5rem; }
+.hero h1 { font-size: 3rem; font-weight: 800; letter-spacing: -0.03em; }
+.hero-meta { display: flex; align-items: center; gap: 1rem; color: var(--muted); margin: 0.6rem 0 1rem; flex-wrap: wrap; }
+.owner-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.65rem 0.3rem 0.3rem; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 999px; font-size: 0.82rem; }
+.owner-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; }
+.pill { display: inline-block; padding: 0.3rem 0.6rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg-subtle); font-size: 0.75rem; margin-right: 0.35rem; margin-bottom: 0.35rem; }
+.pill.primary { border-color: rgba(115, 115, 229, 0.35); background: var(--accent-soft); color: var(--accent); }
+section { padding: 1.5rem 0; border-bottom: 1px solid var(--border); }
+h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.75rem; }
+.motion-lab-disclaimer { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.75rem; padding: 0.5rem 0.75rem; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.hint { font-size: 0.88rem; color: var(--muted); margin-bottom: 1rem; max-width: 72ch; }
+.stage { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 0 1rem; }
+.carousel-ui { position: relative; padding: 0 1rem; }
+.viewport { overflow: hidden; border-radius: var(--radius-sm); }
+.track { display: flex; gap: 12px; padding: 0 9%; will-change: transform; cursor: grab; touch-action: pan-y; }
+.track.dragging { cursor: grabbing; }
+.slide { flex: 0 0 82%; min-height: 140px; border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 600; color: var(--text-2); user-select: none; }
+.slide.clone { opacity: 0.85; border-style: dashed; }
+.dots { display: flex; justify-content: center; gap: 8px; margin-top: 1rem; }
+.dot { width: 8px; height: 8px; border-radius: 50%; border: none; background: var(--border); cursor: pointer; padding: 0; transform: scale(1); opacity: 0.45; }
+.dot[aria-current="true"] { background: var(--accent); }
+.controls { display: flex; gap: 1.25rem; flex-wrap: wrap; margin: 1rem 1.25rem 0; align-items: center; }
+.controls label { cursor: pointer; font-size: 0.88rem; color: var(--text-2); display: inline-flex; align-items: center; gap: 0.35rem; }
+.variant-group { display: inline-flex; gap: 0.75rem; }
+.readout { margin: 0.75rem 1.25rem 0; font-size: 0.78rem; color: var(--muted); line-height: 1.7; }
+.readout code { font-family: var(--mono); font-size: 0.76rem; }
+.companion { margin: 0.75rem 1.25rem 0; font-size: 0.88rem; }
+.companion a { color: var(--accent); }
+.callout { border-left: 4px solid var(--accent); background: var(--accent-soft); padding: 0.8rem 1rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin: 0.75rem 1.25rem 0; font-size: 0.88rem; color: var(--text-2); }
+.mapping { margin: 0.75rem 1.25rem 0; border: 1px solid rgba(115, 115, 229, 0.35); border-radius: var(--radius-sm); padding: 0.8rem; font-size: 0.78rem; color: var(--muted); line-height: 1.6; background: var(--accent-soft); }
+.implementation { margin-top: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.8rem; background: var(--surface); }
+.implementation pre { margin: 0; font-family: var(--mono); font-size: 0.75rem; line-height: 1.45; white-space: pre-wrap; color: var(--text-2); }
+.spec p { color: var(--text-2); margin-bottom: 0.5rem; max-width: 72ch; }
+.rec-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 0.5rem; }
+.rec-table th, .rec-table td { border: 1px solid var(--border); padding: 0.5rem 0.65rem; text-align: left; vertical-align: top; }
+.rec-table th { background: var(--bg-subtle); font-weight: 600; }
+.haptics-section .mapping { margin: 0 0 0.75rem; }
+.doc-footer { text-align: center; padding: 1.2rem 0; color: var(--subtle); font-size: 0.8rem; }
+.doc-footer-brand { font-size: 0.75rem; margin-top: 0.25rem; }
+</style>
+</head>
+<body>
+<div class="page">
+<header class="hero">
+  <h1>Carousel</h1>
+  <div class="hero-meta">
+    <span class="owner-badge"><div class="owner-avatar">EA</div> Ezequiel Arguello</span>
+    <span>App · GGDS · 2026-07-08</span>
+  </div>
+  <span class="pill primary">motion-spring-md · slide</span>
+  <span class="pill">motion-spring-sm · dots</span>
+  <span class="pill">infinite · finite</span>
+</header>
+
+<section id="motion-lab">
+  <h2>Preview de motion</h2>
+  <p class="motion-lab-disclaimer">Motion lab — no es el componente de la librería. Validá motion y tokens; la UI final está en Figma.</p>
+  <p class="hint">Arrastrá el carousel o tocá los dots. Sin flechas en App. Tap en dot dispara haptic simulado en readout. Cambiá <strong>infinite</strong> / <strong>finite</strong>.</p>
+  <div class="stage">
+    <div class="carousel-ui">
+      <div class="viewport">
+        <div class="track" id="track"></div>
+      </div>
+      <div class="dots" id="dots" role="tablist" aria-label="Paginación"></div>
+    </div>
+    <div class="controls">
+      <span class="variant-group">
+        <label><input type="radio" name="variant" value="infinite" checked/> infinite</label>
+        <label><input type="radio" name="variant" value="finite"/> finite</label>
+      </span>
+      <label><input type="checkbox" id="reduced"/> disableAnimations (sin animación)</label>
+    </div>
+    <p class="companion">Referencia visual Web: <a href="../Web/carousel_motion-handoff_web.html">abrir preview Web</a></p>
+    <div class="callout">Este preview es una representación visual del motion, no una simulación física real. El navegador no soporta springs de Flutter. Los valores que el dev implementa son los parámetros de spring del Token Mapping.</div>
+    <div class="readout" id="readout"></div>
+    <div class="mapping">
+      <strong>Token Mapping</strong><br/>
+      Slide: motion-spring-md → mass 1.0 · stiffness 300 · damping 28<br/>
+      Dots: motion-spring-sm → mass 1.0 · stiffness 400 · damping 35<br/>
+      Infinite reset: jumpToPage sin animación
+    </div>
+  </div>
+</section>
+
+<section class="spec">
+  <h2>Motion Specification</h2>
+  <p>Carousel en modo peek desplaza el track con <code>motion-spring-md</code>. Navegación por swipe y dots. Los dots animan el indicador activo con <code>motion-spring-sm</code>. Variantes <strong>infinite</strong> y <strong>finite</strong>, sin autoplay, sin flechas.</p>
+</section>
+
+<section>
+  <h2>Implementación Dart (Flutter)</h2>
+  <div class="implementation"><pre>final springSlide = context.motionTokens.springMd;  // motion-spring-md
+final springDot = context.motionTokens.springSm;    // motion-spring-sm
+final disableAnimations = MediaQuery.of(context).disableAnimations;
+
+PageController(viewportFraction: 0.82); // peek
+
+void animateToSlide(int index) {
+  if (disableAnimations) {
+    _pageController.jumpToPage(index);
+    return;
+  }
+  _slideController.animateWith(
+    SpringSimulation(springSlide, _slideController.value, index.toDouble(), 0),
+  );
+}
+
+// infinite: jumpToPage al slide real tras animar al clone</pre></div>
+</section>
+
+<section class="haptics-section">
+  <h2>Haptics</h2>
+  <div class="mapping">
+    <strong>Token Mapping</strong><br/>
+    haptic-selection-change → haptic-selection-click → HapticFeedback.selectionClick()<br/>
+    Solo en tap de dot. Swipe: sin haptic.
+  </div>
+  <div class="implementation"><pre>void onDotTapped(int index) {
+  if (index != _currentPage) {
+    context.haptics.trigger(GgdsHapticSemantic.selectionChange);
+    animateToSlide(index);
+  }
+}</pre></div>
+</section>
+
+<section>
+  <h2>Recomendaciones</h2>
+  <table class="rec-table">
+    <tr><th>Tema</th><th>Criterio</th></tr>
+    <tr><td>Slide</td><td><code>motion-spring-md</code> — mismo token entrada/salida</td></tr>
+    <tr><td>Dots</td><td><code>motion-spring-sm</code></td></tr>
+    <tr><td>Controles</td><td>Solo dots — sin flechas</td></tr>
+    <tr><td>Navegación</td><td>Swipe + dot tap</td></tr>
+    <tr><td>Haptics</td><td>Solo dot tap · <code>haptic-selection-change</code></td></tr>
+    <tr><td>A11y</td><td><code>disableAnimations</code> → salto instantáneo</td></tr>
+  </table>
+</section>
+
+<footer class="doc-footer">
+  <p>Motion System GGDS · Carousel Handoff App · 2026-07-08</p>
+  <p class="doc-footer-brand">DesignOps @ itti</p>
+</footer>
+</div>
+<script>
+(() => {
+  const SLIDES = ['Slide 1', 'Slide 2', 'Slide 3', 'Slide 4', 'Slide 5'];
+  const S_MD = 300, D_MD = 28, M = 1;
+  const S_SM = 400, D_SM = 35;
+
+  const track = document.getElementById('track');
+  const dotsEl = document.getElementById('dots');
+  const readout = document.getElementById('readout');
+  const reduced = document.getElementById('reduced');
+  const variantInputs = [...document.querySelectorAll('input[name="variant"]')];
+
+  let variant = 'infinite';
+  let domIndex = 0;
+  let realIndex = 0;
+  let dragging = false;
+  let startX = 0;
+  let startTx = 0;
+  let currentTx = 0;
+  let slideEls = [];
+  let dots = [];
+  let raf;
+
+  function isReduced() { return reduced.checked; }
+  function isInfinite() { return variant === 'infinite'; }
+
+  function springTo(from, to, onUpdate, onComplete, S, D) {
+    if (isReduced()) { onUpdate(to); onComplete?.(); return; }
+    let x = from, v = 0, t = performance.now();
+    cancelAnimationFrame(raf);
+    function step(now) {
+      const dt = Math.min((now - t) / 1000, 0.064);
+      t = now;
+      const a = (-S * (x - to) - D * v) / M;
+      v += a * dt;
+      x += v * dt;
+      onUpdate(x);
+      if (Math.abs(x - to) < 0.5 && Math.abs(v) < 0.5) {
+        onUpdate(to);
+        onComplete?.();
+        return;
+      }
+      raf = requestAnimationFrame(step);
+    }
+    raf = requestAnimationFrame(step);
+  }
+
+  function buildDots() {
+    dotsEl.innerHTML = '';
+    SLIDES.forEach((_, i) => {
+      const b = document.createElement('button');
+      b.className = 'dot';
+      b.type = 'button';
+      b.role = 'tab';
+      b.setAttribute('aria-label', `Slide ${i + 1}`);
+      b.addEventListener('click', () => goToReal(i, 'dot · haptic-selection-change'));
+      dotsEl.appendChild(b);
+    });
+    dots = [...dotsEl.querySelectorAll('.dot')];
+  }
+
+  function buildTrack() {
+    track.innerHTML = '';
+    const labels = isInfinite()
+      ? [SLIDES[SLIDES.length - 1], ...SLIDES, SLIDES[0]]
+      : [...SLIDES];
+    labels.forEach((label, i) => {
+      const el = document.createElement('div');
+      el.className = 'slide' + (isInfinite() && (i === 0 || i === labels.length - 1) ? ' clone' : '');
+      el.textContent = label + (el.classList.contains('clone') ? ' (clone)' : '');
+      track.appendChild(el);
+    });
+    slideEls = [...track.querySelectorAll('.slide')];
+    domIndex = isInfinite() ? 1 : 0;
+    realIndex = 0;
+  }
+
+  function realFromDom(i) {
+    if (!isInfinite()) return i;
+    if (i === 0) return SLIDES.length - 1;
+    if (i === slideEls.length - 1) return 0;
+    return i - 1;
+  }
+
+  function domFromReal(i) {
+    return isInfinite() ? i + 1 : i;
+  }
+
+  function slideOffset(i) {
+    const slide = slideEls[i];
+    const vp = track.parentElement;
+    return (vp.offsetWidth - slide.offsetWidth) / 2 - slide.offsetLeft;
+  }
+
+  function setTransform(x) {
+    currentTx = x;
+    track.style.transform = `translateX(${x}px)`;
+  }
+
+  function animateDots() {
+    dots.forEach((d, i) => {
+      const active = i === realIndex;
+      d.setAttribute('aria-current', active ? 'true' : 'false');
+      const targetScale = active ? 1.25 : 1;
+      const targetOpacity = active ? 1 : 0.45;
+      if (isReduced()) {
+        d.style.transform = `scale(${targetScale})`;
+        d.style.opacity = String(targetOpacity);
+        return;
+      }
+      springTo(parseFloat(d.style.transform.replace(/[^0-9.]/g, '')) || 1, targetScale, v => {
+        d.style.transform = `scale(${v})`;
+      }, null, S_SM, D_SM);
+      springTo(parseFloat(d.style.opacity) || 0.45, targetOpacity, v => {
+        d.style.opacity = String(v);
+      }, null, S_SM, D_SM);
+    });
+  }
+
+  function updateReadout(trigger) {
+    const lines = [
+      `Variante: <strong>${variant}</strong>`,
+      `Slide: ${realIndex + 1} / ${SLIDES.length}${trigger ? ' · ' + trigger : ''}`,
+      `Token slide: <code>motion-spring-md</code> · Dots: <code>motion-spring-sm</code>`
+    ];
+    if (trigger && trigger.includes('haptic')) {
+      lines.push('Haptic: <code>haptic-selection-change</code>');
+    }
+    if (trigger === 'loop-reset') {
+      lines.push('Reset infinite: <code>jumpToPage</code> sin animación');
+    }
+    if (trigger === 'swipe-boundary') {
+      lines.push('Finite: swipe bloqueado en extremo');
+    }
+    readout.innerHTML = lines.join('<br/>');
+  }
+
+  function updateUI(trigger) {
+    animateDots();
+    updateReadout(trigger);
+    springTo(currentTx, slideOffset(domIndex), setTransform, () => {
+      if (!isInfinite()) return;
+      if (domIndex === 0) jumpWithoutAnimation(slideEls.length - 2);
+      else if (domIndex === slideEls.length - 1) jumpWithoutAnimation(1);
+    }, S_MD, D_MD);
+  }
+
+  function jumpWithoutAnimation(targetDom) {
+    domIndex = targetDom;
+    realIndex = realFromDom(domIndex);
+    setTransform(slideOffset(domIndex));
+    animateDots();
+    updateReadout('loop-reset');
+  }
+
+  function goToDom(i, trigger) {
+    const min = 0;
+    const max = slideEls.length - 1;
+    let target = Math.max(min, Math.min(max, i));
+    if (!isInfinite()) {
+      if (trigger === 'swipe' && target === domIndex) {
+        updateUI('swipe-boundary');
+        return;
+      }
+    }
+    domIndex = target;
+    realIndex = realFromDom(domIndex);
+    updateUI(trigger);
+  }
+
+  function goToReal(i, trigger) {
+    goToDom(domFromReal(i), trigger);
+  }
+
+  function init() {
+    buildDots();
+    buildTrack();
+    setTransform(slideOffset(domIndex));
+    updateUI();
+  }
+
+  function setVariant(v) {
+    variant = v;
+    init();
+  }
+
+  track.addEventListener('pointerdown', e => {
+    dragging = true;
+    track.classList.add('dragging');
+    startX = e.clientX;
+    startTx = currentTx;
+    track.setPointerCapture(e.pointerId);
+  });
+  track.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    setTransform(startTx + (e.clientX - startX));
+  });
+  function endDrag(e) {
+    if (!dragging) return;
+    dragging = false;
+    track.classList.remove('dragging');
+    const dx = e.clientX - startX;
+    if (Math.abs(dx) > 40) {
+      const dir = dx < 0 ? 1 : -1;
+      if (!isInfinite()) {
+        const nextReal = realIndex + dir;
+        if (nextReal < 0 || nextReal >= SLIDES.length) {
+          updateUI('swipe-boundary');
+          return;
+        }
+      }
+      goToDom(domIndex + dir, 'swipe');
+    } else updateUI('swipe-cancel');
+    try { track.releasePointerCapture(e.pointerId); } catch (_) {}
+  }
+  track.addEventListener('pointerup', endDrag);
+  track.addEventListener('pointercancel', endDrag);
+
+  variantInputs.forEach(input => {
+    input.addEventListener('change', () => { if (input.checked) setVariant(input.value); });
+  });
+  window.addEventListener('resize', () => setTransform(slideOffset(domIndex)));
+
+  init();
+})();
+</script>
+</body>
+</html>
