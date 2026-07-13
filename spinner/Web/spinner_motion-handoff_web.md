@@ -6,7 +6,7 @@
 | **Plataforma** | Web |
 | **Owner** | Nehuén Benitez |
 | **Design system** | GGDS |
-| **Token rotación** | *(sin semántico)* → `easing-linear` · `duration-800` |
+| **Token rotación** | `motion-curve-spin` |
 | **Categoría** | Default |
 | **Fecha** | 2026-06-29 |
 | **Figma** | [Core — Web Components](https://www.figma.com/design/7zqh3EGXWDVhqvY6Fwk1tH/Core---Web-Components?node-id=6055-995) |
@@ -19,10 +19,7 @@ Spinner **indeterminado** de carga pasiva. Variantes de **Color** (accent, neutr
 
 **Única animación documentada:** rotación continua del arco SVG mientras el componente está visible.
 
-- **Rotación:** `transform: rotate(360deg)` en loop infinito.
-- **Curva:** `easing-linear` · `cubic-bezier(0, 0, 1, 1)`.
-- **Período:** `duration-800` · **800ms** por vuelta completa.
-- **Sin token semántico** en el motion system actual — la cadena primitiva es la fuente de verdad. Misma convención que el spinner embebido en Button / Icon Button (0.8s linear).
+- **Rotación:** `motion-curve-spin` → `easing-linear` · `duration-800` · **800ms** por vuelta completa.
 
 **Sin animación** en: montaje/desmontaje (aparición instantánea), cambio de `color` o `size` (swap instantáneo), variante skeleton (excluida del handoff).
 
@@ -38,7 +35,7 @@ Sin viewport enter/exit. Sin stagger. Sin haptics (solo Web).
 |---|---|---|---|---|---|---|---|---|---|---|
 | 1 | Trigger | Montaje / visible en DOM | — | — | — | — | — | — | 0 | — |
 | 2 | Response | Aparición | `.spinner` | — | — | — | **sin animación** | — | 0 | 0 |
-| 3 | Response | Rotación continua | `.spinner-svg` | `transform` (rotate) | 0° | 360° (loop) | `easing-linear` + `duration-800` | 800ms / vuelta | 0 | ∞ |
+| 3 | Response | Rotación continua | `.spinner-svg` | `transform` (rotate) | 0° | 360° (loop) | `motion-curve-spin` | 800ms / vuelta | 0 | ∞ |
 | 4 | Trigger | Cambio `color` o `size` | — | — | — | — | — | — | * | — |
 | 5 | Response | Swap de variante | `.spinner` | color / dimensiones | anterior | nuevo | **sin animación** | — | — | — |
 | 6 | Trigger | Desmontaje / oculto | — | — | — | — | — | — | * | — |
@@ -54,7 +51,7 @@ Sin viewport enter/exit. Sin stagger. Sin haptics (solo Web).
 
 | Momento | Token semántico | Curva primitiva | Valor CSS | Duración primitiva | Valor ms |
 |---|---|---|---|---|---|
-| Rotación continua | *(ninguno)* | `easing-linear` | `cubic-bezier(0, 0, 1, 1)` | `duration-800` | 800ms / revolución |
+| Rotación continua | `motion-curve-spin` | `easing-linear` | `cubic-bezier(0, 0, 1, 1)` | `duration-800` | 800ms / revolución |
 | Montaje / desmontaje | — | — | — | — | instantáneo |
 | Cambio color / size | — | — | — | — | instantáneo |
 | `prefers-reduced-motion` | — | — | `animation: none` | — | rotación pausada |
@@ -76,7 +73,7 @@ Sin viewport enter/exit. Sin stagger. Sin haptics (solo Web).
 }
 
 .spinner-svg {
-  animation: spinner-rotate var(--duration-800) var(--easing-linear) infinite;
+  animation: spinner-rotate var(--duration-800) var(--motion-curve-spin) infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -92,7 +89,7 @@ Sin viewport enter/exit. Sin stagger. Sin haptics (solo Web).
 
 | Tema | Criterio |
 |---|---|
-| Token semántico | No existe `motion-spinner-*`; documentar primitivos. Evaluar token futuro si el patrón se repite fuera de Button |
+| Token semántico | `motion-curve-spin` — categoría Carga continua |
 | Coherencia Button / Icon Button | El spinner inline de esos componentes debe usar la misma cadena (`easing-linear` · `duration-800`) |
 | Cambio de variante | Color y size: reemplazo visual instantáneo, sin `transition` |
 | Skeleton | Excluido del handoff y del preview |

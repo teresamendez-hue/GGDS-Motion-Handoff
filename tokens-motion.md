@@ -44,6 +44,7 @@ Fuente de verdad para handoffs de motion. **Nunca usar valores de memoria** — 
 | Guía | `motion-curve-md` | `easing-decelerate` | `duration-300` | Flujo suave y guiado |
 | Comunicación | `motion-curve-lg` | `easing-emphasis` | `duration-500` | Presencia amable |
 | Interactivos | `motion-curve-xl` | `easing-standard` | `duration-700` | Ritmo pausado y confiable |
+| Carga continua | `motion-curve-spin` | `easing-linear` | `duration-800` | Rotación lineal en loop (spinner) |
 | Salida | `motion-exit` | `easing-accelerate` | *(ver tabla de pares)* | Retiro rápido; el usuario ya decidió cerrar |
 
 > `motion-exit` es el **único** token semántico de salida en Web. No crear variantes por categoría (`motion-exit-md`, etc.). La duración se resuelve según el token de entrada del componente.
@@ -85,6 +86,9 @@ La duración de salida es ~40% menor que la de entrada del mismo componente. El 
 | Guía | `motion-spring-md` | `mass-1` → 1.0 | `stiffness-300` → 300 | `damping-28` → 28 | Flujo suave y guiado |
 | Comunicación | `motion-spring-lg` | `mass-1` → 1.0 | `stiffness-200` → 200 | `damping-30` → 30 | Presencia amable |
 | Interactivos | `motion-spring-xl` | `mass-1` → 1.0 | `stiffness-100` → 100 | `damping-20` → 20 | Ritmo pausado y confiable |
+| Carga continua | `motion-curve-spin` | — | — | — | Rotación lineal en loop · `Curves.linear` · 800ms / vuelta · no usar spring |
+
+> `motion-curve-spin` en App no es un spring: mapea a `Curves.linear` + `Duration(milliseconds: 800)` + `AnimationController.repeat()`.
 
 > Los springs **no** tienen token de duración. El tiempo de asentamiento lo determinan mass, stiffness y damping.
 
@@ -102,6 +106,7 @@ Los springs no diferencian curva de entrada/salida. Para salidas que deban senti
 | `motion-curve-md` | `cubic-bezier(0.0, 0, 0.2, 1)` | 300ms (entrada) |
 | `motion-curve-lg` | `cubic-bezier(0.2, 0, 0, 1)` | 500ms (entrada) |
 | `motion-curve-xl` | `cubic-bezier(0.4, 0, 0.2, 1)` | 700ms (entrada) |
+| `motion-curve-spin` | `cubic-bezier(0, 0, 1, 1)` | 800ms / revolución (loop) |
 | `motion-exit` | `cubic-bezier(0.4, 0, 1, 1)` | ver tabla de pares |
 
 ---
@@ -114,6 +119,7 @@ Los springs no diferencian curva de entrada/salida. Para salidas que deban senti
 | `motion-spring-md` | mass: 1.0, stiffness: 300, damping: 28 |
 | `motion-spring-lg` | mass: 1.0, stiffness: 200, damping: 30 |
 | `motion-spring-xl` | mass: 1.0, stiffness: 100, damping: 20 |
+| `motion-curve-spin` | `Curves.linear` · `Duration(milliseconds: 800)` · `AnimationController.repeat()` |
 
 ---
 
