@@ -46,7 +46,22 @@ Entrada y salida del bloque usan `motion-spring-md`: **fade + expand/collapse ve
 
 Expand/collapse usa `motion-spring-sm` en la región de descripción y rotación del chevron.
 
-Variantes semánticas no cambian tokens. Sin haptic en aparición; X y chevron disparan `haptic-action-press`.
+Variantes semánticas no cambian tokens.
+
+**Haptics:** sin haptic en aparición. X y chevron son componentes compuestos — ver [Composición](#composición).
+
+---
+
+## Composición
+
+| Pieza | Handoff |
+|---|---|
+| Bloque + motion del mensaje | este documento |
+| Cerrar (X, solo Default) | [Icon Button](../../icon-button/App/icon-button_motion-handoff_app.html) |
+| Chevron expand/collapse | [Icon Button](../../icon-button/App/icon-button_motion-handoff_app.html) |
+| Action Link | [Link](../../link/App/link_motion-handoff_app.html) |
+
+**Haptics:** el inline message no dispara haptic al aparecer. Press en X y chevron según handoff Icon Button. Action Link sin haptic.
 
 ---
 
@@ -129,35 +144,6 @@ Future<void> toggleExpand({required bool expanded}) async {
     detailsOpacity: expanded ? const Tuple2(0.0, 1.0) : const Tuple2(1.0, 0.0),
     chevronTurns: expanded ? const Tuple2(0.0, 0.5) : const Tuple2(0.5, 0.0),
   );
-}
-```
-
----
-
-## Haptics Specification
-
-| Acción | Token | Trigger |
-|---|---|---|
-| Aparición del mensaje | none | — |
-| Tap X (solo Default) | `haptic-action-press` | `onPressed` |
-| Tap chevron expand | `haptic-action-press` | `onPressed` |
-| Action Link | none | — |
-
-### Token Mapping Haptics
-
-`haptic-action-press` → `haptic-impact-light` → `HapticFeedback.lightImpact()`
-
-### Implementación Haptics
-
-```dart
-void onClosePressed() {
-  context.haptics.trigger(GgdsHapticSemantic.actionPress);
-  dismissInlineMessage();
-}
-
-void onExpandPressed() {
-  context.haptics.trigger(GgdsHapticSemantic.actionPress);
-  toggleExpand(expanded: !isExpanded);
 }
 ```
 

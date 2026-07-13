@@ -89,7 +89,7 @@ section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35
 </div>
 <div class="callout">Este preview simula el spring en el navegador (mass / stiffness / damping del Token Mapping). No es Flutter. Los valores que implementás son los del Token Mapping.</div>
 <div class="readout">Estado: <span id="readout">hidden</span></div>
-<div class="mapping"><strong>Token Mapping</strong><br/>Entrada / salida bloque: motion-spring-md → mass 1.0 · stiffness 300 · damping 28 · fade + expand vertical (sin translate)<br/>Salida solo Default · Expand sin cierre<br/>Expand/collapse: motion-spring-sm → mass 1.0 · stiffness 400 · damping 35</div></section>
+<div class="mapping"><strong>Token Mapping</strong><br/>Entrada / salida bloque: motion-spring-md → mass 1.0 · stiffness 300 · damping 28 · fade + expand vertical (sin translate)<br/>Salida solo Default · Expand sin cierre<br/>Expand/collapse: motion-spring-sm → mass 1.0 · stiffness 400 · damping 35<br/>Sin haptic en aparición · X y chevron → <a href="../../icon-button/App/icon-button_motion-handoff_app.html">Icon Button</a></div></section>
 <section><h2>Implementación Dart (Flutter)</h2><div class="implementation"><pre>const motionSpringMd = SpringDescription(
   mass: 1.0,
   stiffness: 300,
@@ -124,17 +124,6 @@ Future&lt;void&gt; dismissInlineMessage() async {
     opacity: const Tuple2(1.0, 0.0),
     height: const Tuple2(1.0, 0.0),
   );
-}</pre></div></section>
-<section class="haptics-section"><h2>Haptics</h2>
-<div class="mapping"><strong>Token Mapping</strong><br/>Aparición: sin haptic<br/>X (solo Default): haptic-action-press<br/>Chevron expand: haptic-action-press<br/>Action Link: sin haptic</div>
-<div class="implementation"><pre>void onClosePressed() {
-  context.haptics.trigger(GgdsHapticSemantic.actionPress);
-  dismissInlineMessage();
-}
-
-void onExpandPressed() {
-  context.haptics.trigger(GgdsHapticSemantic.actionPress);
-  toggleExpand();
 }</pre></div></section>
 <footer class="doc-footer">Motion System GGDS · Inline Message Handoff App · 2026-06-29<br/>DesignOps @ itti</footer>
 </div>
