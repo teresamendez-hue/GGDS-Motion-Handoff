@@ -62,16 +62,14 @@ Mensaje contextual en flujo de layout en Flutter. Entrada y salida con **fade + 
 
 ## Haptics
 
-| acción | token |
-|---|---|
-| Aparición | none |
-| Tap X (solo Default) | haptic-action-press |
-| Tap chevron | haptic-action-press |
-| Action Link | none |
+- requiere: false
+- appear: none
+- composicion: [Icon Button, Link]
+- nota: "Sin haptic en aparición; press en X y chevron según handoff Icon Button; Action Link sin haptic"
 
 ## Coherencia sistémica
 
-- componentes_relacionados: [Toast, Coachmark, Tooltip]
+- componentes_relacionados: [Toast, Coachmark, Tooltip, Icon Button, Link]
 - token_mismo_que: [Coachmark]
 - razon: categoría Guía; patrón in-flow fade + expand vertical (no spring-lg de Toast flotante)
 
