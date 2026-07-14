@@ -83,7 +83,6 @@ h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin-botto
   </div>
   <span class="pill primary">motion-curve-md · slide</span>
   <span class="pill">motion-curve-sm · dots</span>
-  <span class="pill">infinite · finite</span>
 </header>
 
 <section id="motion-lab">
@@ -118,12 +117,6 @@ h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin-botto
   </div>
 </section>
 
-<section class="spec">
-  <h2>Motion Specification</h2>
-  <p>Carousel en modo peek desplaza el track con <code>motion-curve-md</code>. Swipe, flechas y dots comparten el mismo token de slide. Los dots animan el indicador activo con <code>motion-curve-sm</code>.</p>
-  <p>Dos variantes: <strong>infinite</strong> (loop con reset instantáneo en clones) y <strong>finite</strong> (extremos con flechas disabled). Sin autoplay. Sin enter/exit de viewport. Motion de flechas documentado en Icon Button.</p>
-</section>
-
 <section>
   <h2>Implementación CSS</h2>
   <div class="implementation"><pre>/* Track — cambio de slide (peek) */
@@ -151,19 +144,6 @@ h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin-botto
     transition: none;
   }
 }</pre></div>
-</section>
-
-<section>
-  <h2>Recomendaciones</h2>
-  <table class="rec-table">
-    <tr><th>Tema</th><th>Criterio</th></tr>
-    <tr><td>Slide</td><td><code>motion-curve-md</code> — categoría Guía</td></tr>
-    <tr><td>Dots</td><td><code>motion-curve-sm</code> — separado del slide</td></tr>
-    <tr><td>Flechas</td><td>Handoff de <strong>Icon Button</strong> — no duplicar</td></tr>
-    <tr><td><code>infinite</code></td><td>Animar adyacentes; reset de clone sin transición</td></tr>
-    <tr><td><code>finite</code></td><td>Misma animación; disabled en extremos (Icon Button)</td></tr>
-    <tr><td>A11y</td><td><code>prefers-reduced-motion</code> → salto instantáneo</td></tr>
-  </table>
 </section>
 
 <footer class="doc-footer">

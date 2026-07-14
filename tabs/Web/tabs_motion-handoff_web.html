@@ -90,13 +90,12 @@ h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin-botto
   </div>
   <span class="pill primary">motion-curve-md · indicador + panel</span>
   <span class="pill">motion-curve-sm · item</span>
-  <span class="pill">Line · Segmented</span>
 </header>
 
 <section id="motion-lab">
   <h2>Preview de motion</h2>
   <p class="motion-lab-disclaimer">Motion lab — no es el componente de la librería. Validá motion y tokens; la UI final está en Figma.</p>
-  <p class="hint">Hacé click en los tabs o deslizá la lista horizontalmente. Cambiá variante <strong>Line</strong> / <strong>Segmented</strong>. Al elegir un tab fuera del viewport, la lista hace scroll para revelarlo. Checkbox: tab disabled y prefers-reduced-motion.</p>
+  <p class="hint"><strong>Cómo probarlo:</strong> hacé click en un tab (o usá ← → del teclado) para cambiar de panel. Usá los radios <strong>Line</strong> / <strong>Segmented</strong> para cambiar variante. El checkbox <strong>prefers-reduced-motion</strong> desactiva las transiciones.</p>
   <div class="stage">
     <div class="tabs-wrap line" id="tabsWrap">
       <div class="tab-bar-outer">
@@ -112,7 +111,6 @@ h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin-botto
         <label><input type="radio" name="variant" value="line" checked/> Line</label>
         <label><input type="radio" name="variant" value="segmented"/> Segmented</label>
       </span>
-      <label><input type="checkbox" id="tabDisabled"/> Tab 3 disabled</label>
       <label><input type="checkbox" id="reduced"/> prefers-reduced-motion</label>
     </div>
     <div class="readout" id="readout"></div>
@@ -122,11 +120,6 @@ h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin-botto
       Tab item: motion-curve-sm → easing-standard → cubic-bezier(0.4, 0, 0.2, 1) → duration-150 (150ms)
     </div>
   </div>
-</section>
-
-<section class="spec">
-  <h2>Motion Specification</h2>
-  <p>Tab con indicador <strong>Line</strong> o <strong>Segmented</strong> se desplaza con <code>motion-curve-md</code>. El panel hace slide horizontal con el mismo token. Estados del item con <code>motion-curve-sm</code>. Scroll horizontal nativo en overflow con reveal del tab activo.</p>
 </section>
 
 <section>
@@ -158,18 +151,6 @@ h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin-botto
 }</pre></div>
 </section>
 
-<section>
-  <h2>Recomendaciones</h2>
-  <table class="rec-table">
-    <tr><th>Tema</th><th>Criterio</th></tr>
-    <tr><td>Indicador + panel</td><td><code>motion-curve-md</code> — sincronizados</td></tr>
-    <tr><td>Tab item</td><td><code>motion-curve-sm</code></td></tr>
-    <tr><td>Variantes</td><td>Line y Segmented — mismo token</td></tr>
-    <tr><td>Scroll</td><td>nativo; reveal con scrollTo smooth / instantáneo en reduced-motion</td></tr>
-    <tr><td>A11y</td><td><code>prefers-reduced-motion</code></td></tr>
-  </table>
-</section>
-
 <footer class="doc-footer">
   <p>Motion System GGDS · Tab Handoff Web · 2026-07-08</p>
   <p class="doc-footer-brand">DesignOps @ itti</p>
@@ -184,7 +165,6 @@ h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin-botto
   const tabsWrap = document.getElementById('tabsWrap');
   const readout = document.getElementById('readout');
   const reduced = document.getElementById('reduced');
-  const tabDisabled = document.getElementById('tabDisabled');
   const lab = document.getElementById('motion-lab');
   const variantInputs = [...document.querySelectorAll('input[name="variant"]')];
 
@@ -207,7 +187,6 @@ h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin-botto
       btn.setAttribute('aria-controls', `panel-${i}`);
       btn.innerHTML = `<span class="ring"></span>${label}`;
       btn.addEventListener('click', () => selectTab(i, 'click'));
-      if (i === 2) btn.disabled = tabDisabled.checked;
       tabScroll.appendChild(btn);
 
       const panel = document.createElement('div');
@@ -267,8 +246,6 @@ h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin-botto
   }
 
   function selectTab(index, trigger) {
-    if (tabs[index]?.disabled) return;
-    const prev = active;
     active = index;
     tabs.forEach((t, i) => {
       t.setAttribute('aria-selected', i === active ? 'true' : 'false');
@@ -305,11 +282,6 @@ h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin-botto
       updateIndicator();
       updateReadout('variant');
     });
-  });
-
-  tabDisabled.addEventListener('change', () => {
-    build();
-    if (active === 2) selectTab(0, 'disabled-fallback');
   });
 
   reduced.addEventListener('change', () => {

@@ -74,13 +74,12 @@ h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin-botto
   </div>
   <span class="pill primary">motion-spring-md · indicador + panel</span>
   <span class="pill">motion-spring-sm · item</span>
-  <span class="pill">Line · Segmented</span>
 </header>
 
 <section id="motion-lab">
   <h2>Preview de motion</h2>
   <p class="motion-lab-disclaimer">Motion lab — no es el componente de la librería. Validá motion y tokens; la UI final está en Figma.</p>
-  <p class="hint">Tocá los tabs o deslizá la lista horizontalmente. Sin hover en App. Cambiá <strong>Line</strong> / <strong>Segmented</strong>. Al elegir un tab fuera del viewport, la lista hace scroll para revelarlo. Tap dispara haptic simulado en readout.</p>
+  <p class="hint"><strong>Cómo probarlo:</strong> tocá un tab para cambiar de panel. Usá los radios <strong>Line</strong> / <strong>Segmented</strong> para cambiar variante. No hay hover en App; cada tap muestra el haptic simulado en el readout. El checkbox <strong>disableAnimations</strong> desactiva las transiciones.</p>
   <div class="stage">
     <div class="tabs-wrap line" id="tabsWrap">
       <div class="tab-bar-outer">
@@ -94,7 +93,6 @@ h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin-botto
         <label><input type="radio" name="variant" value="line" checked/> Line</label>
         <label><input type="radio" name="variant" value="segmented"/> Segmented</label>
       </span>
-      <label><input type="checkbox" id="tabDisabled"/> Tab 3 disabled</label>
       <label><input type="checkbox" id="reduced"/> disableAnimations (sin animación)</label>
     </div>
     <p class="companion">Referencia visual Web: <a href="../Web/tabs_motion-handoff_web.html">abrir preview Web</a></p>
@@ -131,18 +129,6 @@ _panelController.animateWith(
 }</pre></div>
 </section>
 
-<section>
-  <h2>Recomendaciones</h2>
-  <table class="rec-table">
-    <tr><th>Tema</th><th>Criterio</th></tr>
-    <tr><td>Indicador + panel</td><td><code>motion-spring-md</code></td></tr>
-    <tr><td>Tab item</td><td><code>motion-spring-sm</code></td></tr>
-    <tr><td>Haptics</td><td><code>haptic-selection-change</code></td></tr>
-    <tr><td>Scroll</td><td>nativo; reveal con animateTo / jumpTo con disableAnimations</td></tr>
-    <tr><td>A11y</td><td><code>disableAnimations</code></td></tr>
-  </table>
-</section>
-
 <footer class="doc-footer">
   <p>Motion System GGDS · Tab Handoff App · 2026-07-08</p>
   <p class="doc-footer-brand">DesignOps @ itti</p>
@@ -159,12 +145,12 @@ _panelController.animateWith(
   const tabsWrap = document.getElementById('tabsWrap');
   const readout = document.getElementById('readout');
   const reduced = document.getElementById('reduced');
-  const tabDisabled = document.getElementById('tabDisabled');
   const variantInputs = [...document.querySelectorAll('input[name="variant"]')];
 
   let active = 0;
   let tabs = [];
   let raf = null;
+  let animating = false;
   let itemState = 'enabled';
 
   const pos = { left: 0, width: 0, panel: 0, vLeft: 0, vWidth: 0, vPanel: 0 };
@@ -203,6 +189,7 @@ _panelController.animateWith(
 
   function runSpringLoop() {
     cancelAnimationFrame(raf);
+    animating = true;
     let last = performance.now();
 
     function frame(now) {
@@ -226,6 +213,8 @@ _panelController.animateWith(
         Math.abs(pos.panel - target.panel) < 0.5 && Math.abs(pos.vPanel) < 0.5;
 
       if (settled) {
+        animating = false;
+        raf = null;
         snapTo(active);
         return;
       }
@@ -241,6 +230,9 @@ _panelController.animateWith(
     target.width = m.width;
     target.panel = -index * panelViewport.offsetWidth;
     if (reduced.checked) {
+      animating = false;
+      cancelAnimationFrame(raf);
+      raf = null;
       snapTo(index);
       return;
     }
@@ -319,7 +311,6 @@ _panelController.animateWith(
       btn.innerHTML = `<span class="ring"></span>${label}`;
       btn.addEventListener('click', () => selectTab(i, 'tap · haptic-selection-change'));
       bindTabInteractions(btn);
-      if (i === 2) btn.disabled = tabDisabled.checked;
       tabScroll.appendChild(btn);
 
       const panel = document.createElement('div');
@@ -336,7 +327,6 @@ _panelController.animateWith(
   }
 
   function selectTab(index, trigger) {
-    if (tabs[index]?.disabled) return;
     active = index;
     tabs.forEach((t, i) => {
       t.setAttribute('aria-selected', i === active ? 'true' : 'false');
@@ -347,15 +337,19 @@ _panelController.animateWith(
     if (trigger && (trigger.includes('tap') || trigger.includes('keyboard'))) {
       tabs[active].focus({ preventScroll: true });
       revealActiveTab();
-      requestAnimationFrame(() => snapTo(active));
     }
     updateReadout(trigger);
   }
 
   tabScroll.addEventListener('scroll', () => {
     const m = metricsForTab(active);
-    pos.left = target.left = m.left;
-    paint();
+    target.left = m.left;
+    target.width = m.width;
+    if (reduced.checked || !animating) {
+      pos.left = m.left;
+      pos.width = m.width;
+      paint();
+    }
     updateReadout('scroll');
   });
 
@@ -382,13 +376,11 @@ _panelController.animateWith(
     });
   });
 
-  tabDisabled.addEventListener('change', () => {
-    build();
-    if (active === 2) selectTab(0, 'disabled-fallback');
-  });
-
   reduced.addEventListener('change', () => {
     tabScroll.classList.toggle('scroll-instant', reduced.checked);
+    animating = false;
+    cancelAnimationFrame(raf);
+    raf = null;
     snapTo(active);
   });
 
