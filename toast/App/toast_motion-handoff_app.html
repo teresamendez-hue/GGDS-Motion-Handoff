@@ -16,7 +16,6 @@ section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35
 .controls button{padding:.45rem .65rem;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;font:inherit;font-size:.84rem}
 .controls select{padding:.35rem .5rem;border:1px solid var(--border);border-radius:6px;background:#fff;font:inherit;font-size:.84rem}
 .readout{margin-top:.75rem;font-size:.78rem;color:var(--muted)}
-.haptic-readout{margin-top:.35rem;font-size:.78rem;color:var(--muted)}
 .implementation{margin-top:.75rem;border:1px solid var(--border);border-radius:var(--radius-sm);padding:.8rem;background:#fff}.implementation strong{display:block;font-size:.8rem;margin-bottom:.35rem;color:var(--muted)}.implementation pre{margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.75rem;line-height:1.45;white-space:pre-wrap;color:#404047}
 .mapping{margin-top:.75rem;border:1px solid rgba(37,37,41,.18);border-radius:var(--radius-sm);padding:.8rem;font-size:.78rem;color:var(--muted);line-height:1.5;background:rgba(37,37,41,.04)}
 .callout{border-left:4px solid var(--accent);background:rgba(37,37,41,.06);padding:.8rem 1rem;border-radius:0 6px 6px 0;margin-top:1rem;font-size:.88rem;color:#404047}
@@ -60,7 +59,6 @@ section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35
 <label><input type="checkbox" id="actionLinkToggle"/> Action Link (sin timer)</label><label><input type="checkbox" id="reducedToggle"/> disableAnimations</label></div>
 <div class="callout">Este preview simula el spring en el navegador. No es Flutter. Implementá con los parámetros del Token Mapping.</div>
 <div class="readout">Estado: <span id="readout">hidden</span></div>
-<div class="haptic-readout">Último haptic: <span id="hapticReadout">—</span></div>
 <p class="lifecycle" id="lifecycle">Timer: —</p>
 <div class="mapping"><strong>Token Mapping</strong><br/>Entrada: motion-spring-lg → mass 1.0 · stiffness 200 · damping 30<br/>Salida estándar: paridad motion-exit → Curves.easeIn · 300ms<br/>Salida swipe: motion-spring-lg · translateX</div></section>
 <section><h2>Implementación Dart (Flutter)</h2><div class="implementation"><pre>const motionSpringLg = SpringDescription(
@@ -146,7 +144,6 @@ Future<void> onToastShown() async {
   const toast=document.getElementById('toast');
   const toastBadgeIcon=document.getElementById('toastBadgeIcon');
   const readout=document.getElementById('readout');
-  const hapticReadout=document.getElementById('hapticReadout');
   const lifecycle=document.getElementById('lifecycle');
   const actionLink=document.getElementById('actionLink');
   const reducedToggle=document.getElementById('reducedToggle');
@@ -162,10 +159,10 @@ Future<void> onToastShown() async {
     return '<span class="badge-icon-frame">'+icons[key]+'</span>';
   }
   const SEM={
-    info:{cls:'semantic-info',glyph:'info',haptic:null,label:'none'},
-    success:{cls:'semantic-success',glyph:'success',haptic:'haptic-feedback-success · lightImpact()',label:'lightImpact'},
-    warning:{cls:'semantic-warning',glyph:'warning',haptic:'haptic-feedback-warning · mediumImpact()',label:'mediumImpact'},
-    error:{cls:'semantic-error',glyph:'error',haptic:'haptic-feedback-error · heavyImpact()',label:'heavyImpact'}
+    info:{cls:'semantic-info',glyph:'info'},
+    success:{cls:'semantic-success',glyph:'success'},
+    warning:{cls:'semantic-warning',glyph:'warning'},
+    error:{cls:'semantic-error',glyph:'error'}
   };
   let dismissTimer=null,isPaused=false,phase='hidden';
   let opacity=0,translateY=1,dragStartX=null,dragOffsetX=0;
@@ -206,16 +203,11 @@ Future<void> onToastShown() async {
     lifecycle.textContent='Timer: 6s post-entrada';
     dismissTimer=setTimeout(()=>runExit('auto-dismiss'),6000);
   }
-  function fireHaptic(){
-    const s=SEM[semanticSelect.value];
-    if(!s.haptic){hapticReadout.textContent='none';return;}
-    hapticReadout.textContent=s.haptic+' · '+new Date().toLocaleTimeString();
-  }
   function runEnter(){
     applySemantic();
     cancelSprings();clearTimer();dragOffsetX=0;translateY=1;toast.style.transition='none';setPhase('entering');
-    if(noAnim()){opacity=1;translateY=0;applyStyles();fireHaptic();scheduleDismiss();return;}
-    springTo(0,1,v=>{opacity=v;applyStyles();},fireHaptic,rafOp);
+    if(noAnim()){opacity=1;translateY=0;applyStyles();scheduleDismiss();return;}
+    springTo(0,1,v=>{opacity=v;applyStyles();},null,rafOp);
     springTo(1,0,v=>{translateY=v;applyStyles();},scheduleDismiss,rafY);
   }
   function runExit(reason,swipeFromX){
@@ -238,7 +230,7 @@ Future<void> onToastShown() async {
   document.getElementById('btnExit').onclick=()=>runExit('manual');
   document.getElementById('btnReset').onclick=()=>{
     cancelSprings();clearTimer();opacity=0;translateY=1;dragOffsetX=0;applyStyles();setPhase('hidden');
-    lifecycle.textContent='Timer: —';hapticReadout.textContent='—';
+    lifecycle.textContent='Timer: —';
   };
   const closeBtn=document.getElementById('closeBtn');
   closeBtn.addEventListener('pointerdown',(e)=>e.stopPropagation());
