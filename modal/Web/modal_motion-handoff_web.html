@@ -119,7 +119,7 @@ section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35
   const ENTER_MS=700,EXIT_MS=400;
   let phase='hidden',exitTimer=null;
   function reduced(){return reducedToggle.checked||lab.classList.contains('reduced-motion')}
-  function setPhase(p){phase=p;readout.textContent=p+' · '+sizeSelect.value+' · '+typeSelect.value+' · '+(reduced()?'instantáneo':'motion-curve-xl / motion-exit')}
+  function setPhase(p){phase=p;readout.textContent=p}
   function clearExitTimer(){if(exitTimer){clearTimeout(exitTimer);exitTimer=null}}
   function applySize(){panel.classList.remove('size-s','size-m','size-l');panel.classList.add('size-'+sizeSelect.value)}
   function applyContent(){
