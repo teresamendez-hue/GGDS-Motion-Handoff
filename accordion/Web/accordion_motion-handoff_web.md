@@ -129,4 +129,5 @@ Sin stagger. Sin scrim.
 | Type | Default / Container: swap visual instantáneo |
 | Viewport | Sin enter/exit; componente siempre en DOM |
 | Accesibilidad | `prefers-reduced-motion`: estado final sin transición; `aria-expanded` en header |
+| Tokens | Alineado con Dropdown ítems: `motion-curve-sm` |
 | Figma | Referencia visual; implementación en código según este handoff |

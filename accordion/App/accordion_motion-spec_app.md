@@ -76,15 +76,15 @@ haptic_trigger: onHeaderTap
 
 ## Haptics
 
-| acción | token |
-|---|---|
-| Tap header toggle | haptic-selection-change |
-| Cambio Type | none |
+- requiere: true (toggle)
+- toggle: haptic-selection-change
+- composicion: [Icon Button]
+- nota: "selection-change en expand/collapse; press del chevron según handoff Icon Button"
 
 ## Coherencia sistémica
 
-- componentes_relacionados: [Inline Message (Expand), Switch, Checkbox]
-- token_mismo_que: [Inline Message expand, Button estados]
+- componentes_relacionados: [Inline Message (Expand), Dropdown (Web), Icon Button]
+- token_mismo_que: [Dropdown ítems — motion-curve-sm Web; Inline Message expand — motion-spring-sm App]
 - razon: reveal/collapse de microinteracción; motion-spring-sm alineado con expand de Inline Message
 
 ## Accesibilidad

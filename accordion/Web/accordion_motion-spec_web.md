@@ -89,9 +89,9 @@ preview_type: internal_state
 
 ## Coherencia sistémica
 
-- componentes_relacionados: [Inline Message (variante Expand), Left Menu]
-- token_mismo_que: [Inline Message expand, Button estados, Switch]
-- razon: microinteracción de reveal/collapse; categoría Default con motion-curve-sm
+- componentes_relacionados: [Inline Message (variante Expand), Dropdown, Icon Button]
+- token_mismo_que: [Dropdown ítems, Inline Message expand, Button estados]
+- razon: microinteracción de reveal/collapse; `motion-curve-sm` alineado con Dropdown
 
 ## Accesibilidad
 
