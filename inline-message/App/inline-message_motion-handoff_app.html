@@ -1,0 +1,277 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Motion Handoff — Inline Message (App)</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#fff;--bg-subtle:#f7f7f7;--border:#e8e8ec;--text:#252529;--muted:#6c6c78;--accent:#55555e;--radius:12px;--radius-sm:6px;--sans:'Inter',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--sans);font-size:14px;line-height:1.6;color:var(--text)}
+.page{max-width:920px;margin:0 auto;padding:2rem 1.5rem}.hero h1{font-size:3rem;font-weight:800}
+.hero-meta{display:flex;align-items:center;gap:1rem;color:var(--muted);margin:.6rem 0 1rem;flex-wrap:wrap}
+.owner-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.3rem .65rem .3rem .3rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:999px;font-size:.82rem}
+.owner-avatar-img{width:28px;height:28px;border-radius:50%;object-fit:cover}
+.pill{display:inline-block;padding:.3rem .6rem;border:1px solid var(--border);border-radius:999px;background:var(--bg-subtle);font-size:.75rem}
+.pill.primary{border-color:rgba(37,37,41,.18);background:rgba(37,37,41,.06);color:var(--accent)}
+section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35rem;margin-bottom:.75rem}
+.motion-lab-disclaimer{font-size:.82rem;color:var(--muted);margin-bottom:.75rem;padding:.5rem .75rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.hint{font-size:.88rem;color:var(--muted);margin-bottom:1rem}
+.stage{position:relative;min-height:320px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;padding:24px;display:flex;align-items:flex-start}
+.stage-flow{display:flex;flex-direction:column;gap:12px;width:100%;max-width:400px}
+.stage-chrome{min-height:48px;padding:12px 16px;background:#fff;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--muted);display:flex;align-items:center}
+.inline-message-slot{overflow:hidden;height:0}
+.inline-message-slot .inline-message-clip{overflow:hidden}
+.inline-message{display:flex;gap:4px;align-items:flex-start;padding:8px 12px 12px 16px;width:100%;max-width:320px;border-radius:8px;border:.5px solid;opacity:0;pointer-events:none;will-change:opacity}
+.inline-message.semantic-info{background:#f2f8ff;border-color:#004799}
+.inline-message.semantic-success{background:#f0fff8;border-color:#146542}
+.inline-message.semantic-warning{background:#fffaf0;border-color:#664400}
+.inline-message.semantic-error{background:#fff1f5;border-color:#d3315f}
+.im-main{flex:1;display:flex;gap:12px;align-items:flex-start;min-width:0;padding-top:4px}
+.im-badge{flex-shrink:0;width:24px;height:24px;border-radius:999px;display:flex;align-items:center;justify-content:center;padding:2px;margin-top:0}
+.badge-icon-frame{position:relative;display:block;width:16px;height:16px;flex-shrink:0}
+.badge-glyph{position:absolute}
+.badge-glyph img{display:block;width:100%;height:100%}
+.badge-glyph--info{inset:12.5% 37.5% 12.49% 37.5%}
+.badge-glyph--success{inset:27.09% 16.68%}
+.badge-glyph--warning,.badge-glyph--error{inset:16.65% 42.71% 16.67% 42.71%}
+.semantic-info .im-badge{background:#1d85fc}
+.semantic-success .im-badge{background:#16a366}
+.semantic-warning .im-badge{background:#ea9e06}
+.semantic-error .im-badge{background:#d3315f}
+.im-body{flex:1;min-width:0}
+.im-title{font-size:16px;font-weight:600;line-height:24px;margin:0 0 2px}
+.im-desc{font-size:14px;line-height:20px;margin:0}
+.im-link{display:inline-block;margin-top:4px;padding:8px 0;font-size:12px;color:var(--text);text-decoration:underline;background:none;border:none;cursor:pointer;font-family:inherit}
+.im-link[hidden]{display:none!important}
+.im-close,.im-chevron{flex-shrink:0;width:36px;height:36px;border:none;background:transparent;border-radius:4px;cursor:pointer;color:#6c6c78;display:flex;align-items:center;justify-content:center}
+.im-chevron-svg{display:block}
+.im-close{font-size:18px;line-height:1}
+.im-details-wrap{overflow:hidden;height:0;opacity:0}
+.inline-message.variant-expand .im-desc-default{display:none}
+.inline-message:not(.variant-expand) .im-details-wrap{display:none!important}
+.inline-message:not(.variant-expand) .im-chevron{display:none!important}
+.inline-message.variant-expand .im-close{display:none!important}
+.controls button:disabled{opacity:.45;cursor:not-allowed}
+.controls{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1rem;align-items:center}.controls label,.controls select{cursor:pointer;font-size:.84rem}
+.controls button{padding:.45rem .65rem;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;font:inherit;font-size:.84rem}
+.readout{margin-top:.75rem;font-size:.78rem;color:var(--muted)}
+.mapping{margin-top:.75rem;border:1px solid rgba(37,37,41,.18);border-radius:var(--radius-sm);padding:.8rem;font-size:.78rem;color:var(--muted);line-height:1.5;background:rgba(37,37,41,.04)}
+.implementation{margin-top:.75rem;border:1px solid var(--border);border-radius:var(--radius-sm);padding:.8rem;background:#fff}.implementation strong{display:block;font-size:.8rem;margin-bottom:.35rem;color:var(--muted)}.implementation pre{margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.75rem;line-height:1.45;white-space:pre-wrap;color:#404047}
+.callout{border-left:4px solid var(--accent);background:rgba(37,37,41,.06);padding:.8rem 1rem;border-radius:0 6px 6px 0;margin-top:1rem;font-size:.88rem;color:#404047}
+.doc-footer{text-align:center;padding:1.2rem 0;color:#8f8f9c;font-size:.8rem}
+#motion-lab.reduced-motion .inline-message,#motion-lab.reduced-motion .im-chevron-svg{transition:none!important}
+</style></head><body><div class="page">
+<header class="hero"><h1>Inline Message</h1><div class="hero-meta"><span class="owner-badge"><img class="owner-avatar-img" src="data:image/jpeg;base64,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" alt="Nehuén Benitez"/> Nehuén Benitez</span><span>App · GGDS · 2026-06-29</span></div><span class="pill primary">motion-spring-md · motion-spring-sm</span></header>
+<section id="motion-lab"><h2>Preview de motion</h2>
+<p class="motion-lab-disclaimer">Motion lab — no es el componente de la librería. Validá motion y tokens; la UI final está en Figma.</p>
+<p class="hint">Entrada · Salida · Reset. El mensaje aparece <strong>en el flujo</strong> entre bloques de contenido (fade + expand vertical, sin slide). Variante Expand: chevron. Salida solo Default.</p>
+<div class="stage"><div class="stage-flow">
+<div class="stage-chrome">Contenido superior</div>
+<div class="inline-message-slot" id="slot"><div class="inline-message-clip" id="slotClip"><article class="inline-message semantic-info" id="msg" role="status">
+<div class="im-main">
+<span class="im-badge" aria-hidden="true"><span id="badgeIcon"></span></span>
+<div class="im-body">
+<h3 class="im-title">Title</h3>
+<p class="im-desc im-desc-default">Description</p>
+<button type="button" class="im-link im-link-default" id="actionLinkDefault" hidden>Action link</button>
+<div class="im-details-wrap" id="detailsWrap"><div>
+<p class="im-desc">Description</p>
+<button type="button" class="im-link im-link-expand" id="actionLinkExpand" hidden>Action link</button>
+</div></div>
+</div></div>
+<button type="button" class="im-chevron" id="expandBtn" aria-label="Expandir" aria-expanded="false"><svg class="im-chevron-svg" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+<button type="button" class="im-close" id="closeBtn" aria-label="Cerrar">×</button>
+</article></div></div>
+<div class="stage-chrome">Contenido inferior</div>
+</div></div>
+<div class="controls">
+<label>Semántica <select id="semanticSelect"><option value="info">Information</option><option value="success">Success</option><option value="warning">Warning</option><option value="error">Error</option></select></label>
+<label>Variante <select id="variantSelect"><option value="default">Default</option><option value="expand">Expand</option></select></label>
+<button type="button" id="btnEnter">Entrada</button><button type="button" id="btnExit">Salida</button><button type="button" id="btnReset">Reset</button>
+<label><input type="checkbox" id="actionLinkToggle"/> Action Link</label>
+<label><input type="checkbox" id="reducedToggle"/> disableAnimations</label>
+</div>
+<div class="callout">Este preview simula el spring en el navegador (mass / stiffness / damping del Token Mapping). No es Flutter. Los valores que implementás son los del Token Mapping.</div>
+<div class="readout">Estado: <span id="readout">hidden</span></div>
+<div class="mapping"><strong>Token Mapping</strong><br/>Entrada / salida bloque: motion-spring-md → mass 1.0 · stiffness 300 · damping 28 · fade + expand vertical (sin translate)<br/>Salida solo Default · Expand sin cierre<br/>Expand/collapse: motion-spring-sm → mass 1.0 · stiffness 400 · damping 35</div></section>
+<section><h2>Implementación Dart (Flutter)</h2><div class="implementation"><pre>const motionSpringMd = SpringDescription(
+  mass: 1.0,
+  stiffness: 300,
+  damping: 28,
+);
+
+const motionSpringSm = SpringDescription(
+  mass: 1.0,
+  stiffness: 400,
+  damping: 35,
+);
+
+Future&lt;void&gt; showInlineMessage(InlineMessageData data) async {
+  if (disableAnimations) {
+    inlineMessageController.setVisible();
+    return;
+  }
+  await inlineMessageController.animateIn(
+    spring: motionSpringMd,
+    opacity: const Tuple2(0.0, 1.0),
+    height: const Tuple2(0.0, 1.0),
+  );
+}
+
+Future&lt;void&gt; dismissInlineMessage() async {
+  if (disableAnimations) {
+    inlineMessageController.setHidden();
+    return;
+  }
+  await inlineMessageController.animateOut(
+    spring: motionSpringMd,
+    opacity: const Tuple2(1.0, 0.0),
+    height: const Tuple2(1.0, 0.0),
+  );
+}</pre></div></section>
+<section class="haptics-section"><h2>Haptics</h2>
+<div class="mapping"><strong>Token Mapping</strong><br/>Aparición: sin haptic<br/>X (solo Default): haptic-action-press<br/>Chevron expand: haptic-action-press<br/>Action Link: sin haptic</div>
+<div class="implementation"><pre>void onClosePressed() {
+  context.haptics.trigger(GgdsHapticSemantic.actionPress);
+  dismissInlineMessage();
+}
+
+void onExpandPressed() {
+  context.haptics.trigger(GgdsHapticSemantic.actionPress);
+  toggleExpand();
+}</pre></div></section>
+<footer class="doc-footer">Motion System GGDS · Inline Message Handoff App · 2026-06-29<br/>DesignOps @ itti</footer>
+</div>
+<script>
+(()=>{
+  const SPRING_MD={mass:1,stiffness:300,damping:28};
+  const SPRING_SM={mass:1,stiffness:400,damping:35};
+  const ICON_ASSETS={info:'https://www.figma.com/api/mcp/asset/96202495-9eb0-45e2-8876-99eaa6ee7df9',success:'https://www.figma.com/api/mcp/asset/37ddab20-837d-4e9d-a949-1dd9091a01f6',warning:'https://www.figma.com/api/mcp/asset/818ee978-ab6b-4328-957f-b7c41f182bad',error:'https://www.figma.com/api/mcp/asset/db235cea-41ee-4806-9a12-eb5856e93af8'};
+  function dsIcon(key){const g={info:'badge-glyph--info',success:'badge-glyph--success',warning:'badge-glyph--warning',error:'badge-glyph--error'}[key];return '<span class="badge-icon-frame"><span class="badge-glyph '+g+'"><img src="'+ICON_ASSETS[key]+'" alt=""></span></span>'}
+  const SEM={info:{cls:'semantic-info',glyph:'info'},success:{cls:'semantic-success',glyph:'success'},warning:{cls:'semantic-warning',glyph:'warning'},error:{cls:'semantic-error',glyph:'error'}}
+  const lab=document.getElementById('motion-lab'),msg=document.getElementById('msg'),slot=document.getElementById('slot'),readout=document.getElementById('readout')
+  const semanticSelect=document.getElementById('semanticSelect'),variantSelect=document.getElementById('variantSelect')
+  const actionLinkToggle=document.getElementById('actionLinkToggle'),reducedToggle=document.getElementById('reducedToggle')
+  const actionLinkDefault=document.getElementById('actionLinkDefault'),actionLinkExpand=document.getElementById('actionLinkExpand')
+  const badgeIcon=document.getElementById('badgeIcon'),detailsWrap=document.getElementById('detailsWrap'),expandBtn=document.getElementById('expandBtn'),chevronSvg=expandBtn.querySelector('.im-chevron-svg')
+  const btnExit=document.getElementById('btnExit'),closeBtn=document.getElementById('closeBtn')
+  let visible=false,expanded=false,opacity=0,hostH=0,hostFullH=0,detH=0,detOp=0,chevRot=0,detailsFullH=0
+  const rafOp={v:null},rafHost={v:null},rafDet={v:null},rafDetOp={v:null},rafChev={v:null}
+  function isReduced(){return lab.classList.contains('reduced-motion')||reducedToggle.checked}
+  function isExpand(){return variantSelect.value==='expand'}
+  function measureHost(){
+    const prevSlotH=slot.style.height
+    const prevDetH=detailsWrap.style.height
+    const prevDetOp=detailsWrap.style.opacity
+    slot.style.height='auto'
+    msg.style.opacity='1'
+    if(isExpand()){
+      detailsWrap.style.height=expanded?detailsFullH+'px':'0px'
+      detailsWrap.style.opacity=expanded?'1':'0'
+    }
+    hostFullH=msg.offsetHeight
+    slot.style.height=prevSlotH||hostH+'px'
+    if(isExpand()){
+      detailsWrap.style.height=prevDetH||'0'
+      detailsWrap.style.opacity=prevDetOp||'0'
+    }
+    msg.style.opacity=String(opacity)
+  }
+  function remeasureLayout(){
+    measureDetails()
+    measureHost()
+  }
+  function animateLayoutHeights(){
+    if(!visible)return
+    applyActionLink()
+    remeasureLayout()
+    if(isReduced()){
+      if(isExpand()){detH=expanded?detailsFullH:0}
+      hostH=hostFullH
+      applyMotion()
+      return
+    }
+    cancelAll()
+    if(isExpand()&&expanded){
+      springTo(SPRING_SM,detH,detailsFullH,v=>{detH=v;applyMotion()},null,rafDet)
+    }
+    springTo(SPRING_SM,hostH,hostFullH,v=>{hostH=v;applyMotion()},null,rafHost)
+  }
+  function measureDetails(forExpanded){
+    if(!isExpand())return
+    const exp=forExpanded!==undefined?forExpanded:expanded
+    const prevH=detailsWrap.style.height
+    detailsWrap.style.height='auto'
+    detailsWrap.style.opacity='1'
+    actionLinkExpand.hidden=!actionLinkToggle.checked||!exp
+    detailsFullH=detailsWrap.scrollHeight
+    detailsWrap.style.height=prevH||'0'
+    applyActionLink()
+  }
+  function applySemantic(){const s=SEM[semanticSelect.value];msg.classList.remove('semantic-info','semantic-success','semantic-warning','semantic-error');msg.classList.add(s.cls);badgeIcon.innerHTML=dsIcon(s.glyph)}
+  function applyActionLink(){
+    const on=actionLinkToggle.checked
+    actionLinkDefault.hidden=!on||isExpand()
+    actionLinkExpand.hidden=!on||!isExpand()||!expanded
+  }
+  function applyVariant(){
+    msg.classList.toggle('variant-expand',isExpand())
+    expandBtn.style.display=isExpand()?'flex':'none'
+    closeBtn.style.display=isExpand()?'none':'flex'
+    btnExit.disabled=isExpand()
+    if(!isExpand()){expanded=false;detH=0;detOp=0;chevRot=0;expandBtn.setAttribute('aria-expanded','false')}
+    applyActionLink()
+  }
+  function applyMotion(){
+    slot.style.height=hostH+'px'
+    msg.style.opacity=String(opacity)
+    msg.style.pointerEvents=opacity>0.05?'auto':'none'
+    if(isExpand()){detailsWrap.style.height=detH+'px';detailsWrap.style.opacity=String(detOp);chevronSvg.style.transform='rotate('+chevRot+'deg)'}
+  }
+  function cancelAll(){[rafOp,rafHost,rafDet,rafDetOp,rafChev].forEach(r=>{if(r.v)cancelAnimationFrame(r.v);r.v=null})}
+  function springTo(cfg,from,to,setter,done,rafRef){
+    if(rafRef.v)cancelAnimationFrame(rafRef.v)
+    let x=from,v=0,last=performance.now()
+    const frame=(now)=>{const dt=Math.min((now-last)/1000,.064);last=now;const a=(-cfg.stiffness*(x-to)-cfg.damping*v)/cfg.mass;v+=a*dt;x+=v*dt;setter(x);if(Math.abs(x-to)<.002&&Math.abs(v)<.002){setter(to);rafRef.v=null;if(done)done();return}rafRef.v=requestAnimationFrame(frame)}
+    rafRef.v=requestAnimationFrame(frame)
+  }
+  function setHidden(){cancelAll();opacity=0;hostH=0;visible=false;applyMotion();readout.textContent='hidden · motion-spring-md'}
+  function showEnter(){
+    cancelAll();applySemantic();applyVariant();applyActionLink();measureDetails();measureHost()
+    visible=true;readout.textContent='entering · motion-spring-md'
+    if(isReduced()){opacity=1;hostH=hostFullH;applyMotion();readout.textContent='visible (instantáneo)';return}
+    opacity=0;hostH=0;applyMotion()
+    springTo(SPRING_MD,0,1,v=>{opacity=v;applyMotion()},null,rafOp)
+    springTo(SPRING_MD,0,hostFullH,v=>{hostH=v;applyMotion()},()=>readout.textContent='visible · motion-spring-md',rafHost)
+  }
+  function hideSoft(){
+    if(!visible||isExpand())return
+    readout.textContent='exiting · motion-spring-md'
+    if(isReduced()){setHidden();return}
+    cancelAll()
+    springTo(SPRING_MD,opacity,0,v=>{opacity=v;applyMotion()},null,rafOp)
+    springTo(SPRING_MD,hostH,0,v=>{hostH=v;applyMotion()},setHidden,rafHost)
+  }
+  function toggleExpand(){
+    if(!isExpand()||!visible)return
+    expanded=!expanded
+    applyActionLink()
+    measureDetails(expanded)
+    measureHost()
+    const targetDet=expanded?detailsFullH:0,targetOp=expanded?1:0,targetChev=expanded?180:0,targetHost=hostFullH
+    if(isReduced()){detH=targetDet;detOp=targetOp;chevRot=targetChev;hostH=targetHost;expandBtn.setAttribute('aria-expanded',String(expanded));applyMotion();readout.textContent=(expanded?'expanded':'collapsed')+' (instantáneo)';return}
+    cancelAll()
+    springTo(SPRING_SM,detOp,targetOp,v=>{detOp=v;applyMotion()},null,rafDetOp)
+    springTo(SPRING_SM,detH,targetDet,v=>{detH=v;applyMotion()},null,rafDet)
+    springTo(SPRING_SM,chevRot,targetChev,v=>{chevRot=v;applyMotion()},null,rafChev)
+    springTo(SPRING_SM,hostH,targetHost,v=>{hostH=v;applyMotion()},()=>{expandBtn.setAttribute('aria-expanded',String(expanded));readout.textContent=(expanded?'expanded':'collapsed')+' · motion-spring-sm'},rafHost)
+  }
+  function resetAll(){cancelAll();expanded=false;detH=0;detOp=0;chevRot=0;applyVariant();setHidden()}
+  document.getElementById('btnEnter').onclick=showEnter
+  document.getElementById('btnExit').onclick=hideSoft
+  document.getElementById('btnReset').onclick=resetAll
+  document.getElementById('closeBtn').onclick=hideSoft
+  expandBtn.onclick=toggleExpand
+  semanticSelect.onchange=applySemantic
+  variantSelect.onchange=()=>{applyVariant();if(visible){measureHost();showEnter()}}
+  actionLinkToggle.onchange=()=>{if(visible)animateLayoutHeights();else applyActionLink()}
+  reducedToggle.onchange=()=>lab.classList.toggle('reduced-motion',reducedToggle.checked)
+  applySemantic();applyVariant();setHidden()
+})()
+</script></body></html>

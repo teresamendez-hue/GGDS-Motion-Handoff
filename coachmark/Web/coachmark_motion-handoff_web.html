@@ -1,0 +1,205 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Motion Handoff — Coachmark (Web)</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#fff;--bg-subtle:#f7f7f7;--border:#e8e8ec;--text:#252529;--muted:#6c6c78;--accent:#55555e;--radius:12px;--radius-sm:6px;--sans:'Inter',sans-serif;--motion-curve-md:cubic-bezier(0,0,.2,1);--motion-curve-sm:cubic-bezier(.4,0,.2,1);--motion-exit:cubic-bezier(.4,0,1,1);--duration-300:300ms;--duration-200:200ms;--duration-150:150ms}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--sans);font-size:14px;line-height:1.6;color:var(--text)}
+.page{max-width:920px;margin:0 auto;padding:2rem 1.5rem}.hero h1{font-size:3rem;font-weight:800}
+.hero-meta{display:flex;align-items:center;gap:1rem;color:var(--muted);margin:.6rem 0 1rem;flex-wrap:wrap}
+.owner-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.3rem .65rem .3rem .3rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:999px;font-size:.82rem}
+.owner-avatar-img{width:28px;height:28px;border-radius:50%;object-fit:cover}
+.pill{display:inline-block;padding:.3rem .6rem;border:1px solid var(--border);border-radius:999px;background:var(--bg-subtle);font-size:.75rem}
+.pill.primary{border-color:rgba(37,37,41,.18);background:rgba(37,37,41,.06);color:var(--accent)}
+section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35rem;margin-bottom:.75rem}
+.motion-lab-disclaimer{font-size:.82rem;color:var(--muted);margin-bottom:.75rem;padding:.5rem .75rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.hint{font-size:.88rem;color:var(--muted);margin-bottom:1rem}
+.stage{min-height:340px;display:flex;align-items:center;justify-content:center;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius);padding:3rem 2rem;overflow:visible;position:relative}
+.stage.target-off .target-btn{opacity:.25;pointer-events:none}
+.anchor{position:relative;display:inline-flex;flex-direction:column;align-items:center}
+.target-btn{padding:.55rem 1.1rem;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);font:inherit;font-weight:600;cursor:pointer}
+.target-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.coachmark{position:absolute;z-index:2;width:320px;max-width:min(320px,calc(100vw - 48px));filter:drop-shadow(0 0 24px rgba(37,37,41,.08));opacity:0;pointer-events:none}
+.coachmark-panel{position:relative;background:#d0d0d8;border-radius:8px;padding:8px 16px 16px;width:100%}
+.coachmark-close{position:absolute;top:8px;right:8px;width:36px;height:36px;border:none;background:transparent;border-radius:4px;cursor:pointer;color:#6c6c78;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center}
+.coachmark-close:hover{background:rgba(37,37,41,.06)}
+.coachmark-title{font-size:16px;font-weight:600;line-height:24px;color:#252529;margin:0 28px 4px 0}
+.coachmark-desc{font-size:14px;line-height:20px;color:#252529;margin:0 0 8px}
+.coachmark-footer{display:flex;gap:8px;align-items:center;width:100%}
+.coachmark-footer .coachmark-steps{margin:0;flex:1}
+.coachmark-actions{flex-shrink:0}
+.coachmark-actions .secondary{padding:8px 12px;border:none;background:transparent;color:#252529;font:inherit;font-size:14px;font-weight:600;cursor:pointer;border-radius:4px}
+.coachmark-actions .secondary:hover{background:rgba(37,37,41,.06)}
+.coachmark-actions .primary{padding:8px 16px;border:none;background:#252529;color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer;border-radius:4px}
+.coachmark-actions .primary:hover{background:#404047}
+.coachmark-arrow{width:12px;height:6px;background:transparent}
+.coachmark-arrow::before{content:'';display:block;width:0;height:0;margin:0 auto}
+.coachmark.pos-top{bottom:calc(100% + 12px);left:50%;transform:translateX(-50%) translateY(8px);display:flex;flex-direction:column;align-items:center}
+.coachmark.pos-top .coachmark-arrow{order:2;margin-top:2px}.coachmark.pos-top .coachmark-arrow::before{border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid #d0d0d8}
+.coachmark.pos-bottom{top:calc(100% + 12px);left:50%;transform:translateX(-50%) translateY(-8px);display:flex;flex-direction:column;align-items:center}
+.coachmark.pos-bottom .coachmark-arrow{order:0;margin-bottom:2px}.coachmark.pos-bottom .coachmark-arrow::before{border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:6px solid #d0d0d8}
+.coachmark.pos-left{right:calc(100% + 12px);top:50%;transform:translateY(-50%) translateX(8px);display:flex;flex-direction:row;align-items:center}
+.coachmark.pos-left .coachmark-arrow{order:2;width:6px;height:12px}.coachmark.pos-left .coachmark-arrow::before{border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:6px solid #d0d0d8}
+.coachmark.pos-right{left:calc(100% + 12px);top:50%;transform:translateY(-50%) translateX(-8px);display:flex;flex-direction:row;align-items:center}
+.coachmark.pos-right .coachmark-arrow{order:0;width:6px;height:12px}.coachmark.pos-right .coachmark-arrow::before{border-top:6px solid transparent;border-bottom:6px solid transparent;border-right:6px solid #d0d0d8}
+.coachmark.pos-top.is-entering,.coachmark.pos-bottom.is-entering{transform:translateX(-50%) translateY(0)}
+.coachmark.pos-left.is-entering,.coachmark.pos-right.is-entering{transform:translateY(-50%) translateX(0)}
+.coachmark.pos-top.is-exiting,.coachmark.pos-top.is-hidden{transform:translateX(-50%) translateY(8px)}
+.coachmark.pos-bottom.is-exiting,.coachmark.pos-bottom.is-hidden{transform:translateX(-50%) translateY(-8px)}
+.coachmark.pos-left.is-exiting,.coachmark.pos-left.is-hidden{transform:translateY(-50%) translateX(8px)}
+.coachmark.pos-right.is-exiting,.coachmark.pos-right.is-hidden{transform:translateY(-50%) translateX(-8px)}
+.coachmark.is-hidden,.coachmark.is-forced-hidden{opacity:0;transition:none;pointer-events:none}
+.coachmark.is-entering{opacity:1;pointer-events:auto;transition:opacity var(--duration-300) var(--motion-curve-md),transform var(--duration-300) var(--motion-curve-md)}
+.coachmark.is-exiting{opacity:0;pointer-events:none;transition:opacity var(--duration-200) var(--motion-exit),transform var(--duration-200) var(--motion-exit)}
+.coachmark-body{transition:opacity var(--duration-150) var(--motion-curve-sm)}
+.coachmark-body.is-fading{opacity:0}
+.controls{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1rem;align-items:center}.controls label,.controls select{cursor:pointer;font-size:.84rem}
+.controls button{padding:.45rem .65rem;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;font:inherit;font-size:.84rem}
+.readout{margin-top:.75rem;font-size:.78rem;color:var(--muted)}
+.mapping{margin-top:.75rem;border:1px solid rgba(37,37,41,.18);border-radius:var(--radius-sm);padding:.8rem;font-size:.78rem;color:var(--muted);line-height:1.5;background:rgba(37,37,41,.04)}
+.implementation{margin-top:.75rem;border:1px solid var(--border);border-radius:var(--radius-sm);padding:.8rem;background:#fff}.implementation strong{display:block;font-size:.8rem;margin-bottom:.35rem;color:var(--muted)}.implementation pre{margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.75rem;line-height:1.45;white-space:pre-wrap;color:#404047}
+.doc-footer{text-align:center;padding:1.2rem 0;color:#8f8f9c;font-size:.8rem}
+#motion-lab.reduced-motion .coachmark.is-entering,#motion-lab.reduced-motion .coachmark.is-exiting,#motion-lab.reduced-motion .coachmark-body{transition:none!important}
+</style></head><body><div class="page">
+<header class="hero"><h1>Coachmark</h1><div class="hero-meta"><span class="owner-badge"><img class="owner-avatar-img" src="data:image/jpeg;base64,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" alt="Nehuén Benitez"/> Nehuén Benitez</span><span>Web · GGDS · 2026-06-25</span></div><span class="pill primary">motion-curve-md · motion-exit · motion-curve-sm</span></header>
+<section id="motion-lab"><h2>Preview de motion</h2>
+<p class="motion-lab-disclaimer">Motion lab — no es el componente de la librería. Validá motion y tokens; la UI final está en Figma.</p>
+<p class="hint">Interactuá con el componente: botón target en el stage. Controles: Pointer (4 direcciones), Entrada, Salida suave, Siguiente step, Simular Esc, Simular target off-screen y prefers-reduced-motion.</p>
+<div class="stage" id="stage"><div class="anchor" id="anchor">
+<button type="button" class="target-btn" id="targetBtn">Elemento target</button>
+<div class="coachmark is-hidden pos-top" id="coachmark" role="dialog" aria-labelledby="cmTitle">
+<div class="coachmark-arrow"></div>
+<div class="coachmark-panel">
+<button type="button" class="coachmark-close" id="closeBtn" aria-label="Cerrar">×</button>
+<div class="coachmark-body" id="coachmarkBody">
+<h3 class="coachmark-title" id="cmTitle">Bienvenido al tour</h3>
+<p class="coachmark-desc" id="cmDesc">Te guiamos por las funciones principales de la pantalla.</p>
+</div>
+<div class="coachmark-footer">
+<p class="coachmark-steps" id="cmSteps">1 de 4</p>
+<div class="coachmark-actions"><button type="button" class="secondary" id="skipBtn">Omitir</button><button type="button" class="primary" id="primaryBtn">Siguiente</button></div>
+</div>
+</div></div></div></div>
+<div class="controls">
+<label>Pointer <select id="pointerSelect"><option value="top">Top</option><option value="bottom">Bottom</option><option value="left">Left</option><option value="right">Right</option></select></label>
+<button type="button" id="btnEnter">Entrada</button><button type="button" id="btnExit">Salida suave</button><button type="button" id="btnReset">Reset</button><button type="button" id="btnNext">Siguiente step</button>
+<button type="button" id="btnEsc">Simular Esc</button><button type="button" id="btnOffscreen">Simular target off-screen</button>
+<label><input type="checkbox" id="reduced"/> prefers-reduced-motion</label>
+</div>
+<div class="readout">Estado: <span id="readout">hidden · paso 1/4</span></div>
+<div class="mapping"><strong>Token Mapping</strong><br/>Entrada: motion-curve-md → easing-decelerate → cubic-bezier(0, 0, 0.2, 1) → duration-300 (300ms) · opacity 0→1 + translate 8px eje puntero<br/>Salida suave: motion-exit → easing-accelerate → cubic-bezier(0.4, 0, 1, 1) → duration-200 (200ms) · reverse<br/>Cambio de step: motion-curve-sm → easing-standard → duration-150 (150ms) · crossfade contenido<br/>Salida forzada (Esc, target off-screen): instantánea · transition: none<br/>Sin animación de scrim/overlay</div></section>
+<div class="implementation"><strong>Implementación CSS</strong><pre>.coachmark {
+  opacity: 0;
+  transition: none;
+}
+
+.coachmark.is-entering {
+  opacity: 1;
+  transition:
+    opacity var(--duration-300) var(--motion-curve-md),
+    transform var(--duration-300) var(--motion-curve-md);
+}
+
+.coachmark.is-exiting {
+  opacity: 0;
+  transition:
+    opacity var(--duration-200) var(--motion-exit),
+    transform var(--duration-200) var(--motion-exit);
+}
+
+.coachmark-body {
+  transition: opacity var(--duration-150) var(--motion-curve-sm);
+}
+
+.coachmark.is-forced-hidden,
+.coachmark.is-hidden {
+  opacity: 0;
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coachmark,
+  .coachmark.is-entering,
+  .coachmark.is-exiting,
+  .coachmark-body {
+    transition: none;
+  }
+}</pre></div>
+<footer class="doc-footer">Motion System GGDS · Coachmark Handoff Web · 2026-06-25<br/>DesignOps @ itti</footer>
+</div>
+<script>
+(()=>{
+  const STEPS=[
+    {title:'Bienvenido al tour',desc:'Te guiamos por las funciones principales de la pantalla.',step:'1 de 4',primary:'Siguiente'},
+    {title:'Navegación',desc:'Accedé a todas las secciones desde el menú lateral.',step:'2 de 4',primary:'Siguiente'},
+    {title:'Acciones rápidas',desc:'Usá los atajos para tareas frecuentes del día a día.',step:'3 de 4',primary:'Siguiente'},
+    {title:'¡Listo!',desc:'Ya podés empezar a usar la app con confianza.',step:'4 de 4',primary:'Finalizar'}
+  ];
+  const lab=document.getElementById('motion-lab'),coachmark=document.getElementById('coachmark'),stage=document.getElementById('stage'),readout=document.getElementById('readout');
+  const pointerSelect=document.getElementById('pointerSelect'),reduced=document.getElementById('reduced'),bodyEl=document.getElementById('coachmarkBody');
+  const cmTitle=document.getElementById('cmTitle'),cmDesc=document.getElementById('cmDesc'),cmSteps=document.getElementById('cmSteps'),primaryBtn=document.getElementById('primaryBtn');
+  let stepIndex=0,exitTimer=null,swapTimer=null;
+  function isReduced(){return lab.classList.contains('reduced-motion')||reduced.checked;}
+  function isOpen(){return coachmark.classList.contains('is-entering')||coachmark.classList.contains('is-exiting');}
+  function clearTimers(){if(exitTimer){clearTimeout(exitTimer);exitTimer=null;}if(swapTimer){clearTimeout(swapTimer);swapTimer=null;}}
+  function updateReadout(extra){readout.textContent=(extra||'hidden')+' · paso '+(stepIndex+1)+'/4';}
+  function applyPlacement(){
+    coachmark.classList.remove('pos-top','pos-bottom','pos-left','pos-right');
+    coachmark.classList.add('pos-'+pointerSelect.value);
+  }
+  function renderStep(i){
+    const s=STEPS[i];
+    cmTitle.textContent=s.title;cmDesc.textContent=s.desc;cmSteps.textContent=s.step;primaryBtn.textContent=s.primary;
+  }
+  function setHidden(){
+    clearTimers();coachmark.classList.remove('is-entering','is-exiting','is-forced-hidden');
+    coachmark.classList.add('is-hidden');bodyEl.classList.remove('is-fading');updateReadout('hidden');
+  }
+  function showEnter(reason){
+    clearTimers();applyPlacement();stage.classList.remove('target-off');
+    coachmark.classList.remove('is-hidden','is-exiting','is-forced-hidden');
+    if(isReduced()){coachmark.classList.add('is-entering');updateReadout('visible (instantáneo · '+reason+')');return;}
+    coachmark.classList.remove('is-entering');void coachmark.offsetWidth;coachmark.classList.add('is-entering');
+    updateReadout('entering ('+reason+')');
+  }
+  function hideSoft(reason){
+    clearTimers();
+    if(coachmark.classList.contains('is-hidden')||coachmark.classList.contains('is-forced-hidden'))return;
+    if(isReduced()){setHidden();updateReadout('hidden (instantáneo · '+reason+')');return;}
+    coachmark.classList.remove('is-hidden','is-forced-hidden','is-entering');
+    void coachmark.offsetWidth;coachmark.classList.add('is-exiting');
+    updateReadout('exiting ('+reason+')');
+    exitTimer=setTimeout(setHidden,200);
+  }
+  function hideForced(reason){
+    clearTimers();
+    if(coachmark.classList.contains('is-hidden'))return;
+    coachmark.classList.remove('is-entering','is-exiting','is-hidden');
+    coachmark.classList.add('is-forced-hidden');bodyEl.classList.remove('is-fading');
+    updateReadout('hidden (forzado · '+reason+')');
+    requestAnimationFrame(setHidden);
+  }
+  function nextStep(){
+    if(!coachmark.classList.contains('is-entering')){showEnter('manual');return;}
+    if(stepIndex>=STEPS.length-1){hideSoft('Finalizar');return;}
+    if(isReduced()){stepIndex++;renderStep(stepIndex);updateReadout('visible (step '+stepIndex+')');return;}
+    bodyEl.classList.add('is-fading');
+    swapTimer=setTimeout(()=>{
+      stepIndex++;renderStep(stepIndex);bodyEl.classList.remove('is-fading');
+      updateReadout('step change · motion-curve-sm');
+    },150);
+  }
+  function resetAll(){clearTimers();stepIndex=0;renderStep(0);stage.classList.remove('target-off');setHidden();}
+  document.getElementById('btnEnter').onclick=()=>showEnter('programmatic');
+  document.getElementById('btnExit').onclick=()=>hideSoft('manual');
+  document.getElementById('btnReset').onclick=resetAll;
+  document.getElementById('btnNext').onclick=nextStep;
+  document.getElementById('btnEsc').onclick=()=>hideForced('Escape');
+  document.getElementById('btnOffscreen').onclick=()=>{stage.classList.add('target-off');hideForced('target off-screen');};
+  document.getElementById('closeBtn').onclick=()=>hideSoft('tap X');
+  document.getElementById('skipBtn').onclick=()=>hideSoft('Omitir');
+  primaryBtn.onclick=()=>{if(stepIndex>=STEPS.length-1)hideSoft('Finalizar');else nextStep();};
+  pointerSelect.onchange=()=>{applyPlacement();if(isOpen()){coachmark.classList.remove('is-entering');void coachmark.offsetWidth;coachmark.classList.add('is-entering');}};
+  reduced.onchange=()=>lab.classList.toggle('reduced-motion',reduced.checked);
+  window.addEventListener('keydown',e=>{if(e.key==='Escape'&&isOpen())hideForced('Escape');});
+  applyPlacement();renderStep(0);setHidden();
+})();
+</script></body></html>
