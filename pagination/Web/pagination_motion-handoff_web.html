@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Motion Handoff — Pagination (Web)</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
 <style>
-:root{--bg:#fff;--bg-subtle:#f7f7f7;--border:#e8e8ec;--text:#252529;--muted:#6c6c78;--accent:#55555e;--selected-bg:#eebcb5;--selected-text:#40110a;--hover-bg:#b4b4bf;--pressed-bg:#a9a9b6;--focus:#0059bf;--disabled-icon:#c6c6cc;--radius:12px;--radius-sm:6px;--sans:'Inter',sans-serif;--dur:150ms;--curve:cubic-bezier(.4,0,.2,1)}
+:root{--bg:#fff;--bg-subtle:#f7f7f7;--border:#e8e8ec;--text:#252529;--muted:#6c6c78;--accent:#55555e;--selected-bg:#eebcb5;--selected-text:#40110a;--hover-bg:#b4b4bf;--pressed-bg:#a9a9b6;--focus:#0059bf;--disabled-icon:#c6c6cc;--radius:12px;--radius-sm:6px;--sans:'Inter',sans-serif;--motion-curve-sm:cubic-bezier(.4,0,.2,1);--duration-150:150ms}
 *{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--sans);font-size:14px;line-height:1.6;color:var(--text)}
 .page{max-width:980px;margin:0 auto;padding:2rem 1.5rem}.hero h1{font-size:3rem;font-weight:800}
 .hero-meta{display:flex;align-items:center;gap:1rem;color:var(--muted);margin:.6rem 0 1rem;flex-wrap:wrap}
@@ -14,7 +14,8 @@ section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35
 .motion-lab-disclaimer{padding:.5rem .75rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm)}
 .stage{display:flex;justify-content:center;align-items:center;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;min-height:120px}
 .pagination{display:flex;align-items:center;gap:0;flex-wrap:wrap;justify-content:center}
-.pg-btn{position:relative;width:40px;height:40px;padding:8px;border:none;border-radius:4px;background:transparent;color:var(--text);font:inherit;font-size:14px;font-weight:400;line-height:20px;letter-spacing:.15px;font-variant-numeric:tabular-nums lining-nums;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:background-color var(--dur) var(--curve),color var(--dur) var(--curve)}
+.pg-btn{position:relative;width:40px;height:40px;padding:8px;border:none;border-radius:4px;background:transparent;color:var(--text);font:inherit;font-size:14px;font-weight:400;line-height:20px;letter-spacing:.15px;font-variant-numeric:tabular-nums lining-nums;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:background-color var(--duration-150) var(--motion-curve-sm),color var(--duration-150) var(--motion-curve-sm)}
+.pg-btn.is-num{background-color:transparent}
 .pg-btn.is-nav{color:var(--text)}
 .pg-btn.is-nav:disabled{cursor:not-allowed;color:var(--disabled-icon);transition:none}
 .pg-btn.is-nav:not(:disabled):hover{background:var(--hover-bg)}
@@ -24,7 +25,7 @@ section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35
 .pg-btn.is-num:not(.is-selected):active{background:var(--pressed-bg)}
 .pg-btn:focus{outline:none}
 .pg-btn:focus-visible .pg-ring{opacity:1}
-.pg-ring{position:absolute;inset:-2px;border:1px solid var(--focus);border-radius:6px;opacity:0;pointer-events:none;transition:opacity var(--dur) var(--curve)}
+.pg-ring{position:absolute;inset:-2px;border:1px solid var(--focus);border-radius:6px;opacity:0;pointer-events:none;transition:opacity var(--duration-150) var(--motion-curve-sm)}
 .pg-icon{width:20px;height:20px;display:block}
 .controls{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1rem;align-items:center}
 .controls label,.controls select{font:inherit;font-size:.84rem}
@@ -36,18 +37,18 @@ section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35
 #motion-lab.reduced-motion .pg-btn,#motion-lab.reduced-motion .pg-ring{transition:none!important}
 .doc-footer{text-align:center;padding:1.2rem 0;color:#8f8f9c;font-size:.8rem}
 </style></head><body><div class="page">
-<header class="hero"><h1>Pagination</h1><div class="hero-meta"><span class="owner-badge"><img class="owner-avatar-img" src="data:image/jpeg;base64,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" alt="Nehuén Benitez" /> Nehuén Benitez</span><span>Web · GGDS · 2026-07-02</span></div><span class="pill primary">motion-curve-sm · 150ms</span></header>
+<header class="hero"><h1>Pagination</h1><div class="hero-meta"><span class="owner-badge"><img class="owner-avatar-img" src="data:image/jpeg;base64,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" alt="Nehuén Benitez" /> Nehuén Benitez</span><span>Web · GGDS · 2026-07-02</span></div><span class="pill primary">motion-curve-sm</span></header>
 <section id="motion-lab"><h2>Preview de motion</h2>
 <p class="motion-lab-disclaimer">Motion lab — no es el componente de la librería. Validá motion y tokens; la UI final está en Figma.</p>
-<p class="hint">Una variante a la vez. Elegí Items y Position; interactuá con números y flechas (hover, click, Tab). El rearmado de ventana (+4) es instantáneo.</p>
+<p class="hint">Elegí <strong>Items</strong> y <strong>Position</strong> en los controles. Interactuá con números y flechas (hover, click, Tab) para ver <code>motion-curve-sm</code> en hover, pressed, focus y cambio de <strong>Selected</strong>. Con <strong>+4</strong>, el rearmado de la ventana visible es instantáneo.</p>
 <div class="stage"><nav class="pagination" id="pagination" aria-label="Pagination"></nav></div>
 <div class="controls">
 <label>Items <select id="itemsSelect"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="+4">+4</option></select></label>
 <label>Position <select id="positionSelect"><option value="Start">Start</option><option value="Middle">Middle</option><option value="End">End</option></select></label>
 <label><input type="checkbox" id="reducedToggle"/> prefers-reduced-motion</label>
 </div>
-<div class="readout">Estado: <span id="readout">items 1 · Start · page 1 · motion-curve-sm</span></div>
-<div class="mapping"><strong>Token Mapping</strong><br/>Estados Navigation + cambio Selected en Number: motion-curve-sm → easing-standard → cubic-bezier(0.4, 0, 0.2, 1) → 150ms<br/>Rearmado de ventana (+4 / ellipsis): sin animación</div></section>
+<div class="readout">Estado: <span id="readout">items 1 · Start · page 1</span></div>
+<div class="mapping"><strong>Token Mapping</strong><br/>Navigation hover / pressed / focus: motion-curve-sm → easing-standard → cubic-bezier(0.4, 0, 0.2, 1) → duration-150 (150ms)<br/>Number Selected ↔ Enabled: motion-curve-sm → easing-standard → cubic-bezier(0.4, 0, 0.2, 1) → duration-150 (150ms)<br/>Rearmado ventana (+4) · disabled prev/next: sin animación</div></section>
 <section><h2>Implementación CSS</h2><div class="implementation"><pre>.pagination-nav,
 .pagination-number {
   transition:
@@ -87,7 +88,6 @@ section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35
     next:'<svg class="pg-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M8 5L13 10L8 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     dots:'<svg class="pg-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="5" cy="10" r="1.25" fill="currentColor"/><circle cx="10" cy="10" r="1.25" fill="currentColor"/><circle cx="15" cy="10" r="1.25" fill="currentColor"/></svg>'};
   let page=1;
-  function isReduced(){return lab.classList.contains('reduced-motion')||reducedToggle.checked}
   function defaultPage(items,pos){
     if(items==='+4'){if(pos==='Middle')return 22;if(pos==='End')return TOTAL;return 1}
     const n=parseInt(items,10);
@@ -143,22 +143,22 @@ section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35
     if(next)next.disabled=page>=TOTAL;
     updateReadout();
   }
-  function goPage(next,{swap=false}={}){
+  function goPage(next){
     const items=itemsSelect.value,pos=positionSelect.value;
-    const before=swap?null:segKey(items,pos,page);
+    const before=segKey(items,pos,page);
     page=next;
     const after=segKey(items,pos,page);
-    if(!swap&&before===after){updateSelection();return}
-    render(true);
+    if(before===after){updateSelection();return}
+    render();
   }
   function render(){
     const items=itemsSelect.value,pos=positionSelect.value;
     const segs=buildSegments(items,pos,page);
     root.replaceChildren();
     segs.forEach(s=>{
-      if(s.t==='prev'){const b=mkBtn('is-nav',svg.prev,{dis:s.dis,t:'prev'});b.addEventListener('click',()=>{if(page>1)goPage(page-1,{swap:true})});root.appendChild(b);return}
-      if(s.t==='next'){const b=mkBtn('is-nav',svg.next,{dis:s.dis,t:'next'});b.addEventListener('click',()=>{if(page<TOTAL)goPage(page+1,{swap:true})});root.appendChild(b);return}
-      if(s.t==='dots'){const b=mkBtn('is-nav',svg.dots,{t:'dots'});b.addEventListener('click',()=>goPage(Math.min(TOTAL,Math.max(1,page+5)),{swap:true}));root.appendChild(b);return}
+      if(s.t==='prev'){const b=mkBtn('is-nav',svg.prev,{dis:s.dis,t:'prev'});b.addEventListener('click',()=>{if(page>1)goPage(page-1)});root.appendChild(b);return}
+      if(s.t==='next'){const b=mkBtn('is-nav',svg.next,{dis:s.dis,t:'next'});b.addEventListener('click',()=>{if(page<TOTAL)goPage(page+1)});root.appendChild(b);return}
+      if(s.t==='dots'){const b=mkBtn('is-nav',svg.dots,{t:'dots'});b.addEventListener('click',()=>goPage(Math.min(TOTAL,Math.max(1,page+5))));root.appendChild(b);return}
       const b=mkBtn('is-num',String(s.v),{v:s.v});
       b.addEventListener('click',()=>{if(page!==s.v)goPage(s.v)});
       root.appendChild(b);
@@ -166,8 +166,7 @@ section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35
     updateReadout();
   }
   function updateReadout(){
-    const token=isReduced()?'instantáneo':'motion-curve-sm';
-    readout.textContent=`items ${itemsSelect.value} · ${positionSelect.value} · page ${page} · ${token}`;
+    readout.textContent=`items ${itemsSelect.value} · ${positionSelect.value} · page ${page}`;
   }
   itemsSelect.addEventListener('change',()=>{page=defaultPage(itemsSelect.value,positionSelect.value);render()});
   positionSelect.addEventListener('change',()=>{page=defaultPage(itemsSelect.value,positionSelect.value);render()});
