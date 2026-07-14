@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Motion Handoff — Spinner (Web)</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
 <style>
-:root{--bg:#fff;--bg-subtle:#f7f7f7;--border:#e8e8ec;--text:#252529;--muted:#6c6c78;--accent:#55555e;--radius:12px;--radius-sm:6px;--sans:'Inter',sans-serif;--easing-linear:cubic-bezier(0,0,1,1);--duration-800:800ms}
+:root{--bg:#fff;--bg-subtle:#f7f7f7;--border:#e8e8ec;--text:#252529;--muted:#6c6c78;--accent:#55555e;--radius:12px;--radius-sm:6px;--sans:'Inter',sans-serif;--motion-curve-spin:cubic-bezier(0,0,1,1);--duration-800:800ms}
 *{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--sans);font-size:14px;line-height:1.6;color:var(--text)}
 .page{max-width:980px;margin:0 auto;padding:2rem 1.5rem}.hero h1{font-size:3rem;font-weight:800}
 .hero-meta{display:flex;align-items:center;gap:1rem;color:var(--muted);margin:.6rem 0 1rem;flex-wrap:wrap}
@@ -12,10 +12,11 @@
 section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35rem;margin-bottom:.75rem}
 .motion-lab-disclaimer,.hint{font-size:.82rem;color:var(--muted);margin-bottom:.75rem}
 .motion-lab-disclaimer{padding:.5rem .75rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.callout{margin-top:.75rem;padding:.8rem 1rem;border-left:4px solid var(--accent);background:rgba(37,37,41,.06);font-size:.82rem;color:#404047}
 .stage{display:flex;justify-content:center;align-items:center;min-height:120px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius);padding:2rem}
 .stage.is-white-variant{background:#252529}
 .spinner-host{display:flex;align-items:center;justify-content:center}
-.spinner-svg{display:block;animation:spinner-rotate var(--duration-800) var(--easing-linear) infinite}
+.spinner-svg{display:block;animation:spinner-rotate var(--duration-800) var(--motion-curve-spin) infinite}
 @keyframes spinner-rotate{to{transform:rotate(360deg)}}
 #motion-lab.reduced-motion .spinner-svg{animation:none!important}
 .controls{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1rem;align-items:center}
@@ -30,11 +31,11 @@ section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35
 </style></head><body><div class="page">
 <header class="hero"><h1>Spinner</h1>
 <div class="hero-meta"><span class="owner-badge"><img class="owner-avatar-img" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBAUEBAYFBQUGBgYHCQ4JCQgICRINDQoOFRIWFhUSFBQXGiEcFxgfGRQUHScdHyIjJSUlFhwpLCgkKyEkJST/2wBDAQYGBgkICREJCREkGBQYJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCT/wAARCABQAFADASIAAhEBAxEB/8QAHAAAAgIDAQEAAAAAAAAAAAAABgcEBQEDCAIA/8QANhAAAgEDAwMCBQIEBQUAAAAAAQIDBAURABIhBjFBE2EHFCJRcYGRIzJSoQgzQrHwJWJywdH/xAAaAQACAwEBAAAAAAAAAAAAAAADBgIEBQEA/8QAKREAAQQBBAECBgMAAAAAAAAAAQACAxESBAUhMRNBUTJhgZGhwbHR8P/aAAwDAQACEQMRAD8AXmNYOvesxQvPKkUYy7naPzpycQBZS80WaCJOhuiJup61JahZI7ajfxJAQpkxjKqT+Rk+M/fR6/wvtsN9gRLSs1GysxjfcoUD7yBst3HGBn99HPTduFq6YoYaend5qaBY/TOCd3c9+3OT7ajXC7yTVVJbZPnqBqo/wpwUKzsO8R4O098HvwdJ+q3CWWQlpIHpSY9PpGMbRFlDlXcaqx3qOmoIoKOjiCkRKgWOozw65xyRxz4xompai91FCUloqQLz6EglLF17qSuPb7j9NVHUvR8N3KyR1EtPOke1YRj02IOQT3xxkcfvxq+rquSlSK5sHUxKA+9m2snAJwDz5xnnWddmyr1UBSU3xmoKz5u3XCWnZIzE0TsuSivuzjJ7Hk/nB0uV10dTTQXeNKiWqZ4asF0dfrjeLOOUOV3buMeNL7qn4WmStea0T00U0w3Lbypj3vzlYiePB4/Y6YNt3ONrBDJxXqsfXaB7nGRnNpbLrYNeWRo3ZHUqykqykYII7g6yNMbSsVeMaN/hr021fXi4zsIYIGVlZv8AWQw4/GcZP6edTOnuiqC00j3TqaEyuoJhoc5Eh7DJX+Yk+B476YvTFG8lA8lRbqe3rOoWJYEZSkeAcYPIIJPPtpe3LcmPaYovqf6WxotE5rhJJ9kQ0U9ZK7pLCqIxzFu7455P5PjxxqRWWemuVGY54wu4h1yMFGBypHHBzzrCVDRp6ysJlQ+mp4YhsdmPt5Pk6FPiH8TabpCGONF9askBHok44/q3DsM8e/P2zpe+S1RZNomkheOmHryLKQDvAXBOO7Af+tRq+NqmhhSeJ5YJAA7RsoyfGM+fuP8A5pCVXxr6qnkiFLVRUqwDEcdNTrhB28g+Nb7b8eOpaCQLcBT10LYDpPD6ZYf+SY5/fXcVPlN2l6fShkSnZI4UdzIsCSl1XHdkOARknnjzrdJDIaRKSOmLJG+5JnJaNCGU7QW5z3x+dDXTvxOtd9ggWmV46tXx8sy7pFBGMow4Yc88A+2jiupFuiwU0TGP01WUYHLEA48jB78/nUKpSy90l/i5aVpeozW0sGKWoQFpEj2j1CTndx3P99Ao10H1HZae4UzwXARxLKpWSNSRnkYIOOGyN32BH20jr10/XWKfbUxP6Dk+jUAfRMv3B7fp3GmvaNa2Rnid2PysDcdKWO8g6KYFipp0rpa+4Rb5almjdNp20qEHCxqARv5BJ5/GNHfTdYLdWPSzsSjQRmBjLuc4XlQDyMEDk886lP8AK0iQCGKMDGwgHgDAxx/w6pK6hNbVmqapjhIVePQV8YbJwT2JBI/XSqSAt6skRiOCmucc6yMIpk/mU7UIPgjyRj/fSP8A8QVFBS9Q2upWoZIqqmO+PlnVUY/UPY5/cHTVrLxPRWYyxUrVASPeYlfe2zONox5/Glh8Wqae8Vdrlo4WqDRU8glhYh2i3EEAf1Ywfce+uRuGfKmY3Y8C0u6G/WaNViD1UA7KTENpPvgk6j3fqK1mJvRapmXsx9MBfxg8619P9JXGsvQlqqaVadHMj7gcH7cn39vGot56ZrILtPJDBI8Ltnaik4JBz/f/AH0Xxx5douc/juvwvunbhWi704tfzHq7leLAIZDnvkePfXX9mr4rvaaV6R2ZkQRyyOMHeAMkY7+2PB1zz8Oei6umraa6VubZSVIkpVdl3GRsKB9I/wC4jk4AwddGWa2w22hWiiDGOLhzuILZ5JP66HM8ZUELxuDcnDtVt+uIokmmlBl9Mh5HVTuAH0kgecdz7Zzqt6xt5vPR1WFpoxSwwmoj2csGVSRtHjwfcE8avq2up6i2mR9sjF2RSNwfA4bOec58+dU1huVFT0ZierBoW3xqGXb6e0cg5+wzj7c+Ndhfg8PHpyoSNzYWqsttXXVUP/TYBUwcsHMhQceCW7nRHFAEiKfWZH2t6eM447k+R762VVHcIrh67FflETCoPqYPnnkeP76qDNcbhIIRZq2VAGglV1205U+S38xI/pHB0E8ooI7X10jroIJXtFGtRVoWYqWKhx5x25+w0EXa7NWVNvuBtQpdyzJUyAqoaT6SMp3ySW58Y0fx9TdN9G0hN6vVuiIYo8KOrkZP9CZI7d8aAOq/id0V1AlXYbBQTS1tSxmjrioRFkXndz9WCBjsO+pCJ3aIyQg20IJnuF6eQVkU8dE2S0YaJ2BH2IAxjxrXaKi5S3SNKqSKZZZMGVmKgZxk4IHt29tTrfeaieyLTCMCRZChPdkwe3/PGiS9XOh6e6a9BXpaiquBQlIUy8RHPfyfHHnXCD8OKvCRpblkbTDiajgudjtKW95YkjaQTJjZCQuMMMZO4n9CMnV3USSwb3LbVClmOOSPsPfQd01X0PT9XBBdqlluUlLHUOHGUiV84UHuMAYz99MKI0N4Hp01RS1Sj/MSORXIBGOQOR3GhgcUFW1LZGnN4NHr2QvRUbXBS0lMaX5WMEFV2o2Mk7R4BAwdR6miht/TlrqfUq0aFjVBKcAgkjJzuBJxnHGjpoo6MCJgY4ANqccLxqoegy81JOgFM5EkEykFRxzjtj8e+igEBU87Q9178UqbpijqfkkEs0AJkYHCBs4CjHc8/p765kvnxP6nu9dWzS3quSOsJEkUU7KgHhQAe3jGmLLVIwbeySQOMPDMM/kjIyR9wR+2gHqzpqnqIZa63xqssJ/iIhG14/DAfcAr+RzosTwDymvVbIIYh4ea79z/AL2/aDJ6uRwzFjkjk/fVl0ZVrD1LTPI2NysoJ+5GqZkPntrFM5jrVZTyrAjGrLuRSxiwhO80lFVPl2eJyP8AMiba2iT4fdHUdxvorKgvUx0v1KZmzlvGPHvpYWua619IsqQyKv8ApZgcMPbAOj/pG53S2WyemVtktSf8wZ+hcc4yO/v41nSMcOir2n0UspAwq/Vb+p7xFcviBcXiyY6egjgQr/q/i4X9znWiwXyb5ZbhBJLTM7yojIxVwoIUjI++DoCj6nak6qvssbnb8nLHH+YwNv8AfOo9i6l+Wo6ekkJ20qSsTnvl1I/sW1LxmkxQzxMHiPQsfx+k9Kb4lXYbI6r0apFXbh0wc47kjufvowtV+obzSn5ZokmX65YGB3bO2eBzg47f20gLd1LBVSbY33Ow+lScD9Tots9xqKV45YyS6n+aMED9/OvW4fEgavZtJqoy7TjF3y6+q//Z" alt="Nehuén Benitez"/> Nehuén Benitez</span><span>Web · GGDS · 2026-06-29</span></div>
-<span class="pill primary">easing-linear · duration-800</span></header>
+<span class="pill primary">motion-curve-spin</span></header>
 
 <section id="motion-lab"><h2>Preview de motion</h2>
 <p class="motion-lab-disclaimer">Motion lab — no es el componente de la librería. Validá motion y tokens; la UI final está en Figma.</p>
-<p class="hint">Una variante a la vez. Elegí Color y Size; el spinner rota con los primitivos reales del handoff.</p>
+<p class="hint">Elegí Color y Size en los controles. El spinner rota con <code>motion-curve-spin</code> mientras está visible.</p>
 <div class="stage" id="stage"><div class="spinner-host" id="spinnerHost" role="status" aria-busy="true" aria-label="Loading">
 <svg class="spinner-svg" id="spinnerSvg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
 <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="31.4 31.4"/>
@@ -44,14 +45,15 @@ section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35
 <label>Size <select id="sizeSelect"><option value="16">S (16px)</option><option value="20" selected>M (20px)</option><option value="24">L (24px)</option><option value="28">XL (28px)</option><option value="32">2XL (32px)</option><option value="40">3XL (40px)</option><option value="48">4XL (48px)</option><option value="64">5XL (64px)</option></select></label>
 <label><input type="checkbox" id="reducedToggle"/> prefers-reduced-motion</label>
 </div>
-<div class="readout">Estado: <span id="readout">accent · M (20px) · easing-linear · duration-800</span></div>
-<div class="mapping"><strong>Token Mapping</strong><br/>Rotación: easing-linear → cubic-bezier(0, 0, 1, 1) → duration-800 (800ms / vuelta, infinite)<br/>Montaje · color · size: sin animación</div></section>
+<div class="callout">Este preview usa curvas CSS del Token Mapping. No sustituye QA en producto.</div>
+<div class="readout">Estado: <span id="readout">spinning</span></div>
+<div class="mapping"><strong>Token Mapping</strong><br/>Rotación: motion-curve-spin → easing-linear → cubic-bezier(0, 0, 1, 1) → duration-800 (800ms / vuelta, infinite)<br/>Montaje · color · size: sin animación</div></section>
 <section><h2>Implementación CSS</h2><div class="implementation"><pre>@keyframes spinner-rotate {
   to { transform: rotate(360deg); }
 }
 
 .spinner-svg {
-  animation: spinner-rotate var(--duration-800) var(--easing-linear) infinite;
+  animation: spinner-rotate var(--duration-800) var(--motion-curve-spin) infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -68,14 +70,12 @@ section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35
   const svg=document.getElementById('spinnerSvg'),colorSelect=document.getElementById('colorSelect');
   const sizeSelect=document.getElementById('sizeSelect'),reducedToggle=document.getElementById('reducedToggle');
   const readout=document.getElementById('readout');
-  const SIZE_LABELS={'16':'S','20':'M','24':'L','28':'XL','32':'2XL','40':'3XL','48':'4XL','64':'5XL'};
   function update(){
     const color=colorSelect.value,size=+sizeSelect.value;
     svg.style.width=size+'px';svg.style.height=size+'px';
     svg.style.color=COLORS[color];
     stage.classList.toggle('is-white-variant',color==='white');
-    const token=reducedToggle.checked?'pausado (reduced motion)':'easing-linear · duration-800';
-    readout.textContent=`${color} · ${SIZE_LABELS[String(size)]} (${size}px) · ${token}`;
+    readout.textContent=reducedToggle.checked?'paused':'spinning';
   }
   reducedToggle.addEventListener('change',()=>{
     lab.classList.toggle('reduced-motion',reducedToggle.checked);

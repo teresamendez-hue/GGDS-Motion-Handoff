@@ -3,24 +3,24 @@ component: Spinner
 component_slug: spinner
 platform: web
 category: default
-semantic_token_enter: null
+semantic_token_enter: motion-curve-spin
 semantic_token_exit: null
 owner: Nehuén Benitez
 date: 2026-06-29
 design_system: GGDS
 status: draft
 preview_type: internal_state
-web_parity_token: null
+web_parity_token: motion-curve-spin
 ---
 
 ## Descripción
 
-Spinner indeterminado pasivo. Única animación: rotación continua del arco SVG con primitivos `easing-linear` y `duration-800` (800ms por vuelta). Sin token semántico. Montaje, desmontaje y cambios de color/size son instantáneos. Skeleton excluido.
+Spinner indeterminado pasivo. Única animación: rotación continua del arco SVG con `motion-curve-spin` (`easing-linear` + `duration-800`, 800ms por vuelta). Montaje, desmontaje y cambios de color/size son instantáneos. Skeleton excluido.
 
 ## Tokens
 
 ### Rotación continua
-- semantic: null
+- semantic: motion-curve-spin
 - primitive_curve: easing-linear
 - css_value: cubic-bezier(0, 0, 1, 1)
 - primitive_duration: duration-800
@@ -33,7 +33,7 @@ Spinner indeterminado pasivo. Única animación: rotación continua del arco SVG
 ### Arco SVG — Rotación (visible)
 | propiedad | de | a | token |
 |---|---|---|---|
-| transform (rotate) | 0deg | 360deg (loop) | easing-linear + duration-800 |
+| transform (rotate) | 0deg | 360deg (loop) | motion-curve-spin |
 
 ### Variante — Cambio color / size
 | propiedad | de | a | token |

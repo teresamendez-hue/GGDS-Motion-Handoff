@@ -6,7 +6,7 @@
 | **Plataforma** | App (Flutter) |
 | **Owner** | Nehuén Benitez |
 | **Design system** | GGDS |
-| **Token rotación** | *(sin semántico)* → `Curves.linear` · 800ms / vuelta |
+| **Token rotación** | `motion-curve-spin` |
 | **Categoría** | Default |
 | **Fecha** | 2026-06-29 |
 | **Figma** | [Core — App Components](https://www.figma.com/design/7rFqT5ZUPPXd40dKQVAd7N/Core---App-Components?node-id=5358-336) |
@@ -29,7 +29,7 @@
 
 | Aspecto | Web | App |
 |---------|-----|-----|
-| Token semántico | *(ninguno)* | *(ninguno — no usar spring)* |
+| Token semántico | `motion-curve-spin` | `motion-curve-spin` |
 | Curva / física | `easing-linear` · 800ms / vuelta | `Curves.linear` · `Duration(milliseconds: 800)` |
 | Rotación | `@keyframes` infinite | `AnimationController.repeat()` |
 | Montaje / desmontaje | instantáneo | instantáneo |
@@ -55,8 +55,8 @@ Spinner **indeterminado** de carga pasiva. Variantes **Color** (accent, neutral,
 
 **Única animación documentada:** rotación continua del arco mientras el widget está visible.
 
-- **Motor:** `AnimationController` con `duration: Duration(milliseconds: 800)` y `repeat()`.
-- **Curva:** `Curves.linear` (no spring, no `flutter_animate` spring para este loop).
+- **Motor:** `motion-curve-spin` → `AnimationController` con `duration: Duration(milliseconds: 800)` y `repeat()`.
+- **Curva:** `Curves.linear` (no spring).
 - **Transform:** `RotationTransition` o `Transform.rotate` con ángulo 0→2π.
 
 **Sin animación** en: montaje/desmontaje, cambio de color/size, skeleton (excluido).
@@ -71,7 +71,7 @@ Spinner **indeterminado** de carga pasiva. Variantes **Color** (accent, neutral,
 |---|---|---|---|---|---|---|---|---|---|---|
 | 1 | Trigger | Montaje / visible | — | — | — | — | — | — | 0 | — |
 | 2 | Response | Aparición | `Spinner` | — | — | — | **sin animación** | — | 0 | 0 |
-| 3 | Response | Rotación continua | arco SVG / `CustomPaint` | `rotation` | 0 | 2π (loop) | `Curves.linear` · 800ms | 800ms / vuelta | 0 | ∞ |
+| 3 | Response | Rotación continua | arco SVG / `CustomPaint` | `rotation` | 0 | 2π (loop) | `motion-curve-spin` | 800ms / vuelta | 0 | ∞ |
 | 4 | Trigger | Cambio `color` o `size` | — | — | — | — | — | — | * | — |
 | 5 | Response | Swap variante | `Spinner` | color / size | anterior | nuevo | **sin animación** | — | — | — |
 | 6 | Trigger | Desmontaje | — | — | — | — | — | — | * | — |
@@ -87,7 +87,7 @@ Spinner **indeterminado** de carga pasiva. Variantes **Color** (accent, neutral,
 
 | Momento | Token semántico | Curva / motor | Período |
 |---|---|---|---|
-| Rotación continua | *(ninguno)* | `Curves.linear` + `AnimationController.repeat()` | 800ms / revolución |
+| Rotación continua | `motion-curve-spin` | `Curves.linear` + `AnimationController.repeat()` | 800ms / revolución |
 | Montaje / desmontaje | — | — | instantáneo |
 | Cambio color / size | — | — | instantáneo |
 | `disableAnimations` | — | `controller.stop()` | rotación pausada |

@@ -3,28 +3,28 @@ component: Spinner
 component_slug: spinner
 platform: app
 category: default
-semantic_token_enter: null
+semantic_token_enter: motion-curve-spin
 semantic_token_exit: null
 owner: Nehuén Benitez
 date: 2026-06-29
 design_system: GGDS
 status: draft
 preview_type: internal_state
-spring_token: null
+spring_token: motion-curve-spin
 companion_web_handoff: spinner_motion-handoff_web.html
-web_parity_token: null
+web_parity_token: motion-curve-spin
 haptic_semantic_default: none
 haptic_override_allowed: false
 ---
 
 ## Descripción
 
-Spinner indeterminado en Flutter. Única animación: rotación continua con `Curves.linear` y período 800ms vía `AnimationController.repeat()`. Sin token spring. Montaje, desmontaje y cambios de color/size instantáneos. Sin haptics. Skeleton excluido.
+Spinner indeterminado en Flutter. Única animación: rotación continua con `motion-curve-spin` (`Curves.linear` + 800ms vía `AnimationController.repeat()`). Sin spring. Montaje, desmontaje y cambios de color/size instantáneos. Sin haptics. Skeleton excluido.
 
 ## Tokens
 
 ### Rotación continua
-- semantic: null
+- semantic: motion-curve-spin
 - curve: Curves.linear
 - controller_duration_ms: 800
 - repeat: true
@@ -35,7 +35,7 @@ Spinner indeterminado en Flutter. Única animación: rotación continua con `Cur
 ### Arco — Rotación (visible)
 | propiedad | de | a | token |
 |---|---|---|---|
-| rotation (turns) | 0 | 1 (loop) | Curves.linear · 800ms |
+| rotation (turns) | 0 | 1 (loop) | motion-curve-spin |
 
 ### Variante — Cambio color / size
 | propiedad | de | a | token |
