@@ -51,6 +51,7 @@ section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35
 .implementation{margin-top:.75rem;border:1px solid var(--border);border-radius:var(--radius-sm);padding:.8rem;background:#fff}
 .implementation pre{margin:0;font-family:ui-monospace,Menlo,monospace;font-size:.75rem;white-space:pre-wrap}
 #motion-lab.reduced-motion .dd-panel{transition:none!important}
+#motion-lab.reduced-motion .dd-panel.is-entering,#motion-lab.reduced-motion .dd-panel.is-exiting{transition:none!important}
 .doc-footer{text-align:center;padding:1.2rem 0;color:#8f8f9c;font-size:.8rem}
 [hidden]{display:none!important}
 </style></head><body><div class="page">
@@ -140,8 +141,11 @@ section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35
   function openPanel(){
     clearTimeout(exitTimer);clearPanelClasses();
     panel.setAttribute('aria-hidden','false');trigger.setAttribute('aria-expanded','true');
-    if(isReduced()){panel.classList.remove('is-forced-hidden');open=true;updateReadout();return}
     panel.classList.remove('is-forced-hidden');
+    if(isReduced()){
+      panel.classList.add('is-entering');
+      open=true;updateReadout();return
+    }
     requestAnimationFrame(()=>panel.classList.add('is-entering'));
     open=true;updateReadout();
   }
@@ -180,7 +184,16 @@ section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&open)closePanel({forced:false})});
   triggerSelect.addEventListener('change',applyVariant);
   alignSelect.addEventListener('change',applyVariant);
-  reducedToggle.addEventListener('change',()=>{lab.classList.toggle('reduced-motion',reducedToggle.checked);updateReadout()});
+  reducedToggle.addEventListener('change',()=>{
+    lab.classList.toggle('reduced-motion',reducedToggle.checked);
+    clearTimeout(exitTimer);
+    if(reducedToggle.checked&&open){
+      panel.classList.remove('is-exiting','is-forced-hidden');
+      panel.classList.add('is-entering');
+      panel.setAttribute('aria-hidden','false');
+    }
+    updateReadout();
+  });
   applyVariant();
 })();
 </script></body></html>
