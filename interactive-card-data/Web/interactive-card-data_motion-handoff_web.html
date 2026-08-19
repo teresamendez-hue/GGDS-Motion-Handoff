@@ -1,0 +1,147 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Motion Handoff — Interactive Card Data (Web)</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#fff;--bg-subtle:#f7f7f7;--border:#e8e8ec;--text:#252529;--muted:#6c6c78;--accent:#7373e5;--radius:12px;--radius-sm:6px;--sans:'Inter',sans-serif;--motion-curve-sm:cubic-bezier(.4,0,.2,1);--duration-150:150ms}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--sans);font-size:14px;line-height:1.6;color:var(--text)}
+.page{max-width:920px;margin:0 auto;padding:2rem 1.5rem}.hero h1{font-size:3rem;font-weight:800}
+.hero-meta{display:flex;align-items:center;gap:1rem;color:var(--muted);margin:.6rem 0 1rem}
+.owner-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.3rem .65rem .3rem .3rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:999px;font-size:.82rem}
+.owner-avatar-img{width:28px;height:28px;border-radius:50%;object-fit:cover}
+.pill{display:inline-block;padding:.3rem .6rem;border:1px solid var(--border);border-radius:999px;background:var(--bg-subtle);font-size:.75rem;margin-right:.35rem}
+.pill.primary{border-color:rgba(115,115,229,.35);background:rgba(115,115,229,.1);color:var(--accent)}
+section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35rem;margin-bottom:.75rem}
+.motion-lab-disclaimer{font-size:.82rem;color:var(--muted);margin-bottom:.75rem;padding:.5rem .75rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.hint{font-size:.88rem;color:var(--muted);margin-bottom:1rem}
+.stage{min-height:220px;display:flex;align-items:center;justify-content:center;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius);padding:2rem}
+.card{width:360px;min-height:192px;background:#fff;border:1px solid #d4d7df;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:16px;cursor:pointer;outline:2px solid transparent;outline-offset:0;transform:scale(1);transition:border-color var(--duration-150) var(--motion-curve-sm),box-shadow var(--duration-150) var(--motion-curve-sm),transform var(--duration-150) var(--motion-curve-sm),outline-color var(--duration-150) var(--motion-curve-sm),outline-offset var(--duration-150) var(--motion-curve-sm)}
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.card-title{font-size:16px;line-height:1.2;font-weight:700;color:#252529}
+.card-desc{font-size:13px;line-height:1.25;color:#4b4f5c;margin-top:6px}
+.card-badge{height:20px;padding:0 8px;border-radius:999px;background:#ececff;color:#4a4acb;font-size:11px;font-weight:600;display:inline-flex;align-items:center}
+.card-divider{height:1px;background:#e8e8ec}
+.card-slot{min-height:72px;border:1px dashed #d4d7df;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#6c6c78;font-size:12px;text-align:center;padding:8px}
+.card-slot-icon{width:24px;height:24px;border-radius:999px;background:#f2f3f7;display:flex;align-items:center;justify-content:center;font-size:12px}
+.card.is-hovered{box-shadow:0 8px 24px rgba(37,37,41,.08)}
+.card.is-pressed{transform:scale(.98)}
+.card.is-focused{outline-color:rgba(115,115,229,.65);outline-offset:2px}
+.card.is-disabled{opacity:.56;cursor:not-allowed;box-shadow:none;transform:none;transition:none}
+.controls{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1rem}.controls label{cursor:pointer}
+.readout{margin-top:.75rem;font-size:.78rem;color:var(--muted)}
+.implementation{margin-top:.75rem;border:1px solid var(--border);border-radius:var(--radius-sm);padding:.8rem;background:#fff}.implementation strong{display:block;font-size:.8rem;margin-bottom:.35rem;color:var(--muted)}.implementation pre{margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.75rem;line-height:1.45;white-space:pre-wrap;color:#404047}.mapping{margin-top:.75rem;border:1px solid rgba(115,115,229,.35);border-radius:var(--radius-sm);padding:.8rem;font-size:.78rem;color:var(--muted);line-height:1.5;background:rgba(115,115,229,.08)}
+.motion-note{margin-top:.5rem;font-size:.8rem;color:var(--muted)}
+.doc-footer{text-align:center;padding:1.2rem 0;color:#8f8f9c;font-size:.8rem}
+#motion-lab.reduced-motion .card,#motion-lab.reduced-motion .card *{transition:none!important}#motion-lab.reduced-motion .card:active{transform:none!important}
+.callout{border-left:4px solid var(--accent);background:rgba(115,115,229,.1);padding:.8rem 1rem;border-radius:0 6px 6px 0;margin-top:1rem;font-size:.88rem;color:#404047}
+.companion{margin-top:.75rem;font-size:.88rem}.companion a{color:var(--accent)}
+</style></head><body><div class="page">
+
+<header class="hero"><h1>Interactive Card Data</h1><div class="hero-meta"><span class="owner-badge"><img class="owner-avatar-img" src="data:image/jpeg;base64,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" alt="Juan Carlos De La Via Levy"/>Juan Carlos De La Via Levy</span><span>Web · GGDS · 2026-08-18</span></div><span class="pill primary">motion-curve-sm</span><span class="pill">Estados internos</span><span class="pill">Sin skeleton</span></header>
+
+<section id="motion-lab"><h2>Preview de motion</h2>
+<p class="motion-lab-disclaimer">Motion lab — no es el componente de la librería. Validá motion y tokens; la UI final está en Figma.</p>
+<p class="hint">Interactuá con la card: hover, click y Tab (focus). Los checkboxes de abajo solo simulan Disabled.</p>
+<div class="stage">
+<div class="card" id="card" tabindex="0">
+  <div class="card-head">
+    <div>
+      <div class="card-title">Title</div>
+      <div class="card-desc">Description</div>
+    </div>
+    <span class="card-badge">Badge</span>
+  </div>
+  <div class="card-divider"></div>
+  <div class="card-slot">
+    <span class="card-slot-icon">★</span>
+    <span>Replace with another element and delete</span>
+  </div>
+</div>
+</div>
+<div class="controls"><label><input type="checkbox" id="disabled"/> Disabled</label><label><input type="checkbox" id="reduced"/> prefers-reduced-motion</label></div>
+<div class="readout">State: <span id="state">enabled</span></div>
+<p class="motion-note">`prefers-reduced-motion` desactiva transiciones para simular accesibilidad.</p>
+<div class="mapping"><strong>Token Mapping</strong><br/>motion-curve-sm → easing-standard → cubic-bezier(0.4, 0, 0.2, 1) → duration-150 (150ms)</div></section>
+<section><h2>Implementación CSS</h2><div class="implementation"><strong>Implementación CSS</strong><pre>.interactive-card-data {
+  transition-property: border-color, box-shadow, transform, outline-offset;
+  transition-duration: var(--duration-150);
+  transition-timing-function: var(--motion-curve-sm);
+}
+
+.interactive-card-data:disabled,
+.interactive-card-data[aria-disabled="true"] {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .interactive-card-data {
+    transition: none;
+  }
+}</pre></div></section>
+<footer class="doc-footer">Motion System GGDS · Interactive Card Data Handoff Web · 2026-08-18<br/>DesignOps @ itti</footer>
+</div><script>
+(() => {
+  const lab = document.getElementById('motion-lab');
+  const card = document.getElementById('card');
+  const state = document.getElementById('state');
+  const disabled = document.getElementById('disabled');
+  const reduced = document.getElementById('reduced');
+  let keyboardFocus = false;
+  const setState = (value) => { state.textContent = value; };
+  const clearStates = () => card.classList.remove('is-hovered', 'is-pressed', 'is-focused');
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Tab') keyboardFocus = true;
+  });
+
+  card.addEventListener('mouseenter', () => {
+    if (card.classList.contains('is-disabled')) return;
+    clearStates();
+    card.classList.add('is-hovered');
+    setState('hovered');
+  });
+
+  card.addEventListener('mouseleave', () => {
+    if (card.classList.contains('is-disabled')) return;
+    clearStates();
+    setState('enabled');
+  });
+
+  card.addEventListener('mousedown', () => {
+    if (card.classList.contains('is-disabled')) return;
+    card.classList.add('is-pressed');
+    setState('pressed');
+  });
+
+  card.addEventListener('mouseup', () => {
+    if (card.classList.contains('is-disabled')) return;
+    card.classList.remove('is-pressed');
+    setState(card.classList.contains('is-hovered') ? 'hovered' : 'enabled');
+  });
+
+  card.addEventListener('focus', () => {
+    if (card.classList.contains('is-disabled')) return;
+    if (keyboardFocus) {
+      clearStates();
+      card.classList.add('is-focused');
+      setState('focused');
+    }
+  });
+
+  card.addEventListener('blur', () => {
+    clearStates();
+    if (!card.classList.contains('is-disabled')) setState('enabled');
+  });
+
+  disabled.addEventListener('change', (event) => {
+    card.classList.toggle('is-disabled', event.target.checked);
+    card.setAttribute('aria-disabled', event.target.checked ? 'true' : 'false');
+    clearStates();
+    setState(event.target.checked ? 'disabled · sin transición' : 'enabled');
+  });
+
+  reduced.addEventListener('change', (event) => {
+    lab.classList.toggle('reduced-motion', event.target.checked);
+  });
+
+  setState('enabled');
+})();
+</script></body></html>
