@@ -52,10 +52,18 @@ motion/
 
 ## Historial y trazabilidad
 
-- La fuente de verdad de entregables es `~/motion/[componente]/`.
-- El historial curado del skill vive en `~/.cursor/skills/motion-handoff/references/history/`.
+- La fuente de verdad de entregables es `[componente]/` en la **raíz del workspace** (repo `GGDS-Motion-Handoff`).
+- La skill de equipo vive en `.cursor/skills/motion-handoff/SKILL.md` (misma definición que `motion-handoff.skill`).
+- El historial curado del skill vive en `.cursor/skills/motion-handoff/references/history/` (o `~/.cursor/skills/motion-handoff/references/history/` si usás skill personal).
 - En ese historial se mantienen solo referencias canonicas de patrones (no todo componente nuevo).
 - Si hay cambios de criterio, documentarlos en el handoff/spec del componente afectado.
+
+## Uso en equipo
+
+1. Clonar el repo y abrirlo como workspace en Cursor.
+2. Usar la skill `motion-handoff` (detecta el repo por `motion-handoff.skill` en la raíz).
+3. Los entregables se generan en `[componente]/Web/` y/o `[componente]/App/` — rutas relativas, sin paths de usuario.
+4. `git add`, commit y push del componente documentado.
 
 ## Mantenimiento de este README
 
