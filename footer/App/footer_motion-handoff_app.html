@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Motion Handoff — Footer (App)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --bg:#fff; --bg-subtle:#f7f7f7; --border:#e8e8ec; --text:#252529; --muted:#6c6c78; --subtle:#8f8f9c; --accent:#7373e5; --radius:12px; --radius-sm:6px; --sans:'Inter',sans-serif; --mono:'SF Mono','Fira Code','Consolas',monospace; }
+    *{box-sizing:border-box} body{margin:0;font-family:var(--sans);font-size:14px;line-height:1.6;color:var(--text)}
+    .page{max-width:980px;margin:0 auto;padding:20px} section{padding:22px 0;border-bottom:1px solid var(--border)}
+    h1{margin:0;font-size:3rem;font-weight:800;letter-spacing:-.03em} h2{margin:0 0 12px;font-size:1.35rem;font-weight:700;letter-spacing:-.02em}
+    .hero-meta{display:flex;gap:12px;align-items:center;margin:10px 0 14px;color:var(--muted);flex-wrap:wrap}
+    .owner-badge{display:inline-flex;align-items:center;gap:8px;padding:4px 10px 4px 4px;border:1px solid var(--border);border-radius:999px;background:var(--bg-subtle);font-size:12px}
+    .owner-avatar-img{width:28px;height:28px;border-radius:50%;object-fit:cover}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid rgba(115,115,229,.35);background:rgba(115,115,229,.1);color:var(--accent);font-size:12px;margin-right:6px}
+    .motion-lab-disclaimer,.callout,.hint{font-size:12px;color:var(--muted);margin-bottom:10px;padding:8px 10px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm)}
+    .callout{border-left:4px solid var(--accent);color:#404047}
+    .hint{color:#404047}
+    .stage-wrap{display:flex;justify-content:center;margin:0 auto}
+    .stage{position:relative;width:100%;max-width:390px;min-height:640px;overflow:hidden;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 4px 24px rgba(37,37,41,.08)}
+    .stage__content{position:absolute;inset:0;padding:24px 20px;display:flex;flex-direction:column;gap:16px}
+    .stage__field-label{font-size:14px;font-weight:500;color:var(--text)}
+    .stage__field{height:44px;border:1px solid #d3d3da;border-radius:8px;background:#f0f0f0;padding:0 12px;font:inherit;color:var(--text);outline:none}
+    .stage__field:focus{border-color:#0059bf;box-shadow:0 0 0 2px rgba(0,89,191,.2)}
+    .stage__body{flex:1;color:var(--muted);font-size:13px;padding-top:8px}
+    .keyboard{position:absolute;left:0;right:0;bottom:0;height:260px;background:#d0d3d9;transform:translateY(100%);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;z-index:1}
+    .footer-wrap{position:absolute;left:0;right:0;bottom:0;z-index:2;will-change:transform}
+    .footer{width:100%;padding:20px;display:flex;flex-direction:column;gap:12px;background:transparent;border-radius:0;box-shadow:none}
+    .footer__btn{width:100%;height:44px;border:0;border-radius:8px;font:inherit;font-size:14px;font-weight:500;cursor:default}
+    .footer__btn--primary{background:#252529;color:#fff}
+    .footer__btn--ghost{background:transparent;color:#252529}
+    .motion-controls{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;align-items:center}
+    .motion-controls button{font:inherit;font-size:13px;font-weight:600;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer}
+    .motion-controls label{font-size:13px;color:#404047}
+    .motion-token-readout{margin-top:10px;font-size:12px;font-family:var(--mono);color:var(--muted)}
+    .mapping{margin-top:10px;padding:10px;border:1px solid rgba(115,115,229,.35);border-radius:var(--radius-sm);background:rgba(115,115,229,.1);font-size:12px;color:#404047}
+    .implementation pre{background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;font-size:.75rem;white-space:pre-wrap}
+    .doc-footer{text-align:center;color:var(--subtle);font-size:12px;padding:16px 0 8px}
+    #motion-lab.reduced-motion .footer-wrap,#motion-lab.reduced-motion .keyboard{transition:none!important}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <h1>Footer</h1>
+      <div class="hero-meta">
+        <span class="owner-badge"><img class="owner-avatar-img" src="data:image/jpeg;base64,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" alt="Juan Carlos De La Via Levy" /> Juan Carlos De La Via Levy</span>
+        <span>App · GGDS · 2026-09-01</span>
+      </div>
+      <span class="pill">motion-spring-md</span>
+    </header>
+
+    <section class="motion-lab" id="motion-lab">
+      <h2>Preview de motion</h2>
+      <p class="motion-lab-disclaimer">Motion lab — no es el componente de la libreria. Valida motion y tokens; la UI final esta en Figma.</p>
+      <p class="hint">Hace click en el Field Text para abrir el teclado y disparar el motion del Footer. Tambien podes usar los botones Abrir / Cerrar / Reset. Blur del field cierra el teclado. Si Overlay inicial esta desmarcado, el Footer pasa a Overlay/True al enfocar.</p>
+      <div class="stage-wrap">
+        <div class="stage" id="stage">
+          <div class="stage__content">
+            <label class="stage__field-label" for="demoField">Field Text</label>
+            <input class="stage__field" id="demoField" type="text" placeholder="Tap para enfocar" />
+            <div class="stage__body">Contenido de pantalla. El Footer se reposiciona por encima del teclado nativo.</div>
+          </div>
+          <div class="keyboard" id="keyboard">Teclado nativo (simulado)</div>
+          <div class="footer-wrap" id="footerWrap">
+            <div class="footer" id="footer">
+              <button type="button" class="footer__btn footer__btn--primary">Button</button>
+              <button type="button" class="footer__btn footer__btn--ghost">Button</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="motion-controls">
+        <button type="button" id="btnOpen">Abrir teclado</button>
+        <button type="button" id="btnClose">Cerrar teclado</button>
+        <button type="button" id="btnReset">Reset</button>
+        <label><input type="checkbox" id="overlayToggle" /> Overlay inicial (True)</label>
+        <label><input type="checkbox" id="reducedToggle" /> disableAnimations</label>
+      </div>
+      <p class="callout">Este preview simula el spring en el navegador (mass / stiffness / damping del Token Mapping). No es Flutter. Los valores que implementas son los del Token Mapping.</p>
+      <div class="motion-token-readout" id="readout">State: idle · overlay false</div>
+      <div class="mapping"><strong>Token Mapping:</strong> motion-spring-md → mass 1.0 · stiffness 300 · damping 28 (reposicionamiento) · overlay: instantáneo en apertura y cierre</div>
+    </section>
+
+    <section><h2>Implementacion Dart (Flutter)</h2><div class="implementation"><pre>const _footerRepositionSpring = SpringDescription(
+  mass: 1.0,
+  stiffness: 300.0,
+  damping: 28.0,
+);
+
+// Preferido: viewInsets nativo
+Widget buildFooter(BuildContext context) {
+  final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+  final overlay = _resolveOverlay(context, bottomInset > 0);
+
+  return AnimatedPadding(
+    padding: EdgeInsets.only(bottom: bottomInset),
+    duration: const Duration(milliseconds: 300),
+    curve: Curves.easeOut,
+    child: _FooterSurface(overlay: overlay),
+  );
+}</pre></div></section>
+
+    <section>
+      <h2>Haptics</h2>
+      <div class="mapping"><strong>Delegacion a hijos</strong><br/>El Footer como contenedor no dispara haptics. Button e Icon Button usan <code>haptic-action-press</code> en <code>onPressed</code>. Checkbox usa <code>haptic-selection-change</code> en <code>onChanged</code>. Sin haptic en apertura ni cierre del teclado.</div>
+    </section>
+
+    <footer class="doc-footer">Motion System GGDS · Footer Handoff App · 2026-09-01<br/>DesignOps @ itti</footer>
+  </div>
+
+  <script>
+(() => {
+  const S_MD = 300, D_MD = 28, M = 1;
+  const KEYBOARD_H = 260;
+  const SHADOW_M = '0px 0px 24px 0px rgba(37, 37, 41, 0.08)';
+
+  const lab = document.getElementById('motion-lab');
+  const demoField = document.getElementById('demoField');
+  const keyboard = document.getElementById('keyboard');
+  const footerWrap = document.getElementById('footerWrap');
+  const footer = document.getElementById('footer');
+  const readout = document.getElementById('readout');
+  const overlayToggle = document.getElementById('overlayToggle');
+  const reducedToggle = document.getElementById('reducedToggle');
+
+  let keyboardProgress = 0;
+  let overlayProgress = 0;
+  let initialOverlay = false;
+  let keyboardOpen = false;
+  let rafId = null;
+
+  function cancelSpring() {
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  }
+
+  function spring(S, D, from, to, onUpdate, onComplete) {
+    cancelSpring();
+    if (reducedToggle.checked) {
+      onUpdate(to);
+      onComplete?.();
+      return;
+    }
+    let x = from, v = 0, last = performance.now();
+    function frame(now) {
+      const dt = Math.min((now - last) / 1000, 0.064);
+      last = now;
+      const a = (-S * (x - to) - D * v) / M;
+      v += a * dt;
+      x += v * dt;
+      onUpdate(x);
+      if (Math.abs(x - to) < 0.002 && Math.abs(v) < 0.002) {
+        onUpdate(to);
+        rafId = null;
+        onComplete?.();
+        return;
+      }
+      rafId = requestAnimationFrame(frame);
+    }
+    rafId = requestAnimationFrame(frame);
+  }
+
+  function effectiveOverlay() {
+    if (initialOverlay) return 1;
+    return overlayProgress;
+  }
+
+  function applyVisuals() {
+    const offset = keyboardProgress * KEYBOARD_H;
+    footerWrap.style.transform = 'translateY(-' + offset + 'px)';
+    keyboard.style.transform = 'translateY(' + ((1 - keyboardProgress) * 100) + '%)';
+    const ov = effectiveOverlay();
+    footer.style.backgroundColor = 'rgba(255,255,255,' + ov + ')';
+    footer.style.borderRadius = (20 * ov) + 'px ' + (20 * ov) + 'px 0 0';
+    footer.style.boxShadow = ov > 0.02 ? SHADOW_M : 'none';
+  }
+
+  function setReadout(state, token) {
+    readout.textContent = 'State: ' + state + ' · ' + token + ' · overlay ' + (effectiveOverlay() > 0.5 ? 'true' : 'false');
+  }
+
+  function runOpen() {
+    if (keyboardOpen) return;
+    keyboardOpen = true;
+    if (!initialOverlay) {
+      overlayProgress = 1;
+      applyVisuals();
+    }
+    setReadout('keyboard opening', 'motion-spring-md · overlay instantáneo');
+    spring(S_MD, D_MD, keyboardProgress, 1, (val) => {
+      keyboardProgress = val;
+      applyVisuals();
+    }, () => setReadout('keyboard open', 'motion-spring-md · overlay instantáneo'));
+  }
+
+  function runClose() {
+    if (!keyboardOpen) return;
+    keyboardOpen = false;
+    if (!initialOverlay) {
+      overlayProgress = 0;
+      applyVisuals();
+    }
+    setReadout('keyboard closing', 'motion-spring-md · overlay instantáneo');
+    spring(S_MD, D_MD, keyboardProgress, 0, (val) => {
+      keyboardProgress = val;
+      applyVisuals();
+    }, () => setReadout('idle', '—'));
+  }
+
+  function reset() {
+    cancelSpring();
+    keyboardOpen = false;
+    keyboardProgress = 0;
+    overlayProgress = initialOverlay ? 1 : 0;
+    demoField.blur();
+    applyVisuals();
+    setReadout('idle', '—');
+  }
+
+  demoField.addEventListener('focus', runOpen);
+  demoField.addEventListener('blur', runClose);
+  demoField.addEventListener('click', () => demoField.focus());
+
+  document.getElementById('btnOpen').addEventListener('click', () => {
+    demoField.focus();
+    runOpen();
+  });
+  document.getElementById('btnClose').addEventListener('click', () => {
+    demoField.blur();
+    runClose();
+  });
+  document.getElementById('btnReset').addEventListener('click', reset);
+  overlayToggle.addEventListener('change', () => {
+    initialOverlay = overlayToggle.checked;
+    overlayProgress = initialOverlay ? 1 : 0;
+    applyVisuals();
+    setReadout(keyboardOpen ? 'keyboard open' : 'idle', keyboardOpen ? 'motion-spring-md' : '—');
+  });
+  reducedToggle.addEventListener('change', () => lab.classList.toggle('reduced-motion', reducedToggle.checked));
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    lab.classList.add('reduced-motion');
+    reducedToggle.checked = true;
+  }
+
+  reset();
+})();
+  </script>
+</body>
+</html>

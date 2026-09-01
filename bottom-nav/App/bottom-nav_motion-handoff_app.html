@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Motion Handoff — Bottom Nav (App)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:#FFFFFF;--bg-subtle:#F7F7F7;--surface:#FFFFFF;--border:#E8E8EC;
+  --text:#252529;--text-2:#404047;--muted:#6C6C78;--subtle:#8F8F9C;
+  --accent:#7373E5;--accent-soft:rgba(115,115,229,0.10);
+  --radius:12px;--radius-sm:6px;
+  --mono:'SF Mono','Fira Code','Consolas',monospace;--sans:'Inter',sans-serif;
+  /* Bottom Nav / Item */
+  --icon-enabled:#252529; /* color/icon/on-action-3 */
+  --label-enabled:#252529; /* color/text/action-enabled */
+  --icon-selected:#797985; /* color/icon/accent */
+  --label-selected:#797985; /* color/text/accent */
+  --nav-pressed-bg:#B4B4BF; /* color/bg/action-3-pressed */
+  /* Bottom Nav / FAB */
+  --fab-enabled:#8F8F9C; /* color/bg/action-accent-1-enabled */
+  --fab-pressed:#404047; /* color/bg/action-accent-1-pressed */
+  --fab-icon:#FFFFFF; /* color/icon/on-action-accent-1 */
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);font-size:14px;line-height:1.6;color:var(--text);background:var(--bg)}
+.page{max-width:920px;margin:0 auto;padding:2rem 1.5rem}
+.hero h1{font-size:3rem;font-weight:800;letter-spacing:-0.03em}
+.hero-meta{display:flex;align-items:center;gap:1rem;color:var(--muted);margin:.6rem 0 1rem;flex-wrap:wrap}
+.owner-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.3rem .65rem .3rem .3rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:999px;font-size:.82rem}
+.owner-avatar-img{width:28px;height:28px;border-radius:50%;object-fit:cover}
+.pill{display:inline-block;padding:.3rem .6rem;border:1px solid var(--border);border-radius:999px;background:var(--bg-subtle);font-size:.75rem;margin-right:.35rem;margin-bottom:.35rem}
+.pill.primary{border-color:rgba(115,115,229,.35);background:var(--accent-soft);color:var(--accent)}
+section{padding:1.5rem 0;border-bottom:1px solid var(--border)}
+h2{font-size:1.35rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:.75rem}
+.motion-lab-disclaimer{font-size:.82rem;color:var(--muted);margin-bottom:.75rem;padding:.5rem .75rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.hint{font-size:.88rem;color:var(--muted);margin-bottom:1rem;max-width:72ch}
+.stage-wrap{display:flex;justify-content:center}
+.stage{position:relative;width:100%;max-width:390px;min-height:640px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:0 4px 24px rgba(37,37,41,.08)}
+.screen{padding:24px 20px 120px;min-height:640px}
+.screen__title{font-size:18px;font-weight:700;margin-bottom:8px}
+.screen__body{font-size:13px;color:var(--muted)}
+.screen__card{margin-top:16px;padding:16px;background:#fff;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text-2)}
+.nav-host{position:absolute;left:0;right:0;bottom:0;pointer-events:none}
+.nav-host.is-floating{display:flex;justify-content:center;padding:0 20px 32px}
+.nav-host>*{pointer-events:auto}
+.bottom-nav{background:var(--surface);box-shadow:0 8px 16px rgba(37,37,41,.16);display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+.bottom-nav.fixed{width:100%;padding:12px 0;border-radius:20px 20px 0 0}
+.bottom-nav.floating{width:100%;max-width:360px;border-radius:1000px;padding:8px 12px}
+.nav-items{display:flex;align-items:center;justify-content:center;gap:20px;flex:1;padding:0 8px 0 4px}
+.nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;width:64px;border:none;background:transparent;cursor:pointer;font:inherit;padding:0;outline:none}
+.nav-item__icon-wrap{position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px;padding:8px;background:transparent}
+.nav-item__icon{display:flex;align-items:center;justify-content:center;width:24px;height:24px;color:var(--icon-enabled)}
+.nav-item__icon svg{display:block;width:24px;height:24px}
+.nav-item__label{margin-top:0;font-size:12px;font-weight:500;line-height:16px;letter-spacing:.15px;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--label-enabled)}
+.nav-fab{display:flex;align-items:center;justify-content:center;width:56px;height:56px;border:none;border-radius:8px;cursor:pointer;color:var(--fab-icon);background:var(--fab-enabled);outline:none;flex-shrink:0;position:relative;padding:16px}
+.nav-fab svg{width:24px;height:24px;display:block}
+.controls{display:flex;gap:1.25rem;flex-wrap:wrap;margin-top:1rem;align-items:center}
+.controls label{cursor:pointer;font-size:.88rem;color:var(--text-2);display:inline-flex;align-items:center;gap:.35rem}
+.variant-group{display:inline-flex;gap:.75rem}
+.readout{margin-top:.75rem;font-size:.78rem;color:var(--muted);line-height:1.7}
+.readout code{font-family:var(--mono);font-size:.76rem}
+.callout{border-left:4px solid var(--accent);background:var(--accent-soft);padding:.8rem 1rem;border-radius:0 var(--radius-sm) var(--radius-sm) 0;margin-top:.75rem;font-size:.88rem;color:var(--text-2)}
+.mapping{margin-top:.75rem;border:1px solid rgba(115,115,229,.35);border-radius:var(--radius-sm);padding:.8rem;font-size:.78rem;color:var(--muted);line-height:1.6;background:var(--accent-soft)}
+.implementation pre{margin:0;font-family:var(--mono);font-size:.75rem;line-height:1.45;white-space:pre-wrap;color:var(--text-2)}
+.implementation{margin-top:.75rem;border:1px solid var(--border);border-radius:var(--radius-sm);padding:.8rem;background:var(--surface)}
+.haptics-section .mapping{margin:0 0 .75rem}
+.doc-footer{text-align:center;padding:1.2rem 0;color:var(--subtle);font-size:.8rem}
+.doc-footer-brand{font-size:.75rem;margin-top:.25rem}
+#motion-lab.reduced-motion .nav-item,#motion-lab.reduced-motion .nav-fab{transition:none!important}
+</style>
+</head>
+<body>
+<div class="page">
+<header class="hero">
+  <h1>Bottom Nav</h1>
+  <div class="hero-meta">
+    <span class="owner-badge"><img class="owner-avatar-img" src="data:image/jpeg;base64,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" alt="Juan Carlos De La Via Levy"/> Juan Carlos De La Via Levy</span>
+    <span>App · GGDS · 2026-09-01</span>
+  </div>
+  <span class="pill primary">motion-spring-sm · item + FAB</span>
+</header>
+
+<section id="motion-lab">
+  <h2>Preview de motion</h2>
+  <p class="motion-lab-disclaimer">Motion lab — no es el componente de la librería. Validá motion y tokens.</p>
+  <p class="hint"><strong>Cómo probarlo:</strong> tocá un item para navegar a otra sección. El FAB dispara una acción independiente. Usá los radios <strong>Fixed</strong> (4 items) / <strong>Floating</strong> (2 items, pill elevada) para cambiar layout. No hay hover en App. El checkbox <strong>disableAnimations</strong> desactiva las transiciones.</p>
+  <div class="stage-wrap">
+    <div class="stage" id="stage">
+      <div class="screen">
+        <div class="screen__title" id="screenTitle">Label</div>
+        <div class="screen__body">Contenido de la sección activa.</div>
+        <div class="screen__card" id="screenCard">Sección: Label</div>
+      </div>
+      <div class="nav-host" id="navHost">
+        <nav class="bottom-nav fixed" id="bottomNav" aria-label="Bottom navigation">
+          <div class="nav-items" id="navItems"></div>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <div class="controls">
+    <span class="variant-group">
+      <label><input type="radio" name="variant" value="fixed" checked/> Fixed</label>
+      <label><input type="radio" name="variant" value="floating"/> Floating</label>
+    </span>
+    <label><input type="checkbox" id="fabToggle" checked/> Mostrar FAB</label>
+    <label><input type="checkbox" id="reduced"/> disableAnimations (sin animación)</label>
+  </div>
+  <div class="callout">Este preview es una representación visual del motion, no una simulación física real. El navegador no soporta springs de Flutter. Los valores que el dev implementa son los parámetros de spring del Token Mapping.</div>
+  <div class="readout" id="readout"></div>
+  <div class="mapping">
+    <strong>Token Mapping</strong><br/>
+    Nav item + FAB: motion-spring-sm → mass 1.0 · stiffness 400 · damping 35
+  </div>
+</section>
+
+<section>
+  <h2>Implementación Dart (Flutter)</h2>
+  <div class="implementation"><pre>final spring = context.motionTokens.springSm; // motion-spring-sm
+
+void onNavItemTap(int index) {
+  if (index != _currentIndex) {
+    context.haptics.trigger(GgdsHapticSemantic.selectionChange);
+    _selectionController.animateWith(
+      SpringSimulation(spring, _selectionController.value, index.toDouble(), 0),
+    );
+    _navigateToSection(index);
+  }
+}
+
+void onNavItemPressedChanged(bool pressed) {
+  _pressedController.animateWith(
+    SpringSimulation(spring, _pressedController.value, pressed ? 1.0 : 0.0, 0),
+  );
+}
+
+void onFabPressed() {
+  if (widget.fabHaptic != GgdsHapticSemantic.none) {
+    context.haptics.trigger(widget.fabHaptic ?? GgdsHapticSemantic.actionPress);
+  }
+  widget.onFabAction?.call();
+}</pre></div>
+</section>
+
+<section class="haptics-section">
+  <h2>Haptics</h2>
+  <div class="mapping">
+    <strong>Nav Item</strong><br/>
+    haptic-selection-change → haptic-selection-click → HapticFeedback.selectionClick()<br/>
+    Trigger: onTap cuando index != currentIndex<br/><br/>
+    <strong>FAB</strong><br/>
+    haptic-action-press → haptic-impact-light → HapticFeedback.lightImpact()<br/>
+    Trigger: onPressed · Override: none | default
+  </div>
+  <div class="implementation"><pre>void onNavItemTap(int index) {
+  if (index != _currentIndex) {
+    context.haptics.trigger(GgdsHapticSemantic.selectionChange);
+    _navigateToSection(index);
+  }
+}
+
+void onFabPressed() {
+  final haptic = widget.fabHaptic ?? GgdsHapticSemantic.actionPress;
+  if (haptic != GgdsHapticSemantic.none) {
+    context.haptics.trigger(haptic);
+  }
+}</pre></div>
+</section>
+
+<footer class="doc-footer">
+  <p>Motion System GGDS · Bottom Nav Handoff App · 2026-09-01</p>
+  <p class="doc-footer-brand">DesignOps @ itti</p>
+</footer>
+</div>
+<script>
+(() => {
+  const NAV_ICON = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="6.5" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5l7 4.5 7-4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const ITEMS = [
+    { label: 'Label' },
+    { label: 'Label' },
+    { label: 'Label' },
+    { label: 'Label' }
+  ];
+  const S = 400, D = 35, M = 1;
+  const ICON_ENABLED = [37, 37, 41];
+  const ICON_SELECTED = [121, 121, 133];
+  const LABEL_ENABLED = [37, 37, 41];
+  const LABEL_SELECTED = [121, 121, 133];
+  const PRESSED_BG = [180, 180, 191];
+  const FAB_ENABLED = [143, 143, 156];
+  const FAB_PRESSED = [64, 64, 71];
+
+  const navItems = document.getElementById('navItems');
+  const navHost = document.getElementById('navHost');
+  const bottomNav = document.getElementById('bottomNav');
+  const screenTitle = document.getElementById('screenTitle');
+  const screenCard = document.getElementById('screenCard');
+  const readout = document.getElementById('readout');
+  const reduced = document.getElementById('reduced');
+  const fabToggle = document.getElementById('fabToggle');
+  const variantInputs = [...document.querySelectorAll('input[name="variant"]')];
+
+  let active = 0;
+  let fabEl = null;
+  let itemEls = [];
+  let selection = [];
+  let selectionTarget = [];
+  let pressed = [];
+  let pressedTarget = [];
+  let fabPressed = 0;
+  let fabPressedTarget = 0;
+  let raf = null;
+  let lastHaptic = '';
+
+  function lerpColor(a, b, t) {
+    const c = i => Math.round(a[i] + (b[i] - a[i]) * t);
+    return `rgb(${c(0)}, ${c(1)}, ${c(2)})`;
+  }
+
+  function springStep(cur, vel, goal, dt) {
+    const a = (-S * (cur - goal) - D * vel) / M;
+    const v = vel + a * dt;
+    return { x: cur + v * dt, v };
+  }
+
+  function paint() {
+    itemEls.forEach((el) => {
+      const i = Number(el.dataset.index);
+      const blend = selection[i];
+      el.querySelector('.nav-item__icon').style.color = lerpColor(ICON_ENABLED, ICON_SELECTED, blend);
+      el.querySelector('.nav-item__label').style.color = lerpColor(LABEL_ENABLED, LABEL_SELECTED, blend);
+      const alpha = pressed[i];
+      const wrap = el.querySelector('.nav-item__icon-wrap');
+      wrap.style.backgroundColor = alpha > 0.01 ? `rgba(${PRESSED_BG.join(',')}, ${alpha})` : 'transparent';
+    });
+    if (fabEl) {
+      fabEl.style.backgroundColor = lerpColor(FAB_ENABLED, FAB_PRESSED, fabPressed);
+    }
+  }
+
+  function snapState() {
+    selection = selectionTarget.slice();
+    pressed = pressedTarget.slice();
+    fabPressed = fabPressedTarget;
+    paint();
+  }
+
+  function runLoop() {
+    cancelAnimationFrame(raf);
+    let last = performance.now();
+
+    function frame(now) {
+      const dt = Math.min((now - last) / 1000, 0.064);
+      last = now;
+      let settled = true;
+
+      for (let i = 0; i < selection.length; i++) {
+        const r1 = springStep(selection[i], selection._v?.[i] || 0, selectionTarget[i], dt);
+        selection[i] = r1.x;
+        selection._v = selection._v || [];
+        selection._v[i] = r1.v;
+        const r2 = springStep(pressed[i], pressed._v?.[i] || 0, pressedTarget[i], dt);
+        pressed[i] = r2.x;
+        pressed._v = pressed._v || [];
+        pressed._v[i] = r2.v;
+        if (Math.abs(selection[i] - selectionTarget[i]) > 0.005 || Math.abs(pressed[i] - pressedTarget[i]) > 0.005) settled = false;
+      }
+
+      const rf = springStep(fabPressed, fabPressed._v || 0, fabPressedTarget, dt);
+      fabPressed = rf.x; fabPressed._v = rf.v;
+      if (Math.abs(fabPressed - fabPressedTarget) > 0.005) settled = false;
+
+      paint();
+      if (!settled) raf = requestAnimationFrame(frame);
+      else { raf = null; snapState(); }
+    }
+
+    if (reduced.checked) { snapState(); return; }
+    raf = requestAnimationFrame(frame);
+  }
+
+  function animate() {
+    if (reduced.checked) snapState();
+    else runLoop();
+  }
+
+  function setPressed(index, value) {
+    pressedTarget[index] = value ? 1 : 0;
+    animate();
+  }
+
+  function selectItem(index, trigger) {
+    const items = visibleItems();
+    if (index !== active) {
+      selectionTarget[active] = 0;
+      selectionTarget[index] = 1;
+      active = index;
+      screenTitle.textContent = items[index].label;
+      screenCard.textContent = `Sección: ${items[index].label}`;
+      lastHaptic = 'haptic-selection-change';
+    } else {
+      lastHaptic = '';
+    }
+    itemEls.forEach((el) => {
+      const i = Number(el.dataset.index);
+      el.setAttribute('aria-current', i === active ? 'page' : 'false');
+    });
+    animate();
+    updateReadout(trigger || 'tap');
+  }
+
+  function isFloating() {
+    return bottomNav.classList.contains('floating');
+  }
+
+  function visibleItems() {
+    return isFloating() ? ITEMS.slice(0, 2) : ITEMS;
+  }
+
+  function buildNav() {
+    const items = visibleItems();
+    if (active >= items.length) active = 0;
+
+    navItems.innerHTML = '';
+    itemEls = [];
+    selection = items.map((_, i) => (i === active ? 1 : 0));
+    selectionTarget = selection.slice();
+    pressed = items.map(() => 0);
+    pressedTarget = pressed.slice();
+
+    const splitAt = Math.ceil(items.length / 2);
+    const left = items.slice(0, splitAt);
+    const right = items.slice(splitAt);
+
+    function makeItem(item, index) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'nav-item';
+      btn.setAttribute('aria-current', index === active ? 'page' : 'false');
+      btn.dataset.index = String(index);
+      btn.innerHTML = `<span class="nav-item__icon-wrap"><span class="nav-item__icon">${NAV_ICON}</span></span><span class="nav-item__label">${item.label}</span>`;
+      btn.addEventListener('pointerdown', () => setPressed(index, true));
+      btn.addEventListener('pointerup', () => { setPressed(index, false); selectItem(index, 'tap'); btn.blur(); });
+      btn.addEventListener('pointerleave', () => setPressed(index, false));
+      btn.addEventListener('pointercancel', () => setPressed(index, false));
+      btn.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectItem(index, 'keyboard'); }
+      });
+      return btn;
+    }
+
+    left.forEach((item, i) => {
+      const el = makeItem(item, i);
+      itemEls.push(el);
+      navItems.appendChild(el);
+    });
+
+    if (fabToggle.checked) {
+      fabEl = document.createElement('button');
+      fabEl.type = 'button';
+      fabEl.className = 'nav-fab';
+      fabEl.setAttribute('aria-label', 'Acción principal');
+      fabEl.innerHTML = NAV_ICON;
+      fabEl.addEventListener('pointerdown', () => { fabPressedTarget = 1; animate(); });
+      fabEl.addEventListener('pointerup', () => { fabPressedTarget = 0; lastHaptic = 'haptic-action-press'; animate(); updateReadout('fab tap'); fabEl.blur(); });
+      fabEl.addEventListener('pointerleave', () => { fabPressedTarget = 0; animate(); });
+      fabEl.addEventListener('focus', () => updateReadout('fab focus'));
+      navItems.appendChild(fabEl);
+    } else {
+      fabEl = null;
+    }
+
+    right.forEach((item, i) => {
+      const index = i + splitAt;
+      const el = makeItem(item, index);
+      itemEls.push(el);
+      navItems.appendChild(el);
+    });
+
+    screenTitle.textContent = items[active].label;
+    screenCard.textContent = `Sección: ${items[active].label}`;
+    paint();
+    updateReadout('init');
+  }
+
+  function updateReadout(trigger) {
+    const variant = isFloating() ? 'Floating' : 'Fixed';
+    const items = visibleItems();
+    const lines = [
+      `Sección: <strong>${items[active].label}</strong>${trigger ? ' · ' + trigger : ''}`,
+      `Layout: <strong>${variant}</strong>${fabToggle.checked ? ' · FAB visible' : ' · sin FAB'} · ${items.length} items`,
+      `Token: <code>motion-spring-sm</code>`
+    ];
+    if (lastHaptic) lines.push(`Haptic: <code>${lastHaptic}</code>`);
+    readout.innerHTML = lines.join('<br/>');
+  }
+
+  variantInputs.forEach(input => {
+    input.addEventListener('change', () => {
+      if (!input.checked) return;
+      const floating = input.value === 'floating';
+      bottomNav.classList.toggle('fixed', !floating);
+      bottomNav.classList.toggle('floating', floating);
+      navHost.classList.toggle('is-floating', floating);
+      buildNav();
+    });
+  });
+
+  fabToggle.addEventListener('change', buildNav);
+  reduced.addEventListener('change', () => {
+    document.getElementById('motion-lab').classList.toggle('reduced-motion', reduced.checked);
+    if (raf) cancelAnimationFrame(raf);
+    snapState();
+    updateReadout('reduced-motion');
+  });
+
+  buildNav();
+})();
+</script>
+</body>
+</html>
