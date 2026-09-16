@@ -1,0 +1,123 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Motion Handoff — Linear Loader (App)</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#fff;--bg-subtle:#f7f7f7;--border:#e8e8ec;--text:#252529;--muted:#6c6c78;--accent:#55555e;--track:#e4e2e2;--fill:#252529;--radius:12px;--radius-sm:6px;--sans:'Inter',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--sans);font-size:14px;line-height:1.6;color:var(--text)}
+.page{max-width:980px;margin:0 auto;padding:2rem 1.5rem}.hero h1{font-size:3rem;font-weight:800}
+.hero-meta{display:flex;align-items:center;gap:1rem;color:var(--muted);margin:.6rem 0 1rem;flex-wrap:wrap}
+.owner-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.3rem .65rem .3rem .3rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:999px;font-size:.82rem}
+.owner-initials{width:28px;height:28px;border-radius:50%;background:#252529;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700}
+.pill{display:inline-block;padding:.3rem .6rem;border:1px solid var(--border);border-radius:999px;background:var(--bg-subtle);font-size:.75rem}
+.pill.primary{border-color:rgba(37,37,41,.18);background:rgba(37,37,41,.06);color:var(--accent)}
+section{padding:1.5rem 0;border-bottom:1px solid var(--border)}h2{font-size:1.35rem;margin-bottom:.75rem}
+.motion-lab-disclaimer,.hint{font-size:.82rem;color:var(--muted);margin-bottom:.75rem}
+.motion-lab-disclaimer{padding:.5rem .75rem;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.callout{margin-top:.75rem;padding:.8rem 1rem;border-left:4px solid var(--accent);background:rgba(37,37,41,.06);font-size:.82rem;color:#404047}
+.stage{display:flex;justify-content:center;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius);padding:2rem}
+.stage.is-white-variant{background:#252529;border-color:#3a3a42}
+.loader-host{width:360px;max-width:100%}
+.loader-track{position:relative;width:100%;height:4px;border-radius:1000px;overflow:hidden;background:transparent}
+.loader-leading,.loader-trailing{position:absolute;top:0;height:100%;background:var(--track);border-radius:1000px}
+.loader-fill{position:absolute;top:0;height:100%;background:var(--fill);border-radius:1000px;will-change:left,width}
+.controls{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1rem;align-items:center}
+.controls label,.controls select{font:inherit;font-size:.84rem}
+.controls label{display:inline-flex;align-items:center;gap:.35rem}
+.controls select{padding:.35rem .5rem;border:1px solid var(--border);border-radius:6px;background:#fff}
+.readout{margin-top:.75rem;font-size:.78rem;color:var(--muted)}
+.mapping{margin-top:.75rem;border:1px solid rgba(37,37,41,.18);border-radius:var(--radius-sm);padding:.8rem;font-size:.78rem;color:var(--muted);line-height:1.5;background:rgba(37,37,41,.04)}
+.implementation{margin-top:.75rem;border:1px solid var(--border);border-radius:var(--radius-sm);padding:.8rem;background:#fff}
+.implementation pre{margin:0;font-family:ui-monospace,Menlo,monospace;font-size:.75rem;line-height:1.45;white-space:pre-wrap;color:#404047}
+.doc-footer{text-align:center;padding:1.2rem 0;color:#8f8f9c;font-size:.8rem}
+</style></head><body><div class="page">
+<header class="hero"><h1>Linear Loader</h1>
+<div class="hero-meta"><span class="owner-badge"><span class="owner-initials" aria-hidden="true">JC</span> Juan Carlos De La Vía</span><span>App · GGDS · 2026-09-15</span></div>
+<span class="pill primary">motion-spring-md</span></header>
+
+<section id="motion-lab"><h2>Preview de motion</h2>
+<p class="motion-lab-disclaimer">Motion lab — no es el componente de la librería. Validá motion y tokens; la UI final está en Figma.</p>
+<p class="hint">La shape avanza solo hacia la <strong>derecha</strong>, sale del track y reentra por la izquierda. Gap fijo <strong>4px</strong> entre shape y tramos de track (pills grises).</p>
+<div class="stage" id="stage"><div class="loader-host" role="progressbar" aria-busy="true" aria-label="Loading">
+<div class="loader-track">
+<div class="loader-leading" id="loaderLeading"></div>
+<div class="loader-fill" id="loaderFill"></div>
+<div class="loader-trailing" id="loaderTrailing"></div>
+</div>
+</div></div>
+<div class="controls">
+<label>Color <select id="colorSelect"><option value="accent">accent</option><option value="neutral">neutral</option><option value="white">white</option></select></label>
+<label><input type="checkbox" id="reducedToggle"/> disableAnimations</label>
+</div>
+<div class="callout">left(t) = −segWidth + (W + segWidth)×t · segWidth=120 @ W=360 · gap=4 en extremos del corredor visible.</div>
+<div class="readout">Token: <code>motion-spring-md</code> · gap L/R: <span id="readoutGap">—</span> · Estado: <span id="readout">loop</span></div>
+<div class="mapping"><strong>Token Mapping</strong><br/>Ciclo 2000ms · left(t) lineal · width constante<br/>leading = max(0, left−4) · trailing = max(0, W−left−segWidth−4)</div></section>
+<section><h2>Implementación Dart (Flutter)</h2><div class="implementation"><pre>final controller = AnimationController(
+  duration: const Duration(milliseconds: 2000),
+)..repeat();
+
+final seg = linearLoaderSegmentAt(controller.value, trackWidth: W);
+// leading / trailing con gap 4px — ver MD</pre></div></section>
+<footer class="doc-footer"><p>Motion System GGDS · Linear Loader Handoff App · 2026-09-15</p><p class="doc-footer-brand">DesignOps @ itti</p></footer>
+</div>
+<script>
+(()=>{
+  const TRACK_W=360,GAP=4,SEG_W=120,CYCLE_MS=2000;
+  const COLORS={
+    accent:{track:'#e4e2e2',fill:'#252529'},
+    neutral:{track:'#e4e2e2',fill:'#252529'},
+    white:{track:'rgba(255,255,255,0.15)',fill:'#ffffff'}
+  };
+  const lab=document.getElementById('motion-lab'),stage=document.getElementById('stage');
+  const leading=document.getElementById('loaderLeading'),fill=document.getElementById('loaderFill');
+  const trailing=document.getElementById('loaderTrailing'),colorSelect=document.getElementById('colorSelect');
+  const reducedToggle=document.getElementById('reducedToggle'),readout=document.getElementById('readout');
+  const readoutGap=document.getElementById('readoutGap');
+  let rafId=null;
+
+  function layoutAt(t,W){
+    const segW=SEG_W;
+    const left=-segW+(W+segW)*t;
+    const width=segW;
+    const lead=Math.max(0,left-GAP);
+    const trail=Math.max(0,W-left-width-GAP);
+    const gapL=Math.max(0,left-lead);
+    const gapR=Math.max(0,W-left-width-trail);
+    return{left,width,lead,trail,gapL,gapR};
+  }
+  function isReduced(){return lab.classList.contains('reduced-motion')||reducedToggle.checked}
+  function applyColor(){
+    const c=COLORS[colorSelect.value];
+    stage.classList.toggle('is-white-variant',colorSelect.value==='white');
+    document.documentElement.style.setProperty('--track',c.track);
+    document.documentElement.style.setProperty('--fill',c.fill);
+  }
+  function applyLayout(L){
+    leading.style.left='0';leading.style.width=L.lead+'px';
+    fill.style.left=L.left+'px';fill.style.width=L.width+'px';
+    trailing.style.left=(L.left+L.width+GAP)+'px';trailing.style.width=L.trail+'px';
+    readoutGap.textContent=L.gapL.toFixed(0)+'px / '+L.gapR.toFixed(0)+'px';
+  }
+  function cancelLoop(){if(rafId){cancelAnimationFrame(rafId);rafId=null}}
+  function frame(now){
+    if(isReduced())return;
+    const t=(now%CYCLE_MS)/CYCLE_MS;
+    applyLayout(layoutAt(t,TRACK_W));
+    readout.textContent='barrido →';
+    rafId=requestAnimationFrame(frame);
+  }
+  function startLoop(){
+    cancelLoop();
+    if(isReduced()){
+      applyLayout({left:GAP,width:SEG_W,lead:0,trail:TRACK_W-GAP-SEG_W-GAP,gapL:GAP,gapR:GAP});
+      readout.textContent='paused';
+      return;
+    }
+    rafId=requestAnimationFrame(frame);
+  }
+  reducedToggle.addEventListener('change',()=>{
+    lab.classList.toggle('reduced-motion',reducedToggle.checked);
+    startLoop();
+  });
+  colorSelect.addEventListener('change',applyColor);
+  applyColor();startLoop();
+})();
+</script></body></html>
