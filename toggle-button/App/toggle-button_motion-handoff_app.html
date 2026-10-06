@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Motion Handoff — Toggle Button (App)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #FFFFFF;
+  --bg-subtle: #F7F7F7;
+  --surface: #FFFFFF;
+  --border: #E8E8EC;
+  --border-strong: #D8D8DE;
+  --text: #252529;
+  --text-2: #404047;
+  --muted: #6C6C78;
+  --subtle: #8F8F9C;
+  --accent: #7373E5;
+  --accent-soft: rgba(115, 115, 229, 0.10);
+  --shadow-sm: 0px 0px 24px 0px rgba(37, 37, 41, 0.08);
+  --radius: 12px;
+  --radius-sm: 6px;
+  --mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  --sans: 'Inter', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--sans); font-size: 14px; line-height: 1.6; color: var(--text); background: var(--bg); }
+.topnav {
+  position: sticky; top: 0; z-index: 10; height: 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 1.5rem; background: var(--bg-subtle); border-bottom: 1px solid var(--border);
+  font-size: .82rem; color: var(--muted);
+}
+.topnav a { color: var(--accent); text-decoration: none; }
+.page { max-width: 920px; margin: 0 auto; padding: 2rem 1.5rem; }
+.hero h1 { font-size: 3rem; font-weight: 800; letter-spacing: -0.03em; }
+.hero-meta { display: flex; align-items: center; gap: 1rem; color: var(--muted); margin: .6rem 0 1rem; flex-wrap: wrap; }
+.owner-badge {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .3rem .65rem .3rem .3rem; background: var(--bg-subtle);
+  border: 1px solid var(--border); border-radius: 999px; font-size: .82rem; color: var(--text);
+}
+.owner-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+.pill {
+  display: inline-block; padding: .3rem .6rem; border: 1px solid var(--border);
+  border-radius: 999px; background: var(--bg-subtle); font-size: .75rem;
+}
+.pill.primary {
+  border-color: rgba(115,115,229,.35); background: var(--accent-soft); color: var(--accent);
+}
+section { padding: 1.5rem 0; border-bottom: 1px solid var(--border); }
+h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: .75rem; }
+.motion-lab-disclaimer {
+  font-size: .82rem; color: var(--muted); margin-bottom: .75rem;
+  padding: .5rem .75rem; background: var(--bg-subtle); border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.hint { font-size: .88rem; color: var(--muted); margin-bottom: 1rem; }
+.stage {
+  min-height: 200px; display: flex; align-items: center; justify-content: center;
+  background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 2rem;
+}
+.toggle-btn {
+  position: relative; width: 44px; height: 44px; border: none; border-radius: 8px;
+  background: transparent; color: #252529; display: flex; align-items: center;
+  justify-content: center; cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent;
+  padding: 2px;
+}
+.toggle-btn .icons { position: relative; width: 24px; height: 24px; }
+.toggle-btn svg {
+  position: absolute; inset: 0; width: 24px; height: 24px; display: block;
+}
+.toggle-btn .icon-outline,
+.toggle-btn .icon-filled { color: #252529; }
+.controls { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem; }
+.controls label { cursor: pointer; font-size: .88rem; color: var(--text-2); }
+.callout {
+  border-left: 4px solid var(--accent); background: var(--accent-soft);
+  padding: .8rem 1rem; border-radius: 0 6px 6px 0; margin-top: 1rem;
+  font-size: .88rem; color: var(--text-2);
+}
+.readout { margin-top: .75rem; font-size: .78rem; color: var(--muted); }
+.mapping {
+  margin-top: .75rem; border: 1px solid rgba(115,115,229,.35); border-radius: var(--radius-sm);
+  padding: .8rem; font-size: .78rem; color: var(--muted); line-height: 1.5;
+  background: rgba(115,115,229,.08);
+}
+.implementation {
+  margin-top: .75rem; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: .8rem; background: #fff;
+}
+.implementation pre {
+  margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .75rem; line-height: 1.45; white-space: pre-wrap; color: #404047;
+}
+#motion-lab.reduced-motion .toggle-btn,
+#motion-lab.reduced-motion .toggle-btn * { transition: none !important; animation: none !important; }
+.doc-footer { text-align: center; padding: 1.2rem 0; color: var(--subtle); font-size: .8rem; }
+.doc-footer-brand { font-size: .72rem; margin-top: .25rem; }
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <span>Motion System → Toggle Button</span>
+  <a href="./toggle-button_motion-handoff_app.md">Documentation</a>
+</nav>
+<div class="page">
+<header class="hero">
+  <h1>Toggle Button</h1>
+  <div class="hero-meta">
+    <span class="owner-badge">
+      <img class="owner-avatar-img" src="data:image/jpeg;base64,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" alt="Nehuen Benitez"/>
+      Nehuen Benitez
+    </span>
+    <span>App · GGDS · 2026-10-06</span>
+  </div>
+  <span class="pill primary">motion-spring-sm</span>
+  <span class="pill">Selected False ↔ True</span>
+</header>
+
+<section id="motion-lab">
+  <h2>Preview de motion</h2>
+  <p class="motion-lab-disclaimer">Motion lab — no es el componente de la librería. Validá motion y tokens; la UI final está en Figma.</p>
+  <p class="hint">Casuística de ejemplo: Favorite (Figma). Selected False = outline · True = filled. Tap/click o Space/Enter. El checkbox solo simula <code>disableAnimations</code>.</p>
+  <div class="stage">
+    <button class="toggle-btn" id="toggle" type="button" aria-pressed="false" aria-label="Favorite">
+      <span class="icons" aria-hidden="true">
+        <svg class="icon-outline" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M10.2304 4.06192C10.9702 2.64025 13.0297 2.64025 13.7695 4.06192L13.8388 4.20938L15.4502 7.975H18.9961L19.1601 7.98086C20.8308 8.10813 21.6304 10.1671 20.4111 11.3881L17.7382 14.0639L18.709 18.5688C19.0988 20.3819 17.0243 21.7031 15.5459 20.5834L12.0088 17.9047L8.56247 20.5717C7.10056 21.7024 5.01868 20.415 5.37692 18.602L6.27243 14.0746L3.58883 11.3881C2.33028 10.1277 3.22275 7.975 5.00387 7.975H8.54977L10.1611 4.20938L10.2304 4.06192ZM12.4599 4.79922C12.2869 4.39485 11.7131 4.39485 11.54 4.79922L9.7988 8.86856L9.73044 8.99942C9.57598 9.24994 9.3184 9.41985 9.02731 9.46328L8.87985 9.475H5.00387L4.92282 9.48086C4.53262 9.54121 4.35541 10.0322 4.65036 10.3275L7.52243 13.2045C7.75764 13.4404 7.8605 13.7781 7.79587 14.1049L6.93259 18.4652L6.8486 18.893C6.75929 19.346 7.2791 19.6676 7.6445 19.3852L11.3945 16.4848C11.7518 16.2083 12.2502 16.2052 12.6103 16.4779L16.4511 19.3881C16.7977 19.6505 17.2752 19.3761 17.2529 18.9672L17.2422 18.8842L16.2158 14.1137C16.1444 13.7821 16.2458 13.4367 16.4853 13.1967L19.3496 10.3275C19.6445 10.0322 19.4673 9.54125 19.0771 9.48086L18.9961 9.475H15.1201L14.9726 9.46328C14.6815 9.41985 14.424 9.24993 14.2695 8.99942L14.2011 8.86856L12.4599 4.79922Z" fill="#252529"/>
+        </svg>
+        <svg class="icon-filled" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10.2304 4.06192C10.9702 2.64025 13.0297 2.64025 13.7695 4.06192L13.8388 4.20938L15.4502 7.975H18.9961L19.1601 7.98086C20.8308 8.10813 21.6304 10.1671 20.4111 11.3881L17.7382 14.0639L18.709 18.5688C19.0988 20.3819 17.0243 21.7031 15.5459 20.5834L12.0088 17.9047L8.56247 20.5717C7.10056 21.7024 5.01868 20.415 5.37692 18.602L6.27243 14.0746L3.58883 11.3881C2.33028 10.1277 3.22275 7.975 5.00387 7.975H8.54977L10.1611 4.20938L10.2304 4.06192Z" fill="#252529"/>
+        </svg>
+      </span>
+    </button>
+  </div>
+  <div class="controls">
+    <label><input type="checkbox" id="reduced"/> disableAnimations (sin animación)</label>
+  </div>
+  <div class="callout">Este preview es una representación visual del motion, no una simulación física real. El navegador no soporta springs de Flutter. Los valores que el dev implementa son los parámetros de spring del Token Mapping.</div>
+  <div class="readout">Token: motion-spring-sm · State: <span id="state">unselected</span></div>
+  <div class="mapping"><strong>Token Mapping</strong><br/>motion-spring-sm → mass 1.0 · stiffness 400 · damping 35</div>
+</section>
+
+<section>
+  <h2>Implementación Dart (Flutter)</h2>
+  <div class="implementation"><pre>final motion = context.motionTokens;
+final spring = motion.springSm; // motion-spring-sm (mass: 1.0, stiffness: 400, damping: 35)
+final disableAnimations = MediaQuery.of(context).disableAnimations;
+
+double selectedT = selected ? 1.0 : 0.0; // 0 = False, 1 = True
+
+void onSelectedChanged(bool next) {
+  final from = selectedT;
+  final to = next ? 1.0 : 0.0;
+  if (disableAnimations) {
+    selectedT = to;
+    return;
+  }
+  controller.animateWith(
+    SpringSimulation(spring, from, to, 0),
+  );
+}
+
+// Crossfade del ícono outline → filled con selectedT (Favorite / casuística).</pre></div>
+</section>
+
+<section class="haptics-section">
+  <h2>Haptics</h2>
+  <div class="mapping">
+    <strong>Token Mapping</strong><br/>
+    haptic-selection-change → haptic-selection-click → HapticFeedback.selectionClick()<br/>
+    Trigger: onChanged (Selected False ↔ True)
+  </div>
+  <div class="implementation"><pre>void onChanged(bool value) {
+  context.haptics.trigger(GgdsHapticSemantic.selectionChange); // haptic-selection-change
+}</pre></div>
+</section>
+
+<footer class="doc-footer">
+  <p>Motion System GGDS · Toggle Button Handoff App · 2026-10-06</p>
+  <p class="doc-footer-brand">DesignOps @ itti</p>
+</footer>
+</div>
+
+<script>
+(() => {
+  const M = 1.0, S = 400, D = 35;
+  const btn = document.getElementById('toggle');
+  const outline = btn.querySelector('.icon-outline');
+  const filled = btn.querySelector('.icon-filled');
+  const reduced = document.getElementById('reduced');
+  const lab = document.getElementById('motion-lab');
+  const stateEl = document.getElementById('state');
+  let selected = false;
+  let t = 0;
+  let raf = 0;
+
+  function paint(v) {
+    t = v;
+    outline.style.opacity = String(1 - v);
+    filled.style.opacity = String(v);
+  }
+
+  function springTo(from, to, onUpdate, onComplete) {
+    if (reduced.checked) {
+      onUpdate(to);
+      onComplete?.();
+      return;
+    }
+    let x = from, v = 0;
+    let last = performance.now();
+    cancelAnimationFrame(raf);
+    function step(now) {
+      const dt = Math.min((now - last) / 1000, 0.064);
+      last = now;
+      const a = (-S * (x - to) - D * v) / M;
+      v += a * dt;
+      x += v * dt;
+      onUpdate(x);
+      if (Math.abs(x - to) < 0.002 && Math.abs(v) < 0.002) {
+        onUpdate(to);
+        onComplete?.();
+        raf = 0;
+        return;
+      }
+      raf = requestAnimationFrame(step);
+    }
+    raf = requestAnimationFrame(step);
+  }
+
+  function setReadout() {
+    stateEl.textContent = selected ? 'selected' : 'unselected';
+  }
+
+  function toggle() {
+    selected = !selected;
+    btn.setAttribute('aria-pressed', String(selected));
+    springTo(t, selected ? 1 : 0, paint, setReadout);
+    setReadout();
+  }
+
+  btn.addEventListener('click', toggle);
+  btn.addEventListener('keydown', (e) => {
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      toggle();
+    }
+  });
+  reduced.addEventListener('change', (e) => {
+    lab.classList.toggle('reduced-motion', e.target.checked);
+    if (e.target.checked) paint(selected ? 1 : 0);
+  });
+
+  paint(0);
+  setReadout();
+})();
+</script>
+</body>
+</html>
